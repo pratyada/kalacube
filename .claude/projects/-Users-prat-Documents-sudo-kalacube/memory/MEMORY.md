@@ -1,0 +1,2 @@
+- [KalaCUBE Project Overview](project_kalacube_overview.md) — Art platform: LinkedIn for artists, 3 dimensions (handicraft, visual art, performing arts)
+- [KalaCUBE Legacy Repos](reference_legacy_repos.md) — Original frontend (Next.js) and backend (NestJS) repos on GitHub

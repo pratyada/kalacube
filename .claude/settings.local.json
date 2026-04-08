@@ -1,0 +1,9 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(git clone:*)",
+      "WebFetch(domain:www.kalacube.com)",
+      "WebSearch"
+    ]
+  }
+}

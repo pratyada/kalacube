@@ -1,0 +1,22 @@
+{
+  "name": "kalacube",
+  "version": "1.0.0",
+  "private": true,
+  "description": "KalaCUBE — LinkedIn for Artists across Handicraft, Visual Art, and Performing Arts",
+  "workspaces": [
+    "frontend",
+    "backend"
+  ],
+  "scripts": {
+    "dev": "turbo run dev",
+    "build": "turbo run build",
+    "lint": "turbo run lint",
+    "dev:backend": "npm run dev --workspace=backend",
+    "dev:frontend": "npm run dev --workspace=frontend",
+    "build:backend": "npm run build --workspace=backend",
+    "build:frontend": "npm run build --workspace=frontend"
+  },
+  "devDependencies": {
+    "turbo": "^2.0.0"
+  }
+}
