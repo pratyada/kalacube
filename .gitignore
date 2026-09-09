@@ -49,3 +49,6 @@ coverage/
 # Legacy repos (reference only)
 kalacube-frontend/
 kalaCUBE-backend/
+
+# Local-only compose overrides
+docker-compose.override.yml

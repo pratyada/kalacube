@@ -11,6 +11,7 @@ import { HttpExceptionFilter } from './common/filters/http-exception.filter';
 import { AuthModule } from './auth/auth.module';
 import { CognitoModule } from './auth/cognito/cognito.module';
 import { UserModule } from './user/user.module';
+import { ExploreModule } from './explore/explore.module';
 import { S3Module } from './s3/s3.module';
 import { EmailModule } from './email/email.module';
 
@@ -38,6 +39,7 @@ import { EmailModule } from './email/email.module';
     CognitoModule,
     AuthModule,
     UserModule,
+    ExploreModule,
     S3Module,
     EmailModule,
   ],

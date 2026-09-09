@@ -8,11 +8,18 @@ const api = axios.create({
   headers: { 'Content-Type': 'application/json' },
 });
 
-// Attach the Cognito ID token (async — Amplify reads it from its token store).
+// Attach the Cognito ID token if available — but NEVER block the request on it.
+// Public browse pages need no token; if Amplify's token lookup stalls, we still
+// fire the request (racing it against a short timeout).
 api.interceptors.request.use(async (config) => {
-  const token = await getIdToken();
-  if (token) {
-    config.headers.Authorization = `Bearer ${token}`;
+  try {
+    const token = await Promise.race([
+      getIdToken(),
+      new Promise<null>((resolve) => setTimeout(() => resolve(null), 800)),
+    ]);
+    if (token) config.headers.Authorization = `Bearer ${token}`;
+  } catch {
+    /* ignore — proceed unauthenticated */
   }
   return config;
 });

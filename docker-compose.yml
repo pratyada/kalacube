@@ -11,7 +11,9 @@ services:
     volumes:
       - mongo_data:/data/db
     ports:
-      - "27017:27017"
+      # Host port configurable (MONGO_PORT in ./.env) to avoid clashing with a
+      # native mongod on 27017. Backend still uses the internal `mongo:27017`.
+      - "${MONGO_PORT:-27017}:27017"
     healthcheck:
       test: ["CMD", "mongosh", "--quiet", "--eval", "db.adminCommand('ping')"]
       interval: 10s
@@ -62,9 +64,15 @@ services:
         # Baked into the client bundle at build time; must be the URL the
         # BROWSER uses to reach the API (host machine), not the compose network.
         NEXT_PUBLIC_API_URL: http://localhost:8000
+        # Cognito public identifiers (no secret) — needed for login in-browser.
+        NEXT_PUBLIC_COGNITO_USER_POOL_ID: ap-south-1_6Tz4OLn4d
+        NEXT_PUBLIC_COGNITO_APP_CLIENT_ID: 6n3t3poh0co772eaahgvopcfn
+        NEXT_PUBLIC_COGNITO_DOMAIN: kalacube.auth.ap-south-1.amazoncognito.com
+        NEXT_PUBLIC_APP_URL: http://localhost:3000
     restart: unless-stopped
     ports:
-      - "3000:3000"
+      # Host port configurable (FRONTEND_PORT in ./.env) — defaults to 3000.
+      - "${FRONTEND_PORT:-3000}:3000"
     depends_on:
       - backend
 

@@ -41,8 +41,12 @@ aws cognito-idp create-identity-provider \
 1. Cognito → User pool → **App integration → Domain** → create a Cognito domain, e.g. `kalacube` → `https://kalacube.auth.ap-south-1.amazoncognito.com`. (Go back and paste this into step 1.4/1.5.)
 2. Cognito → **App integration → App client `6n3t3poh0co772eaahgvopcfn` → Edit Hosted UI:**
    - **Identity providers:** enable **Cognito user pool** AND **Google**
-   - **Allowed callback URLs:** `http://localhost:3000/auth/oauth/callback` and prod `https://<your-domain>/auth/oauth/callback`
-   - **Allowed sign-out URLs:** `http://localhost:3000/` and prod `https://<your-domain>/`
+   - **Allowed callback URLs:** MUST match the port the frontend actually runs on.
+     Local dev currently runs on **:3005** (3000/3001 were taken), so add BOTH:
+     `http://localhost:3005/auth/oauth/callback` AND `http://localhost:3000/auth/oauth/callback`
+     (+ prod `https://<your-domain>/auth/oauth/callback`).
+     NOTE: a `redirect_mismatch` error at the Hosted UI = the app's port isn't in this list.
+   - **Allowed sign-out URLs:** `http://localhost:3005/`, `http://localhost:3000/`, prod `https://<your-domain>/`
    - **OAuth grant types:** Authorization code grant
    - **OpenID Connect scopes:** `openid`, `email`, `profile`
 3. Confirm the app client is a **public client** (no secret) — the SPA uses PKCE. If it currently has a secret, create a new public app client for the web app and hand back its ID.
