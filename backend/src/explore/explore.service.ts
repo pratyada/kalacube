@@ -27,10 +27,18 @@ export class ExploreService {
     return { items: data, total, page, limit };
   }
 
-  async listArtists(page = 1, limit = 24) {
+  async listArtists(page = 1, limit = 24, dimension?: string, search?: string) {
     const skip = (page - 1) * limit;
+    const match: any = { role: 'artist', isActive: true };
+    if (search) {
+      const rx = { $regex: search, $options: 'i' };
+      match.$or = [{ username: rx }, { firstName: rx }, { lastName: rx }];
+    }
+    const dimensionStage = dimension
+      ? [{ $match: { artDimensions: dimension } }]
+      : [];
     const pipeline = [
-      { $match: { role: 'artist', isActive: true } },
+      { $match: match },
       {
         $lookup: {
           from: 'artistprofiles',
@@ -64,6 +72,7 @@ export class ExploreService {
           },
         },
       },
+      ...dimensionStage,
       {
         $project: {
           username: 1,
@@ -80,11 +89,23 @@ export class ExploreService {
       { $skip: skip },
       { $limit: limit },
     ];
-    const [data, total] = await Promise.all([
+    // Count matching the same filters (dimension needs the profile lookup).
+    const countPipeline: any[] = [
+      { $match: match },
+      ...(dimension
+        ? [
+            { $lookup: { from: 'artistprofiles', localField: '_id', foreignField: 'user', as: 'profile' } },
+            { $addFields: { artDimensions: { $arrayElemAt: ['$profile.artDimensions', 0] } } },
+            ...dimensionStage,
+          ]
+        : []),
+      { $count: 'n' },
+    ];
+    const [data, countRes] = await Promise.all([
       this.userRepo.userModel.aggregate(pipeline as any),
-      this.userRepo.userModel.countDocuments({ role: 'artist', isActive: true }),
+      this.userRepo.userModel.aggregate(countPipeline),
     ]);
-    return { items: data, total, page, limit };
+    return { items: data, total: countRes[0]?.n || 0, page, limit };
   }
 
   async getArtist(username: string) {

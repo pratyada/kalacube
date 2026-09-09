@@ -29,8 +29,13 @@ export class ExploreController {
 
   @Public()
   @Get('artists')
-  artists(@Query('page') page = '1', @Query('limit') limit = '24') {
-    return this.explore.listArtists(Number(page), Number(limit));
+  artists(
+    @Query('page') page = '1',
+    @Query('limit') limit = '24',
+    @Query('dimension') dimension?: string,
+    @Query('search') search?: string,
+  ) {
+    return this.explore.listArtists(Number(page), Number(limit), dimension, search);
   }
 
   @Public()

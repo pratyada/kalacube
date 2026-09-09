@@ -26,22 +26,37 @@ function initials(a: Artist) {
   return n.split(/\s+/).slice(0, 2).map((s) => s[0]?.toUpperCase()).join('');
 }
 
+const DIMENSION_FILTERS = [
+  { key: '', label: 'All' },
+  { key: 'handicraft', label: 'Handicraft' },
+  { key: 'visual_art', label: 'Visual Art' },
+  { key: 'performing_arts', label: 'Performing Arts' },
+];
+
 export default function AllArtistPage() {
   const [artists, setArtists] = useState<Artist[]>([]);
   const [total, setTotal] = useState(0);
   const [loading, setLoading] = useState(true);
+  const [dimension, setDimension] = useState('');
+  const [search, setSearch] = useState('');
 
   useEffect(() => {
-    api
-      .get('/api/explore/artists', { params: { limit: 48 } })
-      .then(({ data }) => {
-        const p = data.data || {};
-        setArtists(p.items || []);
-        setTotal(p.total || 0);
-      })
-      .catch(() => setArtists([]))
-      .finally(() => setLoading(false));
-  }, []);
+    setLoading(true);
+    const t = setTimeout(() => {
+      api
+        .get('/api/explore/artists', {
+          params: { limit: 48, dimension: dimension || undefined, search: search || undefined },
+        })
+        .then(({ data }) => {
+          const p = data.data || {};
+          setArtists(p.items || []);
+          setTotal(p.total || 0);
+        })
+        .catch(() => setArtists([]))
+        .finally(() => setLoading(false));
+    }, 250); // debounce search typing
+    return () => clearTimeout(t);
+  }, [dimension, search]);
 
   return (
     <main className="min-h-screen bg-[#faf8f5] text-neutral-900">
@@ -51,8 +66,33 @@ export default function AllArtistPage() {
         </p>
         <h1 className="mt-3 font-serif text-4xl md:text-5xl">Artists</h1>
         <p className="mt-3 text-neutral-600">
-          {loading ? 'Loading…' : `${total} artists across Handicraft, Visual & Performing Arts`}
+          {loading ? 'Loading…' : `${total} artist${total === 1 ? '' : 's'}`}
         </p>
+
+        {/* Filters */}
+        <div className="mt-6 flex flex-col items-center gap-4">
+          <div className="flex flex-wrap justify-center gap-2">
+            {DIMENSION_FILTERS.map((f) => (
+              <button
+                key={f.key}
+                onClick={() => setDimension(f.key)}
+                className={`rounded-full border px-4 py-1.5 text-sm transition ${
+                  dimension === f.key
+                    ? 'border-[#a06f1e] bg-[#a06f1e] text-white'
+                    : 'border-neutral-300 text-neutral-600 hover:border-[#a06f1e]'
+                }`}
+              >
+                {f.label}
+              </button>
+            ))}
+          </div>
+          <input
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            placeholder="Search artists by name…"
+            className="w-full max-w-sm rounded-full border border-neutral-300 px-4 py-2 text-sm outline-none focus:border-[#a06f1e]"
+          />
+        </div>
       </header>
 
       <section className="mx-auto max-w-7xl px-6 py-10">
