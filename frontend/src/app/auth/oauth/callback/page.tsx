@@ -1,25 +1,38 @@
 'use client';
 
 import { Suspense, useEffect } from 'react';
-import { useRouter, useSearchParams } from 'next/navigation';
+import { useRouter } from 'next/navigation';
+import { Hub } from 'aws-amplify/utils';
 import { useAuthStore } from '@/stores/authStore';
 
 function OAuthCallbackContent() {
   const router = useRouter();
-  const searchParams = useSearchParams();
-  const { setTokens, fetchUser } = useAuthStore();
+  const { fetchUser } = useAuthStore();
 
   useEffect(() => {
-    const accessToken = searchParams.get('accessToken');
-    const refreshToken = searchParams.get('refreshToken');
+    let done = false;
+    const finish = async () => {
+      if (done) return;
+      done = true;
+      await fetchUser();
+      router.push('/dashboard');
+    };
 
-    if (accessToken && refreshToken) {
-      setTokens(accessToken, refreshToken);
-      fetchUser().then(() => router.push('/dashboard'));
-    } else {
-      router.push('/auth/login');
-    }
-  }, [searchParams, setTokens, fetchUser, router]);
+    // Amplify emits this once it exchanges the ?code= for tokens.
+    const unsubscribe = Hub.listen('auth', ({ payload }) => {
+      if (payload.event === 'signInWithRedirect') finish();
+      if (payload.event === 'signInWithRedirect_failure')
+        router.push('/auth/login?error=oauth');
+    });
+
+    // Fallback: if the session is already established, proceed.
+    fetchUser().then(() => {
+      const { isAuthenticated } = useAuthStore.getState();
+      if (isAuthenticated) finish();
+    });
+
+    return unsubscribe;
+  }, [fetchUser, router]);
 
   return (
     <div className="min-h-screen flex items-center justify-center">

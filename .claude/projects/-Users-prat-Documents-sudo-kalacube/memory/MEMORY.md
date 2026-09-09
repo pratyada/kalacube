@@ -1,2 +1,7 @@
 - [KalaCUBE Project Overview](project_kalacube_overview.md) — Art platform: LinkedIn for artists, 3 dimensions (handicraft, visual art, performing arts)
 - [KalaCUBE Legacy Repos](reference_legacy_repos.md) — Original frontend (Next.js) and backend (NestJS) repos on GitHub
+- [Redesign Vision](project_redesign_vision.md) — Muse.tv-inspired cinematic redesign: dark theme, gold accents, editorial serif typography, immersive art-forward UI
+- [Prat - Founder](user_prat.md) — Project owner, wants iterative module-by-module build, cinematic art-forward vision
+- [Build Approach](feedback_build_approach.md) — Always build on existing monorepo, never reinvent from scratch
+- [Deployment Pipeline](project_deployment_pipeline.md) — Docker Compose foundation built + verified; target is guided Render/Railway + Atlas; not deployed yet
+- [Data Migration](project_data_migration.md) — Mongo+Cognito+S3 all inventoried (see AWS_DISCOVERY.md); ~467 users, ~2100 real artworks, ~1GB images. Blockers resolved. AUTH: keep AWS Cognito + S3/Amplify. Backend+frontend Cognito/Amplify auth BUILT & compiling (Google one-tap + email/pw). AWS session must do Google IdP + Hosted UI + linking Lambda (AWS_SETUP_CHECKLIST.md) + hand back client id/domain. Not live-tested yet.

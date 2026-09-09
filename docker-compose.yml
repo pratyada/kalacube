@@ -1,0 +1,73 @@
+# KalaCUBE — full local/prod-parity stack.
+#   docker compose up --build
+# Frontend  -> http://localhost:3000
+# Backend   -> http://localhost:8000
+# Copy .env.docker.example to .env.docker and fill in secrets first.
+
+services:
+  mongo:
+    image: mongo:7
+    restart: unless-stopped
+    volumes:
+      - mongo_data:/data/db
+    ports:
+      - "27017:27017"
+    healthcheck:
+      test: ["CMD", "mongosh", "--quiet", "--eval", "db.adminCommand('ping')"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 20s
+
+  redis:
+    image: redis:7-alpine
+    restart: unless-stopped
+    volumes:
+      - redis_data:/data
+    ports:
+      - "6379:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  backend:
+    build:
+      context: .
+      dockerfile: backend/Dockerfile
+    restart: unless-stopped
+    env_file:
+      - .env.docker
+    environment:
+      # Override host-facing values so the container talks to sibling services.
+      NODE_ENV: production
+      PORT: "8000"
+      MONGO_URI: mongodb://mongo:27017/kalacube
+      REDIS_HOST: redis
+      REDIS_PORT: "6379"
+    ports:
+      - "8000:8000"
+    depends_on:
+      mongo:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+
+  frontend:
+    build:
+      context: .
+      dockerfile: frontend/Dockerfile
+      args:
+        # Baked into the client bundle at build time; must be the URL the
+        # BROWSER uses to reach the API (host machine), not the compose network.
+        NEXT_PUBLIC_API_URL: http://localhost:8000
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    depends_on:
+      - backend
+
+volumes:
+  mongo_data:
+  redis_data:

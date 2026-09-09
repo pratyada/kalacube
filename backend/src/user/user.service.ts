@@ -72,7 +72,7 @@ export class UserService {
     const user = await this.userRepo.findUserByUsername(username);
     if (!user) throw new NotFoundException('User not found');
 
-    if (user._id.toString() !== currentUserId) {
+    if (user._id.toString() !== currentUserId.toString()) {
       throw new ConflictException('You can only update your own profile');
     }
 
@@ -104,7 +104,7 @@ export class UserService {
   ) {
     const user = await this.userRepo.findUserByUsername(username);
     if (!user) throw new NotFoundException('User not found');
-    if (user._id.toString() !== currentUserId) {
+    if (user._id.toString() !== currentUserId.toString()) {
       throw new ConflictException('You can only update your own profile');
     }
 
@@ -123,7 +123,7 @@ export class UserService {
   ) {
     const user = await this.userRepo.findUserByUsername(username);
     if (!user) throw new NotFoundException('User not found');
-    if (user._id.toString() !== currentUserId) {
+    if (user._id.toString() !== currentUserId.toString()) {
       throw new ConflictException('You can only update your own profile');
     }
 
@@ -142,7 +142,7 @@ export class UserService {
   ) {
     const user = await this.userRepo.findUserByUsername(username);
     if (!user) throw new NotFoundException('User not found');
-    if (user._id.toString() !== currentUserId) {
+    if (user._id.toString() !== currentUserId.toString()) {
       throw new ConflictException('You can only update your own profile');
     }
 

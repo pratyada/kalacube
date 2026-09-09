@@ -1,4 +1,5 @@
 import axios from 'axios';
+import { getIdToken } from '@/lib/amplify';
 
 const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
 
@@ -7,52 +8,27 @@ const api = axios.create({
   headers: { 'Content-Type': 'application/json' },
 });
 
-// Request interceptor: attach access token
-api.interceptors.request.use((config) => {
-  if (typeof window !== 'undefined') {
-    const token = localStorage.getItem('accessToken');
-    if (token) {
-      config.headers.Authorization = `Bearer ${token}`;
-    }
+// Attach the Cognito ID token (async — Amplify reads it from its token store).
+api.interceptors.request.use(async (config) => {
+  const token = await getIdToken();
+  if (token) {
+    config.headers.Authorization = `Bearer ${token}`;
   }
   return config;
 });
 
-// Response interceptor: handle 401 with token refresh
+// On 401, bounce to login. Cognito/Amplify handles token refresh internally,
+// so there's no manual refresh dance anymore.
 api.interceptors.response.use(
   (response) => response,
-  async (error) => {
-    const originalRequest = error.config;
-
-    if (error.response?.status === 401 && !originalRequest._retry) {
-      originalRequest._retry = true;
-
-      try {
-        const refreshToken = localStorage.getItem('refreshToken');
-        if (!refreshToken) throw new Error('No refresh token');
-
-        const { data } = await axios.post(`${API_BASE}/api/auth/refresh`, {
-          refreshToken,
-        });
-
-        const newAccess = data.data.accessToken;
-        const newRefresh = data.data.refreshToken;
-
-        localStorage.setItem('accessToken', newAccess);
-        localStorage.setItem('refreshToken', newRefresh);
-
-        originalRequest.headers.Authorization = `Bearer ${newAccess}`;
-        return api(originalRequest);
-      } catch {
-        localStorage.removeItem('accessToken');
-        localStorage.removeItem('refreshToken');
-        if (typeof window !== 'undefined') {
-          window.location.href = '/auth/login';
-        }
-        return Promise.reject(error);
-      }
+  (error) => {
+    if (
+      error.response?.status === 401 &&
+      typeof window !== 'undefined' &&
+      !window.location.pathname.startsWith('/auth')
+    ) {
+      window.location.href = '/auth/login';
     }
-
     return Promise.reject(error);
   },
 );

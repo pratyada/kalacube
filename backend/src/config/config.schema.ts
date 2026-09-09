@@ -26,6 +26,11 @@ export const configValidationSchema = Joi.object({
   REDIS_HOST: Joi.string().required(),
   REDIS_PORT: Joi.number().required(),
 
+  // AWS Cognito (auth) — allow '' so the app still boots before values are wired
+  COGNITO_REGION: Joi.string().allow('').default('ap-south-1'),
+  COGNITO_USER_POOL_ID: Joi.string().allow('').default(''),
+  COGNITO_APP_CLIENT_ID: Joi.string().allow('').default(''),
+
   // Email
   EMAIL_USERNAME: Joi.string().required(),
   EMAIL_PASSWORD: Joi.string().required(),

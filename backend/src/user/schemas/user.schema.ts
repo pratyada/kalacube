@@ -22,13 +22,16 @@ export class User extends Document {
   @Prop()
   countryCode: string;
 
-  @Prop({ required: true })
+  // Optional: ~73% of migrated 2021-era artists have no dob on record.
+  @Prop()
   dob: Date;
 
-  @Prop({ required: true, trim: true })
+  // Optional for migrated data (many legacy records lack names); collected via
+  // profile completion.
+  @Prop({ trim: true })
   firstName: string;
 
-  @Prop({ required: true, trim: true })
+  @Prop({ trim: true })
   lastName: string;
 
   @Prop({ select: false })
@@ -90,6 +93,16 @@ export class User extends Document {
 
   @Prop()
   lastLoginAt: Date;
+
+  // Preserved from legacy AWS Amplify data. Keys the artist's S3 image objects:
+  //   protected/{legacyIdentityId}/artist_work/{artworkId}/...
+  @Prop({ index: true })
+  legacyIdentityId: string;
+
+  // Legacy Google Places id from the old `location` field (kept for future
+  // geocoding; the human-readable city/country live in `location`).
+  @Prop()
+  legacyLocationPlaceId: string;
 
   @Prop()
   emailVerificationToken: string;

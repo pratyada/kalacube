@@ -1,0 +1,16 @@
+# Applied to the monorepo-root build context used by both Dockerfiles.
+**/node_modules
+**/dist
+**/.next
+**/.turbo
+**/coverage
+**/.git
+**/.env
+**/.env.*
+!**/.env.example
+!**/.env.docker.example
+kalacube-frontend
+kalaCUBE-backend
+.claude
+**/*.log
+**/.DS_Store

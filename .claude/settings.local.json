@@ -3,7 +3,13 @@
     "allow": [
       "Bash(git clone:*)",
       "WebFetch(domain:www.kalacube.com)",
-      "WebSearch"
+      "WebSearch",
+      "Bash(curl -s -L \"https://www.muse.tv/\")",
+      "Bash(tr '>' '\\\\n')",
+      "Bash(command -v mongosh)",
+      "Bash(mongosh --version)",
+      "Bash(node -e \"require.resolve\\('mongodb'\\); console.log\\('  mongodb driver: YES'\\)\")",
+      "Bash(node -e \"require\\('/Users/prat/Documents/sudo/kalacube/backend/node_modules/mongoose'\\); console.log\\('  mongoose: YES \\(can use its bundled driver\\)'\\)\")"
     ]
   }
 }

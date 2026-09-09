@@ -34,6 +34,7 @@
     "@nestjs/platform-socket.io": "^11.1.18",
     "@nestjs/websockets": "^11.1.18",
     "@superfaceai/passport-twitter-oauth2": "^1.2.4",
+    "aws-jwt-verify": "^5.2.1",
     "bcrypt": "^6.0.0",
     "bull": "^4.16.5",
     "class-transformer": "^0.5.1",

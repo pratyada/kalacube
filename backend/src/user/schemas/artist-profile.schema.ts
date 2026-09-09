@@ -7,7 +7,9 @@ export class ArtistProfile extends Document {
   @Prop({ type: Types.ObjectId, ref: 'User', required: true, unique: true })
   user: Types.ObjectId;
 
-  @Prop({ type: [String], enum: ArtDimension, required: true })
+  // Default [] (not required): ~35% of migrated artists have no derivable
+  // dimension from their legacy art styles; set during profile completion.
+  @Prop({ type: [String], enum: ArtDimension, default: [] })
   artDimensions: ArtDimension[];
 
   @Prop({ type: [String], default: [] })

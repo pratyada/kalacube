@@ -12,9 +12,17 @@ build/
 # Environment
 .env
 .env.local
+.env.docker
 .env.development.local
 .env.test.local
 .env.production.local
+
+# Migration secrets (connection strings / AWS keys) — never commit
+.secrets/
+
+# Google OAuth client secret files — never commit
+**/client_secret_*.json
+docs/client_secret_*.json
 
 # IDE
 .idea/

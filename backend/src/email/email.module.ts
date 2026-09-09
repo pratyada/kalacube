@@ -1,6 +1,7 @@
 import { Module } from '@nestjs/common';
 import { BullModule } from '@nestjs/bull';
 import { MailerModule } from '@nestjs-modules/mailer';
+import { HandlebarsAdapter } from '@nestjs-modules/mailer/adapters/handlebars.adapter';
 import { ConfigService } from '@nestjs/config';
 import { join } from 'path';
 import { EmailService } from './email.service';
@@ -26,7 +27,7 @@ import { EmailProcessor } from './email.processor';
         },
         template: {
           dir: join(__dirname, 'templates'),
-          adapter: new (require('@nestjs-modules/mailer/dist/adapters/handlebars.adapter').HandlebarsAdapter)(),
+          adapter: new HandlebarsAdapter(),
           options: { strict: true },
         },
       }),

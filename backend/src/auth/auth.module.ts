@@ -7,7 +7,7 @@ import { AuthController } from './auth.controller';
 import { AuthService } from './auth.service';
 import { JwtStrategy } from './strategies/jwt.strategy';
 import { JwtRefreshStrategy } from './strategies/jwt-refresh.strategy';
-import { GoogleStrategy } from './strategies/google.strategy';
+// GoogleStrategy loaded conditionally when GOOGLE_CLIENT_ID is set
 import {
   RefreshToken,
   RefreshTokenSchema,
@@ -32,7 +32,7 @@ import { UserModule } from '../user/user.module';
     UserModule,
   ],
   controllers: [AuthController],
-  providers: [AuthService, JwtStrategy, JwtRefreshStrategy, GoogleStrategy],
+  providers: [AuthService, JwtStrategy, JwtRefreshStrategy],
   exports: [AuthService],
 })
 export class AuthModule {}
