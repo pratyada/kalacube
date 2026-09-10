@@ -29,6 +29,9 @@ ENV NEXT_PUBLIC_COGNITO_USER_POOL_ID=$NEXT_PUBLIC_COGNITO_USER_POOL_ID
 ENV NEXT_PUBLIC_COGNITO_APP_CLIENT_ID=$NEXT_PUBLIC_COGNITO_APP_CLIENT_ID
 ENV NEXT_PUBLIC_COGNITO_DOMAIN=$NEXT_PUBLIC_COGNITO_DOMAIN
 ENV NEXT_PUBLIC_APP_URL=$NEXT_PUBLIC_APP_URL
+# Opt into `output: "standalone"` for this self-hosted image (see next.config.ts).
+# Amplify Hosting builds leave this unset and use Next.js managed SSR output.
+ENV BUILD_STANDALONE=true
 RUN npm run build --workspace=frontend
 
 # ---- runtime: minimal standalone server ----

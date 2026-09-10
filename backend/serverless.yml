@@ -1,0 +1,107 @@
+# Serverless Framework v3 — KalaCUBE NestJS API on AWS Lambda + API Gateway (HTTP API v2)
+#
+# SCAFFOLD ONLY. A human runs `serverless deploy` (see DEPLOYMENT_BACKEND_SERVERLESS.md).
+# No secrets are hardcoded here — every sensitive value is pulled from SSM Parameter
+# Store at deploy time via ${ssm:/kalacube/prod/...}. Create those params first.
+#
+# Packaging model: NATIVE (no bundler). We ship the tsc-compiled `dist/` plus a
+# production-only `node_modules`. This keeps NestJS decorator metadata intact and
+# lets the mailer read `dist/email/templates/*.hbs` via a normal __dirname path.
+# NOTE: this is an npm-workspaces monorepo, so `backend/node_modules` is empty by
+# default (deps hoist to the repo root). The deploy prep step in the runbook
+# materializes a self-contained prod `node_modules` before packaging.
+
+service: kalacube-api
+
+frameworkVersion: '3'
+
+provider:
+  name: aws
+  runtime: nodejs20.x
+  region: ap-south-1
+  stage: ${opt:stage, 'prod'}
+  memorySize: 1024
+  timeout: 30
+  architecture: arm64
+  logRetentionInDays: 14
+  httpApi:
+    cors: true # App-level CORS in lambda.ts is the source of truth; this is a safety net.
+  # IAM: grant the function access to the S3 bucket + SSM (so you can later drop
+  # the static AWS_ACCESS_KEY/AWS_SECRET_KEY and use the execution role instead).
+  iam:
+    role:
+      statements:
+        - Effect: Allow
+          Action:
+            - s3:GetObject
+            - s3:PutObject
+            - s3:DeleteObject
+            - s3:ListBucket
+          Resource:
+            - arn:aws:s3:::05-202011-kalacube-artist
+            - arn:aws:s3:::05-202011-kalacube-artist/*
+  environment:
+    NODE_ENV: production
+    # AWS_REGION is a RESERVED Lambda env var — the runtime injects it automatically
+    # (= ap-south-1, the function's region), so we do NOT (and cannot) set it here.
+    # The app's Joi `AWS_REGION` requirement is satisfied by that runtime value.
+    CLIENT_URL: ${ssm:/kalacube/prod/CLIENT_URL}
+    MONGO_URI: ${ssm:/kalacube/prod/MONGO_URI}
+    JWT_ACCESS_SECRET: ${ssm:/kalacube/prod/JWT_ACCESS_SECRET}
+    JWT_REFRESH_SECRET: ${ssm:/kalacube/prod/JWT_REFRESH_SECRET}
+    # S3 — prefer the execution role above; these static keys are kept only because
+    # the S3 module currently reads them from config. Migrate to role creds later.
+    AWS_STORAGE_BUCKET: ${ssm:/kalacube/prod/AWS_STORAGE_BUCKET}
+    AWS_ACCESS_KEY: ${ssm:/kalacube/prod/AWS_ACCESS_KEY, ''}
+    AWS_SECRET_KEY: ${ssm:/kalacube/prod/AWS_SECRET_KEY, ''}
+    # Cognito
+    COGNITO_REGION: ${ssm:/kalacube/prod/COGNITO_REGION, 'ap-south-1'}
+    COGNITO_USER_POOL_ID: ${ssm:/kalacube/prod/COGNITO_USER_POOL_ID, ''}
+    COGNITO_APP_CLIENT_ID: ${ssm:/kalacube/prod/COGNITO_APP_CLIENT_ID, ''}
+    # Redis (Bull email queue) — Upstash serverless Redis over TLS in prod.
+    REDIS_HOST: ${ssm:/kalacube/prod/REDIS_HOST}
+    REDIS_PORT: ${ssm:/kalacube/prod/REDIS_PORT}
+    REDIS_PASSWORD: ${ssm:/kalacube/prod/REDIS_PASSWORD, ''}
+    REDIS_TLS: ${ssm:/kalacube/prod/REDIS_TLS, 'true'}
+    # Email (Gmail SMTP today; consider SES for prod deliverability)
+    EMAIL_USERNAME: ${ssm:/kalacube/prod/EMAIL_USERNAME}
+    EMAIL_PASSWORD: ${ssm:/kalacube/prod/EMAIL_PASSWORD}
+    # OAuth (optional — app tolerates empty)
+    GOOGLE_CLIENT_ID: ${ssm:/kalacube/prod/GOOGLE_CLIENT_ID, ''}
+    GOOGLE_CLIENT_SECRET: ${ssm:/kalacube/prod/GOOGLE_CLIENT_SECRET, ''}
+    GOOGLE_CALLBACK_URL: ${ssm:/kalacube/prod/GOOGLE_CALLBACK_URL, ''}
+    FACEBOOK_APP_ID: ${ssm:/kalacube/prod/FACEBOOK_APP_ID, ''}
+    FACEBOOK_APP_SECRET: ${ssm:/kalacube/prod/FACEBOOK_APP_SECRET, ''}
+    FACEBOOK_CALLBACK_URL: ${ssm:/kalacube/prod/FACEBOOK_CALLBACK_URL, ''}
+
+functions:
+  api:
+    handler: dist/lambda.handler
+    description: KalaCUBE NestJS API (all routes) behind API Gateway HTTP API
+    events:
+      # Catch-all: every route/method goes to the single Nest handler. Controllers
+      # already include the /api/... prefix, so no basePath rewriting is needed.
+      - httpApi: '*'
+
+package:
+  # Ship only the compiled output + prod deps. Everything else is excluded.
+  patterns:
+    - '!./**'
+    - 'dist/**'
+    - 'node_modules/**'
+    - 'package.json'
+
+plugins:
+  - serverless-offline # local emulation: `npm run deploy:offline`
+
+# ---------------------------------------------------------------------------
+# CUSTOM DOMAIN (api.kalacube.com) — not automated here to avoid extra plugins.
+# After the first deploy, map the domain to this HTTP API. Recommended manual /
+# console path (see runbook for the exact CLI):
+#   1. Request/confirm an ACM cert for api.kalacube.com in ap-south-1 (regional).
+#   2. API Gateway > Custom domain names > create `api.kalacube.com` (Regional,
+#      HTTP, that cert) > API mappings > map to this HTTP API, stage $default.
+#   3. Route53: point api.kalacube.com (A/AAAA alias) at the domain's regional
+#      target. This is the DNS flip that cuts traffic over from the EC2 box.
+#   (Alternative: add the `serverless-domain-manager` plugin to automate steps 2-3.)
+# ---------------------------------------------------------------------------

@@ -1,0 +1,38 @@
+# AWS Amplify Hosting (Gen 2) build spec — KalaCUBE frontend (Next.js 16, SSR).
+#
+# npm-workspaces monorepo. This uses Amplify's MONOREPO build-spec syntax:
+# an `applications` list with an `appRoot` per app. Because deps are hoisted to
+# the repo root, we install AND build from the monorepo root (buildPath: '/')
+# and build only the `frontend` workspace. Amplify auto-detects the npm
+# workspace, sets the platform to WEB_COMPUTE (managed Next.js SSR), and
+# packages the standard `frontend/.next` output (NOT standalone — see
+# frontend/next.config.ts). Confirmed against AWS "Configuring monorepo build
+# settings" docs and Amplify's Next.js SSR baseDirectory=.next convention.
+#
+# NOTE: also set the AMPLIFY_MONOREPO_APP_ROOT env var = `frontend` in the app
+# (the console does this automatically when you mark the app as a monorepo and
+# enter `frontend` as the app root).
+version: 1
+applications:
+  - appRoot: frontend
+    frontend:
+      buildPath: '/' # install + build from the monorepo root (workspaces are hoisted)
+      phases:
+        preBuild:
+          commands:
+            - npm ci
+        build:
+          commands:
+            # NEXT_PUBLIC_* are inlined at build time — set them in the Amplify
+            # app's Environment variables (see DEPLOYMENT_FRONTEND_SERVERLESS.md).
+            - npm run build --workspace=frontend
+      artifacts:
+        # Next.js SSR output. Path is relative to the monorepo root (buildPath).
+        baseDirectory: frontend/.next
+        files:
+          - '**/*'
+      cache:
+        paths:
+          - node_modules/**/*
+          - frontend/node_modules/**/*
+          - frontend/.next/cache/**/*
