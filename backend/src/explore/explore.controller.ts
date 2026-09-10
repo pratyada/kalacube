@@ -14,9 +14,29 @@ export class ExploreController {
   constructor(private readonly explore: ExploreService) {}
 
   @Public()
+  @Get('categories')
+  categories() {
+    return this.explore.getCategories();
+  }
+
+  @Public()
   @Get('artworks')
-  artworks(@Query('page') page = '1', @Query('limit') limit = '24') {
-    return this.explore.listArtworks(Number(page), Number(limit));
+  artworks(
+    @Query('page') page = '1',
+    @Query('limit') limit = '24',
+    @Query('domain') domain?: string,
+    @Query('category') category?: string,
+    @Query('specialist') specialist?: string,
+    @Query('search') search?: string,
+  ) {
+    return this.explore.listArtworks(
+      Number(page),
+      Number(limit),
+      domain,
+      category,
+      specialist,
+      search,
+    );
   }
 
   @Public()
@@ -32,10 +52,19 @@ export class ExploreController {
   artists(
     @Query('page') page = '1',
     @Query('limit') limit = '24',
-    @Query('dimension') dimension?: string,
     @Query('search') search?: string,
+    @Query('domain') domain?: string,
+    @Query('category') category?: string,
+    @Query('specialist') specialist?: string,
   ) {
-    return this.explore.listArtists(Number(page), Number(limit), dimension, search);
+    return this.explore.listArtists(
+      Number(page),
+      Number(limit),
+      search,
+      domain,
+      category,
+      specialist,
+    );
   }
 
   @Public()
