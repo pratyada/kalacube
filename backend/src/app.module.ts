@@ -13,6 +13,7 @@ import { CognitoModule } from './auth/cognito/cognito.module';
 import { UserModule } from './user/user.module';
 import { ExploreModule } from './explore/explore.module';
 import { AdminModule } from './admin/admin.module';
+import { ArtworkModule } from './artwork/artwork.module';
 import { S3Module } from './s3/s3.module';
 import { EmailModule } from './email/email.module';
 
@@ -26,22 +27,42 @@ import { EmailModule } from './email/email.module';
       inject: [ConfigService],
       useFactory: (config: ConfigService) => ({
         uri: config.get('MONGO_URI'),
+        // Lambda-friendly connection reuse: keep bufferCommands on so queries
+        // that arrive during a cold-start connect are buffered (not thrown),
+        // and hold a small pool open across warm invocations rather than
+        // opening a new connection per request. Nest caches this connection as
+        // a singleton, which the module-level app cache in lambda.ts reuses.
+        bufferCommands: true,
+        maxPoolSize: 10,
+        minPoolSize: 0,
+        serverSelectionTimeoutMS: 5000,
       }),
     }),
     BullModule.forRootAsync({
       inject: [ConfigService],
-      useFactory: (config: ConfigService) => ({
-        redis: {
-          host: config.get('REDIS_HOST'),
-          port: config.get('REDIS_PORT'),
-        },
-      }),
+      useFactory: (config: ConfigService) => {
+        // Serverless Redis (e.g. Upstash) needs TLS + an auth password; local
+        // dev Redis needs neither. Both are opt-in via env so the existing
+        // local Bull path is untouched when the flags are absent.
+        const password = config.get<string>('REDIS_PASSWORD') || undefined;
+        const useTls =
+          String(config.get('REDIS_TLS')).toLowerCase() === 'true';
+        return {
+          redis: {
+            host: config.get('REDIS_HOST'),
+            port: config.get('REDIS_PORT'),
+            ...(password ? { password } : {}),
+            ...(useTls ? { tls: {} } : {}),
+          },
+        };
+      },
     }),
     CognitoModule,
     AuthModule,
     UserModule,
     ExploreModule,
     AdminModule,
+    ArtworkModule,
     S3Module,
     EmailModule,
   ],

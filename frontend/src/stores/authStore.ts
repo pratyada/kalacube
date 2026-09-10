@@ -22,13 +22,24 @@ export const useAuthStore = create<AuthState>((set) => ({
   isLoading: true,
 
   loginWithEmail: async (email, password) => {
-    const { isSignedIn, nextStep } = await signIn({
-      username: email,
-      password,
-    });
-    if (!isSignedIn) {
+    let result;
+    try {
+      result = await signIn({ username: email, password });
+    } catch (err) {
+      // A valid Amplify session already exists (cookie storage under ssr:true;
+      // our store was just out of sync). Don't sign out — that triggers an OAuth
+      // redirect. Just hydrate from the existing session and proceed.
+      if (
+        (err as { name?: string })?.name === 'UserAlreadyAuthenticatedException'
+      ) {
+        await useAuthStore.getState().fetchUser();
+        if (useAuthStore.getState().isAuthenticated) return;
+      }
+      throw err;
+    }
+    if (!result.isSignedIn) {
       // e.g. CONFIRM_SIGN_UP, NEW_PASSWORD_REQUIRED, MFA — surface for the UI.
-      throw new Error(`ADDITIONAL_STEP:${nextStep.signInStep}`);
+      throw new Error(`ADDITIONAL_STEP:${result.nextStep.signInStep}`);
     }
     await useAuthStore.getState().fetchUser();
   },

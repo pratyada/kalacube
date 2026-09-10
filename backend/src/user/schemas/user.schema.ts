@@ -82,6 +82,10 @@ export class User extends Document {
   @Prop({ default: true })
   isActive: boolean;
 
+  // Editorially highlighted artist — surfaced on featured rails / home page.
+  @Prop({ default: false, index: true })
+  isFeatured: boolean;
+
   @Prop({ default: 0 })
   profileCompleteness: number;
 
@@ -98,6 +102,11 @@ export class User extends Document {
   //   protected/{legacyIdentityId}/artist_work/{artworkId}/...
   @Prop({ index: true })
   legacyIdentityId: string;
+
+  // AWS Cognito `sub` for users who signed up on the new platform (the primary
+  // identity link; existing/migrated users are matched by email).
+  @Prop({ index: true, sparse: true })
+  cognitoSub: string;
 
   // Legacy Google Places id from the old `location` field (kept for future
   // geocoding; the human-readable city/country live in `location`).

@@ -25,6 +25,9 @@ export const configValidationSchema = Joi.object({
   // Redis
   REDIS_HOST: Joi.string().required(),
   REDIS_PORT: Joi.number().required(),
+  // Optional: serverless/managed Redis (Upstash) auth + TLS. Absent locally.
+  REDIS_PASSWORD: Joi.string().allow('').default(''),
+  REDIS_TLS: Joi.boolean().truthy('true').falsy('false').default(false),
 
   // AWS Cognito (auth) — allow '' so the app still boots before values are wired
   COGNITO_REGION: Joi.string().allow('').default('ap-south-1'),

@@ -1,4 +1,7 @@
 export interface User {
+  // Set when a verified Cognito user has no Mongo profile yet (needs onboarding).
+  isNewUser?: boolean;
+  isFeatured?: boolean;
   _id: string;
   authType: string;
   role: 'superadmin' | 'admin' | 'curator' | 'artist' | 'art-space' | 'user';

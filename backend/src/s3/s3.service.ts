@@ -14,14 +14,24 @@ import { nanoid } from 'nanoid';
 export class S3Service {
   private s3: S3Client;
   private bucket: string;
+  private region: string;
 
   constructor(private configService: ConfigService) {
+    this.region = configService.get<string>('AWS_REGION')!;
+    const key = configService.get<string>('AWS_ACCESS_KEY');
+    const secret = configService.get<string>('AWS_SECRET_KEY');
+
+    // Use explicit env credentials only when they look real. When they are the
+    // shipped placeholders (or absent), fall back to the default AWS credential
+    // provider chain — the local `aws` config in dev, and the IAM role on Lambda.
+    const explicit =
+      key && secret && !/^placeholder/i.test(key) && !/^placeholder/i.test(secret);
+
     this.s3 = new S3Client({
-      region: configService.get<string>('AWS_REGION')!,
-      credentials: {
-        accessKeyId: configService.get<string>('AWS_ACCESS_KEY')!,
-        secretAccessKey: configService.get<string>('AWS_SECRET_KEY')!,
-      },
+      region: this.region,
+      ...(explicit
+        ? { credentials: { accessKeyId: key!, secretAccessKey: secret! } }
+        : {}),
     });
     this.bucket = configService.get<string>('AWS_STORAGE_BUCKET')!;
   }
@@ -66,7 +76,10 @@ export class S3Service {
   }
 
   getPublicUrl(key: string) {
-    return `https://${this.bucket}.s3.amazonaws.com/${key}`;
+    // Region-scoped virtual-hosted URL, matching the migrated artwork URLs.
+    // Each path segment is encoded (identityId contains a ':').
+    const encoded = key.split('/').map(encodeURIComponent).join('/');
+    return `https://${this.bucket}.s3.${this.region}.amazonaws.com/${encoded}`;
   }
 
   async copyFile(params: {

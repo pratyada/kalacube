@@ -5,10 +5,12 @@ import {
   Get,
   Param,
   Patch,
+  Post,
   Query,
 } from '@nestjs/common';
 import { AdminService } from './admin.service';
 import { Roles } from '../common/decorators/roles.decorator';
+import { CurrentUser } from '../common/decorators/current-user.decorator';
 
 /** Admin-only management API. Requires auth (global guard) + admin role. */
 @Controller('api/admin')
@@ -34,9 +36,14 @@ export class AdminController {
   @Patch('users/:id')
   updateUser(
     @Param('id') id: string,
-    @Body() dto: { role?: string; isActive?: boolean },
+    @Body() dto: { role?: string; isActive?: boolean; isFeatured?: boolean },
   ) {
     return this.admin.updateUser(id, dto);
+  }
+
+  @Get('featured')
+  featured() {
+    return this.admin.listFeatured();
   }
 
   @Get('artworks')
@@ -67,5 +74,32 @@ export class AdminController {
   @Get('events')
   events() {
     return this.admin.listEvents();
+  }
+
+  // --- Email & Marketing ---
+
+  @Get('recipients')
+  recipients(@Query('segment') segment = 'all') {
+    return this.admin.recipients(segment);
+  }
+
+  @Post('campaigns')
+  createCampaign(
+    @Body()
+    dto: {
+      subject?: string;
+      bodyHtml?: string;
+      segment?: string;
+      testEmail?: string;
+      confirm?: boolean;
+    },
+    @CurrentUser('email') email?: string,
+  ) {
+    return this.admin.createCampaign(dto, email);
+  }
+
+  @Get('campaigns')
+  campaigns() {
+    return this.admin.listCampaigns();
   }
 }

@@ -1,4 +1,7 @@
+'use client';
+
 import Link from 'next/link';
+import { usePathname } from 'next/navigation';
 
 const DIMENSIONS = [
   { href: '/explore', label: 'Explore Gallery' },
@@ -8,6 +11,10 @@ const DIMENSIONS = [
 ];
 
 export default function Footer() {
+  const pathname = usePathname();
+  // Hidden inside the full-screen admin console.
+  if (pathname.startsWith('/admin')) return null;
+
   return (
     <footer className="border-t border-neutral-200 bg-[#f3efe9] text-neutral-700">
       <div className="mx-auto grid max-w-7xl gap-8 px-6 py-14 md:grid-cols-4">

@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <style>
+    body { font-family: 'Georgia', 'Times New Roman', serif; background: #faf8f5; margin: 0; padding: 24px; color: #1a1a1a; }
+    .container { max-width: 600px; margin: 0 auto; background: #ffffff; border: 1px solid #e5e5e5; border-radius: 14px; overflow: hidden; }
+    .masthead { background: #111111; padding: 28px 40px; text-align: center; }
+    .masthead h1 { color: #ffffff; font-size: 26px; margin: 0; letter-spacing: 1px; font-family: 'Georgia', serif; }
+    .masthead h1 span { color: #cda45c; }
+    .rule { height: 3px; background: linear-gradient(90deg, #a06f1e, #cda45c); }
+    .content { padding: 36px 40px; }
+    .greeting { font-size: 18px; color: #a06f1e; margin: 0 0 18px; font-weight: 600; }
+    .body-html { font-family: 'Segoe UI', Arial, sans-serif; color: #333333; line-height: 1.65; font-size: 15px; }
+    .body-html a { color: #a06f1e; }
+    .body-html img { max-width: 100%; height: auto; }
+    .footer { padding: 24px 40px 32px; border-top: 1px solid #eeeeee; text-align: center; color: #999999; font-size: 12px; font-family: 'Segoe UI', Arial, sans-serif; }
+    .footer a { color: #a06f1e; text-decoration: none; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="masthead">
+      <h1>kala<span>CUBE</span></h1>
+    </div>
+    <div class="rule"></div>
+    <div class="content">
+      <p class="greeting">Hello {{firstName}},</p>
+      <div class="body-html">{{{bodyHtml}}}</div>
+    </div>
+    <div class="footer">
+      <p>kalaCUBE &mdash; Where Art Meets Community</p>
+      <p>You are receiving this because you are part of the kalaCUBE artist community.<br />
+        <a href="{{unsubscribeUrl}}">Unsubscribe</a></p>
+    </div>
+  </div>
+</body>
+</html>

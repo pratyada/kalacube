@@ -32,7 +32,9 @@ export default function LoginPage() {
     setLoading(true);
     try {
       await loginWithEmail(email, password);
-      router.push('/dashboard');
+      // New Cognito sign-ups have no Mongo profile yet — send them to onboarding.
+      const current = useAuthStore.getState().user;
+      router.push(current?.isNewUser ? '/onboarding' : '/dashboard');
     } catch (err: any) {
       const msg: string = err?.message || '';
       if (msg.startsWith('ADDITIONAL_STEP:')) {

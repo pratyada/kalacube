@@ -2,7 +2,6 @@
 
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import Header from '@/components/layout/Header';
 import { useAuth } from '@/hooks/useAuth';
 import api from '@/lib/api';
 
@@ -146,7 +145,6 @@ export default function EditProfilePage() {
 
   return (
     <>
-      <Header />
       <main className="flex-1 bg-gray-50">
         <div className="max-w-2xl mx-auto px-4 py-8">
           <h1 className="text-2xl font-bold text-gray-900 mb-6">

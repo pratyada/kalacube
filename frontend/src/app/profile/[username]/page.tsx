@@ -3,7 +3,6 @@
 import { useEffect, useState } from 'react';
 import { useParams } from 'next/navigation';
 import Link from 'next/link';
-import Header from '@/components/layout/Header';
 import api from '@/lib/api';
 import { useAuthStore } from '@/stores/authStore';
 import type { User } from '@/types/auth';
@@ -29,7 +28,6 @@ export default function ProfilePage() {
   if (loading) {
     return (
       <>
-        <Header />
         <div className="flex-1 flex items-center justify-center">
           <p className="text-gray-500">Loading profile...</p>
         </div>
@@ -40,7 +38,6 @@ export default function ProfilePage() {
   if (!profile) {
     return (
       <>
-        <Header />
         <div className="flex-1 flex items-center justify-center">
           <p className="text-gray-500">Profile not found</p>
         </div>
@@ -53,7 +50,6 @@ export default function ProfilePage() {
 
   return (
     <>
-      <Header />
       <main className="flex-1 bg-gray-50">
         <div className="max-w-4xl mx-auto px-4 py-8">
           {/* Profile Card */}

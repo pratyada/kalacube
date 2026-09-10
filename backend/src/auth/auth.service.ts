@@ -17,7 +17,9 @@ import { UserRepository } from '../user/user.repository';
 import { RefreshToken } from './schemas/refresh-token.schema';
 import { RegisterDto } from './dto/register.dto';
 import { LoginDto } from './dto/login.dto';
+import { OnboardingDto } from './dto/onboarding.dto';
 import { AuthType, UserRole } from '../user/types/user.types';
+import type { CognitoClaims } from './cognito/cognito.service';
 
 @Injectable()
 export class AuthService {
@@ -271,6 +273,48 @@ export class AuthService {
     const user = await this.userRepo.findUserById(userId);
     if (!user) throw new NotFoundException('User not found');
     return { data: this.sanitizeUser(user), message: 'User fetched' };
+  }
+
+  /**
+   * First-login onboarding: creates the Mongo user + artist profile for a
+   * verified Cognito sign-up that has no record yet. Idempotent — if a record
+   * already exists for the token's email it is returned as-is.
+   */
+  async onboard(claims: CognitoClaims, dto: OnboardingDto) {
+    const email = (claims?.email || '').toLowerCase();
+    if (!email) throw new BadRequestException('Token has no email claim');
+
+    const existing = await this.userRepo.findUserByEmail(email);
+    if (existing) {
+      return { data: this.sanitizeUser(existing), message: 'Already onboarded' };
+    }
+
+    const username = dto.username.toLowerCase().trim();
+    if (await this.userRepo.userExists({ username })) {
+      throw new ConflictException('Username already taken');
+    }
+
+    const isFederated = !!claims.identities;
+    const user = await this.userRepo.createUser({
+      authType: isFederated ? AuthType.GOOGLE : AuthType.KALACUBE,
+      role: UserRole.ARTIST,
+      username,
+      email,
+      firstName: dto.firstName || claims.given_name,
+      lastName: dto.lastName || claims.family_name,
+      bio: dto.bio,
+      cognitoSub: claims.sub,
+      emailVerifiedAt: claims.email_verified ? new Date() : undefined,
+      isActive: true,
+    });
+
+    await this.userRepo.upsertArtistProfile(user._id.toString(), {
+      artDimensions: dto.artDimensions,
+      headline: dto.headline,
+      statement: dto.statement,
+    });
+
+    return { data: this.sanitizeUser(user), message: 'Onboarding complete' };
   }
 
   // Private helpers

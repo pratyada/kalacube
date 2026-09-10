@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import { Model, ProjectionType } from 'mongoose';
+import { Model, ProjectionType, Types } from 'mongoose';
 import { User } from './schemas/user.schema';
 import { ArtistProfile } from './schemas/artist-profile.schema';
 import { CuratorProfile } from './schemas/curator-profile.schema';
@@ -71,8 +71,8 @@ export class UserRepository {
   // Artist Profile
   async upsertArtistProfile(userId: string, data: Partial<ArtistProfile>) {
     return this.artistProfileModel.findOneAndUpdate(
-      { user: userId },
-      { $set: { ...data, user: userId } },
+      { user: new Types.ObjectId(userId) },
+      { $set: { ...data, user: new Types.ObjectId(userId) } },
       { upsert: true, new: true },
     );
   }
@@ -84,8 +84,8 @@ export class UserRepository {
   // Curator Profile
   async upsertCuratorProfile(userId: string, data: Partial<CuratorProfile>) {
     return this.curatorProfileModel.findOneAndUpdate(
-      { user: userId },
-      { $set: { ...data, user: userId } },
+      { user: new Types.ObjectId(userId) },
+      { $set: { ...data, user: new Types.ObjectId(userId) } },
       { upsert: true, new: true },
     );
   }
@@ -100,8 +100,8 @@ export class UserRepository {
     data: Partial<ArtSpaceProfile>,
   ) {
     return this.artSpaceProfileModel.findOneAndUpdate(
-      { user: userId },
-      { $set: { ...data, user: userId } },
+      { user: new Types.ObjectId(userId) },
+      { $set: { ...data, user: new Types.ObjectId(userId) } },
       { upsert: true, new: true },
     );
   }
