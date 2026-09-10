@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
-import { motion } from 'framer-motion';
+import { motion, type Variants } from 'framer-motion';
 import api from '@/lib/api';
 import ArtworkMarquee from '@/components/ArtworkMarquee';
 
@@ -22,7 +22,7 @@ const DIMENSIONS = [
   { key: 'performing_arts', label: 'Performing Arts', blurb: 'Movement, sound, and living expression.' },
 ];
 
-const fadeUp = {
+const fadeUp: Variants = {
   hidden: { opacity: 0, y: 24 },
   show: (i = 0) => ({ opacity: 1, y: 0, transition: { duration: 0.6, delay: i * 0.12, ease: 'easeOut' } }),
 };
@@ -138,6 +138,54 @@ export default function Home() {
               </Link>
             </motion.div>
           ))}
+        </div>
+      </section>
+
+      {/* ===== Our Story ===== */}
+      <section className="border-t border-neutral-200 bg-[#f3efe9]">
+        <div className="mx-auto max-w-5xl px-6 py-24">
+          <motion.div variants={fadeUp} initial="hidden" whileInView="show" viewport={{ once: true, amount: 0.3 }}>
+            <p className="text-xs uppercase tracking-[0.4em] text-[#a06f1e]">Our Story</p>
+            <h2 className="mt-4 font-serif text-4xl leading-tight md:text-5xl">
+              It began on the walls of a café.
+            </h2>
+          </motion.div>
+
+          <div className="mt-14 space-y-12">
+            {[
+              {
+                year: '2019',
+                title: 'Musée Art Café',
+                body: 'It started at Musée Art Café — a place where coffee met canvas. Our walls became a living gallery, turning everyday cups of chai into first encounters with local art. Artists found their first audience here; customers took home their first original piece.',
+              },
+              {
+                year: '2020',
+                title: 'Born in lockdown',
+                body: 'When COVID emptied the café, the art couldn’t stay on the walls alone. So we built KalaCUBE — to take those walls online. A digital gallery to keep local artisans visible, discovered, and connected to the people who love their work, even when the doors were closed.',
+              },
+              {
+                year: 'Today',
+                title: 'A home for artists',
+                body: 'What began as a café wall is now a platform for artists across Handicraft, Visual Art, and Performing Arts — a place to showcase, connect, and grow. The walls never really closed. They just went everywhere.',
+              },
+            ].map((s, i) => (
+              <motion.div
+                key={s.year}
+                custom={i}
+                variants={fadeUp}
+                initial="hidden"
+                whileInView="show"
+                viewport={{ once: true, amount: 0.4 }}
+                className="grid gap-4 md:grid-cols-[140px_1fr]"
+              >
+                <div className="font-serif text-3xl text-[#a06f1e]">{s.year}</div>
+                <div>
+                  <h3 className="font-serif text-xl">{s.title}</h3>
+                  <p className="mt-3 leading-relaxed text-neutral-700">{s.body}</p>
+                </div>
+              </motion.div>
+            ))}
+          </div>
         </div>
       </section>
     </main>

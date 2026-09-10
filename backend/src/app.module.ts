@@ -12,6 +12,7 @@ import { AuthModule } from './auth/auth.module';
 import { CognitoModule } from './auth/cognito/cognito.module';
 import { UserModule } from './user/user.module';
 import { ExploreModule } from './explore/explore.module';
+import { AdminModule } from './admin/admin.module';
 import { S3Module } from './s3/s3.module';
 import { EmailModule } from './email/email.module';
 
@@ -40,6 +41,7 @@ import { EmailModule } from './email/email.module';
     AuthModule,
     UserModule,
     ExploreModule,
+    AdminModule,
     S3Module,
     EmailModule,
   ],
