@@ -141,9 +141,9 @@ export default function RootLayout({
             auto-tracks SPA route changes, so the base config is sufficient. */}
         <Script
           src="https://www.googletagmanager.com/gtag/js?id=G-TP8KDLQR1Z"
-          strategy="afterInteractive"
+          strategy="beforeInteractive"
         />
-        <Script id="ga4" strategy="afterInteractive">
+        <Script id="ga4" strategy="beforeInteractive">
           {`window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag('js',new Date());gtag('config','G-TP8KDLQR1Z');`}
         </Script>
         {/* Report Core Web Vitals (page speed/performance) to GA4. */}
