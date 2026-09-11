@@ -295,9 +295,11 @@ export class AuthService {
     }
 
     const isFederated = !!claims.identities;
+    // Artist by default; 'user' = Guest / art enthusiast (no artist profile).
+    const role = dto.role === 'user' ? UserRole.USER : UserRole.ARTIST;
     const user = await this.userRepo.createUser({
       authType: isFederated ? AuthType.GOOGLE : AuthType.KALACUBE,
-      role: UserRole.ARTIST,
+      role,
       username,
       email,
       firstName: dto.firstName || claims.given_name,
@@ -308,11 +310,13 @@ export class AuthService {
       isActive: true,
     });
 
-    await this.userRepo.upsertArtistProfile(user._id.toString(), {
-      artDimensions: dto.artDimensions,
-      headline: dto.headline,
-      statement: dto.statement,
-    });
+    if (role === UserRole.ARTIST) {
+      await this.userRepo.upsertArtistProfile(user._id.toString(), {
+        artDimensions: dto.artDimensions,
+        headline: dto.headline,
+        statement: dto.statement,
+      });
+    }
 
     return { data: this.sanitizeUser(user), message: 'Onboarding complete' };
   }

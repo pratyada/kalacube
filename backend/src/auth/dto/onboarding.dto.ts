@@ -18,6 +18,11 @@ export class OnboardingDto {
   @MaxLength(30)
   username: string;
 
+  // 'artist' (default) or 'user' (Guest / art enthusiast).
+  @IsOptional()
+  @IsIn(['artist', 'user'])
+  role?: 'artist' | 'user';
+
   @IsOptional()
   @IsString()
   @MaxLength(60)
