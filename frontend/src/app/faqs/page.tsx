@@ -2,9 +2,17 @@ import Link from 'next/link';
 import type { Metadata } from 'next';
 
 export const metadata: Metadata = {
-  title: 'FAQs — KalaCUBE',
+  title: 'FAQs',
   description:
-    'Frequently asked questions about KalaCUBE — India’s home for handicraft, visual art and performing arts.',
+    'Answers about KalaCUBE — how to join as an artist, upload artwork, browse the gallery, whether it’s free, and our roots in Musée Art Café, Dehradun.',
+  alternates: { canonical: '/faqs' },
+  openGraph: {
+    title: 'Frequently Asked Questions — KalaCUBE',
+    description:
+      'How to join as an artist, upload artwork, browse the gallery, and more.',
+    url: '/faqs',
+    type: 'website',
+  },
 };
 
 const FAQS = [
@@ -34,9 +42,23 @@ const FAQS = [
   },
 ];
 
+const faqJsonLd = {
+  '@context': 'https://schema.org',
+  '@type': 'FAQPage',
+  mainEntity: FAQS.map((f) => ({
+    '@type': 'Question',
+    name: f.q,
+    acceptedAnswer: { '@type': 'Answer', text: f.a },
+  })),
+};
+
 export default function FaqsPage() {
   return (
     <main className="min-h-screen bg-[#faf7f2] text-neutral-900">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(faqJsonLd) }}
+      />
       <header className="border-b border-neutral-200 px-6 py-10 text-center sm:py-14">
         <p className="text-xs uppercase tracking-[0.3em] text-[#202f9a]">Help</p>
         <h1 className="mt-3 font-serif text-4xl md:text-5xl">Frequently Asked Questions</h1>

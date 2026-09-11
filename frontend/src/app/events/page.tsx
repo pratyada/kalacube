@@ -2,9 +2,17 @@ import Link from 'next/link';
 import type { Metadata } from 'next';
 
 export const metadata: Metadata = {
-  title: 'Events — KalaCUBE',
+  title: 'Events',
   description:
-    'Exhibitions, workshops and art events from the KalaCUBE community. Coming soon.',
+    "Exhibitions, workshops and live demos from India's artists on KalaCUBE. Our first season is being curated now — check back soon for events near you.",
+  alternates: { canonical: '/events' },
+  openGraph: {
+    title: 'Events — KalaCUBE',
+    description:
+      "Exhibitions, workshops and live demos from India's artists on KalaCUBE. Coming soon.",
+    url: '/events',
+    type: 'website',
+  },
 };
 
 export default function EventsPage() {
