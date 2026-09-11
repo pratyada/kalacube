@@ -3,5 +3,5 @@
 - [Redesign Vision](project_redesign_vision.md) — Muse.tv-inspired cinematic redesign: dark theme, gold accents, editorial serif typography, immersive art-forward UI
 - [Prat - Founder](user_prat.md) — Project owner, wants iterative module-by-module build, cinematic art-forward vision
 - [Build Approach](feedback_build_approach.md) — Always build on existing monorepo, never reinvent from scratch
-- [Deployment Pipeline](project_deployment_pipeline.md) — Docker Compose foundation built + verified; target is guided Render/Railway + Atlas; not deployed yet
+- [Deployment Pipeline](project_deployment_pipeline.md) — ★ LIVE: kalacube.com on AWS Amplify (Next SSR) + Lambda API (api.kalacube.com) + Atlas + Cognito + S3 + Route53 + GA4. Full as-built ref = repo-root DEPLOYMENT.md
 - [Data Migration](project_data_migration.md) — Mongo+Cognito+S3 all inventoried (see AWS_DISCOVERY.md); ~467 users, ~2100 real artworks, ~1GB images. Blockers resolved. AUTH: keep AWS Cognito + S3/Amplify. Backend+frontend Cognito/Amplify auth BUILT & compiling (Google one-tap + email/pw). AWS session must do Google IdP + Hosted UI + linking Lambda (AWS_SETUP_CHECKLIST.md) + hand back client id/domain. Not live-tested yet.
