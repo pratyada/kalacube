@@ -1,22 +1,104 @@
 @import "tailwindcss";
 
+/*
+  KalaCUBE design tokens — source of truth is the official Brand Guideline.
+  "A World of Art. In One Cube." · Art Lives Here.
+  Navy = trust / primary structure · Yellow = CTA / spark.
+  Category coding: Visual Art = Orange · Handicraft = Teal · Performing Art = Magenta.
+*/
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  /* Core brand */
+  --navy: #0b1f52;         /* primary UI, headings, primary buttons */
+  --navy-deep: #071738;    /* strongest text / deep surfaces */
+  --indigo: #202f9a;       /* interactive accent, links, secondary structure */
+  --cream: #faf7f2;        /* warm editorial canvas */
+  --cream-2: #f3efe9;      /* slightly deeper warm section */
+  --white: #ffffff;
+
+  /* Signature + category accents */
+  --yellow: #ffd200;       /* signature spark / primary CTA */
+  --yellow-deep: #e6bd00;
+  --orange: #ff8a00;       /* Visual Art */
+  --orange-deep: #f07a00;
+  --teal: #00a896;         /* Handicraft */
+  --teal-deep: #087f6a;
+  --magenta: #d81b60;      /* Performing Art */
+  --magenta-deep: #c21858;
+
+  /* Cool tints + neutrals */
+  --blue-50: #eef1ff;
+  --blue-100: #e7ecff;
+  --blue-200: #dde7ff;
+  --line: #dde3ee;
+  --muted: #65708a;
+  --muted-2: #93a3cf;
+
+  /* Semantic */
+  --background: var(--cream);
+  --foreground: var(--navy-deep);
 }
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-  --color-rose-500: #f43f5e;
-  --color-rose-600: #e11d48;
-  --color-rose-100: #ffe4e6;
+
+  /* Typography — Poppins for UI, Fraunces for editorial display */
+  --font-sans: var(--font-poppins);
+  --font-serif: var(--font-fraunces);
+  --font-mono: var(--font-poppins);
+
+  /* Brand palette exposed as Tailwind color utilities */
+  --color-navy: var(--navy);
+  --color-navy-deep: var(--navy-deep);
+  --color-indigo: var(--indigo);
+  --color-cream: var(--cream);
+  --color-cream-2: var(--cream-2);
+
+  --color-yellow: var(--yellow);
+  --color-yellow-deep: var(--yellow-deep);
+  --color-orange: var(--orange);
+  --color-orange-deep: var(--orange-deep);
+  --color-teal: var(--teal);
+  --color-teal-deep: var(--teal-deep);
+  --color-magenta: var(--magenta);
+  --color-magenta-deep: var(--magenta-deep);
+
+  --color-brand-50: var(--blue-50);
+  --color-brand-100: var(--blue-100);
+  --color-brand-200: var(--blue-200);
+  --color-line: var(--line);
+  --color-muted: var(--muted);
+  --color-muted-2: var(--muted-2);
+
+  /*
+    The auth / profile pages were built on Tailwind's `rose` accent. Re-point
+    the rose scale at the brand navy/indigo/tint ramp so those screens inherit
+    the brand system without per-element edits. (rose-600 = primary button,
+    rose-500 = hover/lighter, rose-100/50 = soft fills.)
+  */
+  --color-rose-50: #eef1ff;
+  --color-rose-100: #e7ecff;
+  --color-rose-200: #dde7ff;
+  --color-rose-300: #b7c2ef;
+  --color-rose-400: #4f5fc0;
+  --color-rose-500: #202f9a;
+  --color-rose-600: #0b1f52;
+  --color-rose-700: #071738;
 }
 
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: var(--font-sans), Arial, Helvetica, sans-serif;
+  font-family: var(--font-sans), "Segoe UI", Arial, Helvetica, sans-serif;
+}
+
+/* Editorial display headings default to Fraunces where `font-serif` is used. */
+.font-serif {
+  font-family: var(--font-serif), Georgia, "Times New Roman", serif;
+}
+
+/* Brand focus ring for accessible keyboard navigation (guideline §08). */
+:where(a, button, [role="button"], input, select, textarea):focus-visible {
+  outline: 2px solid var(--indigo);
+  outline-offset: 2px;
 }

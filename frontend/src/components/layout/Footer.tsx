@@ -16,40 +16,55 @@ export default function Footer() {
   if (pathname.startsWith('/admin')) return null;
 
   return (
-    <footer className="border-t border-neutral-200 bg-[#f3efe9] text-neutral-700">
-      <div className="mx-auto grid max-w-7xl gap-8 px-6 py-14 md:grid-cols-4">
+    <footer className="bg-navy-deep text-white/70">
+      <div className="mx-auto grid max-w-7xl gap-8 px-6 py-16 md:grid-cols-4">
         <div className="md:col-span-2">
-          <Link href="/" className="font-serif text-2xl">
-            kala<span className="text-[#a06f1e]">CUBE</span>
+          <Link href="/" className="inline-flex items-center" aria-label="KalaCUBE — Art Lives Here">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            {/* Transparent (navy) logo rendered white for the dark footer. */}
+            <img
+              src="/brand/logo-primary.png"
+              alt="KalaCUBE"
+              width={547}
+              height={451}
+              className="h-16 w-auto brightness-0 invert"
+            />
           </Link>
-          <p className="mt-3 max-w-sm text-sm text-neutral-600">
-            A home for India&apos;s artists across Handicraft, Visual Art, and
-            Performing Arts — showcase your work, connect, and grow.
+          <p className="mt-4 max-w-sm text-sm leading-relaxed text-white/60">
+            A World of Art. In One Cube. Discover visual art, handicraft and
+            performing arts — and connect with the people behind the work.
           </p>
+          <div className="mt-5 flex items-center gap-4 text-xs font-semibold uppercase tracking-wider">
+            <span className="text-orange">Visual Art</span>
+            <span className="text-white/25">·</span>
+            <span className="text-teal">Handicraft</span>
+            <span className="text-white/25">·</span>
+            <span className="text-magenta">Performing Art</span>
+          </div>
         </div>
 
         <div>
-          <h4 className="font-semibold text-neutral-900">Discover</h4>
-          <ul className="mt-3 space-y-2 text-sm">
+          <h4 className="font-semibold text-white">Discover</h4>
+          <ul className="mt-4 space-y-2.5 text-sm">
             {DIMENSIONS.map((d) => (
               <li key={d.href}>
-                <Link href={d.href} className="hover:text-[#a06f1e]">{d.label}</Link>
+                <Link href={d.href} className="transition hover:text-yellow">{d.label}</Link>
               </li>
             ))}
           </ul>
         </div>
 
         <div>
-          <h4 className="font-semibold text-neutral-900">Community</h4>
-          <ul className="mt-3 space-y-2 text-sm">
-            <li><Link href="/auth/register" className="hover:text-[#a06f1e]">Join as an artist</Link></li>
-            <li><Link href="/auth/login" className="hover:text-[#a06f1e]">Sign in</Link></li>
-            <li><Link href="/faqs" className="hover:text-[#a06f1e]">FAQs</Link></li>
+          <h4 className="font-semibold text-white">Community</h4>
+          <ul className="mt-4 space-y-2.5 text-sm">
+            <li><Link href="/auth/register" className="transition hover:text-yellow">Join KalaCUBE</Link></li>
+            <li><Link href="/auth/login" className="transition hover:text-yellow">Sign in</Link></li>
+            <li><Link href="/faqs" className="transition hover:text-yellow">FAQs</Link></li>
           </ul>
         </div>
       </div>
-      <div className="border-t border-neutral-200 px-6 py-5 text-center text-xs text-neutral-500">
-        © {2026} KalaCUBE. Art in three dimensions.
+      <div className="border-t border-white/10 px-6 py-5 text-center text-xs text-white/45">
+        © {2026} KalaCUBE. Art Lives Here.
       </div>
     </footer>
   );

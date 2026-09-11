@@ -21,9 +21,9 @@ export default async function BlogIndex() {
   const artists = await fetchArtists(60);
 
   return (
-    <main className="min-h-screen bg-[#faf8f5] text-neutral-900">
+    <main className="min-h-screen bg-[#faf7f2] text-neutral-900">
       <section className="border-b border-neutral-200 px-6 py-16 text-center">
-        <p className="text-xs uppercase tracking-[0.4em] text-[#a06f1e]">The KalaCUBE Journal</p>
+        <p className="text-xs uppercase tracking-[0.4em] text-[#202f9a]">The KalaCUBE Journal</p>
         <h1 className="mx-auto mt-4 max-w-3xl font-serif text-4xl leading-tight md:text-6xl">
           Where handmade art meets its story
         </h1>
@@ -47,7 +47,7 @@ export default async function BlogIndex() {
                   // eslint-disable-next-line @next/next/no-img-element
                   <img src={a.avatar.url} alt={a.username} className="h-14 w-14 rounded-full object-cover" />
                 ) : (
-                  <div className="flex h-14 w-14 items-center justify-center rounded-full bg-[#cda45c]/20 font-serif text-lg text-[#a06f1e]">
+                  <div className="flex h-14 w-14 items-center justify-center rounded-full bg-[#202f9a]/20 font-serif text-lg text-[#202f9a]">
                     {(a.firstName?.[0] || a.username?.[0] || 'A').toUpperCase()}
                   </div>
                 )}
@@ -59,7 +59,7 @@ export default async function BlogIndex() {
                 </div>
               </div>
               {a.headline && <p className="mt-4 line-clamp-2 text-sm text-neutral-600">{a.headline}</p>}
-              <span className="mt-4 inline-block text-sm text-[#a06f1e] group-hover:underline">Read portfolio →</span>
+              <span className="mt-4 inline-block text-sm text-[#202f9a] group-hover:underline">Read portfolio →</span>
             </Link>
           ))}
         </div>

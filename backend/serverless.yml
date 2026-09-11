@@ -52,8 +52,8 @@ provider:
     # S3 — prefer the execution role above; these static keys are kept only because
     # the S3 module currently reads them from config. Migrate to role creds later.
     AWS_STORAGE_BUCKET: ${ssm:/kalacube/prod/AWS_STORAGE_BUCKET}
-    AWS_ACCESS_KEY: ${ssm:/kalacube/prod/AWS_ACCESS_KEY, ''}
-    AWS_SECRET_KEY: ${ssm:/kalacube/prod/AWS_SECRET_KEY, ''}
+    # AWS_ACCESS_KEY / AWS_SECRET_KEY are RESERVED Lambda env names and cannot be
+    # set. S3Service falls back to the execution role (default provider chain).
     # Cognito
     COGNITO_REGION: ${ssm:/kalacube/prod/COGNITO_REGION, 'ap-south-1'}
     COGNITO_USER_POOL_ID: ${ssm:/kalacube/prod/COGNITO_USER_POOL_ID, ''}

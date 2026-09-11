@@ -83,12 +83,12 @@ export default function UploadArtworkPage() {
   };
 
   const field =
-    'w-full rounded-lg border border-neutral-300 px-3 py-2 outline-none focus:border-[#cda45c] focus:ring-2 focus:ring-[#cda45c]/30';
+    'w-full rounded-lg border border-neutral-300 px-3 py-2 outline-none focus:border-[#202f9a] focus:ring-2 focus:ring-[#202f9a]/30';
 
   return (
-    <main className="min-h-screen bg-[#faf8f5] px-4 py-10 text-neutral-900">
+    <main className="min-h-screen bg-[#faf7f2] px-4 py-10 text-neutral-900">
       <div className="mx-auto max-w-2xl">
-        <Link href="/dashboard" className="text-sm text-[#a06f1e] hover:underline">
+        <Link href="/dashboard" className="text-sm text-[#202f9a] hover:underline">
           ← Back to dashboard
         </Link>
         <h1 className="mt-3 font-serif text-4xl">Upload artwork</h1>
@@ -120,7 +120,7 @@ export default function UploadArtworkPage() {
               accept="image/*"
               multiple
               onChange={(e) => onPick(e.target.files)}
-              className="block w-full text-sm text-neutral-600 file:mr-4 file:rounded-full file:border-0 file:bg-[#cda45c]/20 file:px-4 file:py-2 file:text-sm file:font-medium file:text-[#a06f1e] hover:file:bg-[#cda45c]/40"
+              className="block w-full text-sm text-neutral-600 file:mr-4 file:rounded-full file:border-0 file:bg-[#202f9a]/20 file:px-4 file:py-2 file:text-sm file:font-medium file:text-[#202f9a] hover:file:bg-[#202f9a]/40"
             />
             {previews.length > 0 && (
               <div className="mt-3 grid grid-cols-4 gap-2">
@@ -213,7 +213,7 @@ export default function UploadArtworkPage() {
           <button
             type="submit"
             disabled={saving}
-            className="w-full rounded-full bg-[#111] py-3 text-sm font-semibold text-white transition hover:bg-black disabled:opacity-60"
+            className="w-full rounded-full bg-[#0b1f52] py-3 text-sm font-semibold text-white transition hover:bg-[#202f9a] disabled:opacity-60"
           >
             {saving ? 'Publishing…' : 'Publish artwork'}
           </button>

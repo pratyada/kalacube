@@ -17,9 +17,30 @@ interface Artwork {
 }
 
 const DIMENSIONS = [
-  { key: 'handicraft', label: 'Handicraft', blurb: 'Hands that shape tradition into form.' },
-  { key: 'visual_art', label: 'Visual Art', blurb: 'Colour, line, and light on every surface.' },
-  { key: 'performing_arts', label: 'Performing Arts', blurb: 'Movement, sound, and living expression.' },
+  {
+    key: 'visual_art',
+    label: 'Visual Art',
+    blurb: 'Colour, line, and light on every surface.',
+    accent: 'text-orange',
+    bar: 'bg-orange',
+    ring: 'group-hover:border-orange',
+  },
+  {
+    key: 'handicraft',
+    label: 'Handicraft',
+    blurb: 'Hands that shape tradition into form.',
+    accent: 'text-teal',
+    bar: 'bg-teal',
+    ring: 'group-hover:border-teal',
+  },
+  {
+    key: 'performing_arts',
+    label: 'Performing Arts',
+    blurb: 'Movement, sound, and living expression.',
+    accent: 'text-magenta',
+    bar: 'bg-magenta',
+    ring: 'group-hover:border-magenta',
+  },
 ];
 
 const fadeUp: Variants = {
@@ -48,7 +69,7 @@ export default function Home() {
   const rowB = imgs.slice(12, 24);
 
   return (
-    <main className="bg-[#faf8f5] text-neutral-900">
+    <main className="bg-cream text-navy-deep">
       {/* ===== HERO — artwork-forward, animated ===== */}
       <section className="relative flex min-h-[92vh] flex-col justify-center overflow-hidden">
         {/* Animated artwork backdrop */}
@@ -57,16 +78,16 @@ export default function Home() {
           <ArtworkMarquee images={rowB.length ? rowB : imgs} reverse duration={70} />
         </div>
         {/* Legibility scrim */}
-        <div className="pointer-events-none absolute inset-0 bg-gradient-to-b from-[#faf8f5]/85 via-[#faf8f5]/70 to-[#faf8f5]/90" />
+        <div className="pointer-events-none absolute inset-0 bg-gradient-to-b from-[#faf7f2]/85 via-[#faf7f2]/70 to-[#faf7f2]/90" />
 
         <div className="relative z-10 mx-auto max-w-4xl px-6 text-center">
           <motion.p custom={0} variants={fadeUp} initial="hidden" animate="show"
-            className="text-xs uppercase tracking-[0.45em] text-[#a06f1e]">
+            className="text-xs uppercase tracking-[0.45em] text-[#202f9a]">
             Kala · Art in three dimensions
           </motion.p>
           <motion.h1 custom={1} variants={fadeUp} initial="hidden" animate="show"
             className="mt-6 font-serif text-5xl leading-[1.05] md:text-7xl">
-            Where India&apos;s artists <span className="italic text-[#a06f1e]">come alive</span>
+            Where India&apos;s artists <span className="italic text-[#202f9a]">come alive</span>
           </motion.h1>
           <motion.p custom={2} variants={fadeUp} initial="hidden" animate="show"
             className="mx-auto mt-6 max-w-xl text-lg text-neutral-700">
@@ -75,10 +96,10 @@ export default function Home() {
           </motion.p>
           <motion.div custom={3} variants={fadeUp} initial="hidden" animate="show"
             className="mt-10 flex flex-wrap justify-center gap-4">
-            <Link href="/explore" className="rounded-full bg-[#111] px-8 py-3.5 text-sm font-semibold text-white shadow-lg transition hover:bg-[#a06f1e]">
+            <Link href="/explore" className="rounded-full bg-yellow px-8 py-3.5 text-sm font-semibold text-navy shadow-lg transition hover:bg-yellow-deep">
               Explore the Gallery
             </Link>
-            <Link href="/all-artist" className="rounded-full border border-neutral-400 bg-white/60 px-8 py-3.5 text-sm font-semibold backdrop-blur transition hover:border-[#a06f1e]">
+            <Link href="/all-artist" className="rounded-full border border-navy/30 bg-white/60 px-8 py-3.5 text-sm font-semibold text-navy backdrop-blur transition hover:border-navy hover:bg-navy hover:text-white">
               Meet the Artists
             </Link>
           </motion.div>
@@ -91,9 +112,10 @@ export default function Home() {
           {DIMENSIONS.map((d, i) => (
             <motion.div key={d.key} custom={i} variants={fadeUp} initial="hidden"
               whileInView="show" viewport={{ once: true, amount: 0.4 }}
-              className="rounded-2xl border border-neutral-200 bg-white p-8 shadow-sm">
-              <h3 className="font-serif text-2xl text-[#a06f1e]">{d.label}</h3>
-              <p className="mt-3 text-neutral-600">{d.blurb}</p>
+              className={`group overflow-hidden rounded-2xl border border-line bg-white p-8 shadow-sm transition ${d.ring}`}>
+              <span className={`mb-5 block h-1.5 w-10 rounded-full ${d.bar}`} aria-hidden />
+              <h3 className={`font-serif text-2xl ${d.accent}`}>{d.label}</h3>
+              <p className="mt-3 text-muted">{d.blurb}</p>
             </motion.div>
           ))}
         </div>
@@ -104,7 +126,7 @@ export default function Home() {
         <section className="py-8">
           <div className="mx-auto mb-8 flex max-w-7xl items-baseline justify-between px-6">
             <h2 className="font-serif text-3xl">From the Gallery</h2>
-            <Link href="/explore" className="text-sm text-[#a06f1e] hover:underline">Explore →</Link>
+            <Link href="/explore" className="text-sm text-[#202f9a] hover:underline">Explore →</Link>
           </div>
           <ArtworkMarquee images={imgs} duration={80} />
         </section>
@@ -114,7 +136,7 @@ export default function Home() {
       <section className="mx-auto max-w-7xl px-6 py-20">
         <div className="mb-8 flex items-baseline justify-between">
           <h2 className="font-serif text-3xl">Featured Artists</h2>
-          <Link href="/all-artist" className="text-sm text-[#a06f1e] hover:underline">View all →</Link>
+          <Link href="/all-artist" className="text-sm text-[#202f9a] hover:underline">View all →</Link>
         </div>
         <div className="grid grid-cols-2 gap-4 sm:grid-cols-4 lg:grid-cols-5">
           {artists.map((a, i) => (
@@ -126,7 +148,7 @@ export default function Home() {
                   // eslint-disable-next-line @next/next/no-img-element
                   <img src={a.avatar.url} alt={a.username} loading="lazy" className="h-16 w-16 rounded-full object-cover" />
                 ) : (
-                  <div className="flex h-16 w-16 items-center justify-center rounded-full bg-gradient-to-br from-[#cda45c]/30 to-[#cda45c]/5 font-serif text-xl text-[#a06f1e]">
+                  <div className="flex h-16 w-16 items-center justify-center rounded-full bg-gradient-to-br from-[#202f9a]/30 to-[#202f9a]/5 font-serif text-xl text-[#202f9a]">
                     {initials(a)}
                   </div>
                 )}
@@ -142,10 +164,10 @@ export default function Home() {
       </section>
 
       {/* ===== Our Story ===== */}
-      <section className="border-t border-neutral-200 bg-[#f3efe9]">
+      <section className="border-t border-neutral-200 bg-[#eef1ff]">
         <div className="mx-auto max-w-5xl px-6 py-24">
           <motion.div variants={fadeUp} initial="hidden" whileInView="show" viewport={{ once: true, amount: 0.3 }}>
-            <p className="text-xs uppercase tracking-[0.4em] text-[#a06f1e]">Our Story</p>
+            <p className="text-xs uppercase tracking-[0.4em] text-[#202f9a]">Our Story</p>
             <h2 className="mt-4 font-serif text-4xl leading-tight md:text-5xl">
               It began on the walls of a café.
             </h2>
@@ -178,7 +200,7 @@ export default function Home() {
                 viewport={{ once: true, amount: 0.4 }}
                 className="grid gap-4 md:grid-cols-[140px_1fr]"
               >
-                <div className="font-serif text-3xl text-[#a06f1e]">{s.year}</div>
+                <div className="font-serif text-3xl text-[#202f9a]">{s.year}</div>
                 <div>
                   <h3 className="font-serif text-xl">{s.title}</h3>
                   <p className="mt-3 leading-relaxed text-neutral-700">{s.body}</p>

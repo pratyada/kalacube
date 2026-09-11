@@ -69,12 +69,12 @@ export default async function ArtistBlog({
   };
 
   return (
-    <main className="min-h-screen bg-[#faf8f5] text-neutral-900">
+    <main className="min-h-screen bg-[#faf7f2] text-neutral-900">
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
 
       <article className="mx-auto max-w-4xl px-6 py-14">
         <nav className="text-sm text-neutral-500">
-          <Link href="/blog" className="hover:text-[#a06f1e]">Journal</Link> / {name}
+          <Link href="/blog" className="hover:text-[#202f9a]">Journal</Link> / {name}
         </nav>
 
         <header className="mt-6 flex items-center gap-6">
@@ -82,7 +82,7 @@ export default async function ArtistBlog({
             // eslint-disable-next-line @next/next/no-img-element
             <img src={user.avatar.url} alt={name} className="h-24 w-24 rounded-full object-cover" />
           ) : (
-            <div className="flex h-24 w-24 items-center justify-center rounded-full bg-[#cda45c]/20 font-serif text-3xl text-[#a06f1e]">
+            <div className="flex h-24 w-24 items-center justify-center rounded-full bg-[#202f9a]/20 font-serif text-3xl text-[#202f9a]">
               {(user.firstName?.[0] || user.username?.[0] || 'A').toUpperCase()}
             </div>
           )}
@@ -96,20 +96,20 @@ export default async function ArtistBlog({
         </header>
 
         {profile?.headline && (
-          <p className="mt-8 font-serif text-2xl italic text-[#a06f1e]">“{profile.headline}”</p>
+          <p className="mt-8 font-serif text-2xl italic text-[#202f9a]">“{profile.headline}”</p>
         )}
         {profile?.statement && (
           <p className="mt-5 text-lg leading-relaxed text-neutral-700">{profile.statement}</p>
         )}
 
         {/* Backlink — editorial feature */}
-        <div className="mt-8 rounded-xl border border-[#cda45c]/30 bg-[#f3efe9] p-5 text-sm text-neutral-700">
+        <div className="mt-8 rounded-xl border border-[#202f9a]/30 bg-[#eef1ff] p-5 text-sm text-neutral-700">
           Read the editorial feature on {name} at the{' '}
-          <a href={museeUrl} className="font-medium text-[#a06f1e] underline" target="_blank" rel="noopener">
+          <a href={museeUrl} className="font-medium text-[#202f9a] underline" target="_blank" rel="noopener">
             Musée Living Journal
           </a>
           . {name} has exhibited at{' '}
-          <a href={MUSEE} className="font-medium text-[#a06f1e] underline" target="_blank" rel="noopener">
+          <a href={MUSEE} className="font-medium text-[#202f9a] underline" target="_blank" rel="noopener">
             Musée Art Café
           </a>
           , Dehradun — where KalaCUBE began.
@@ -120,18 +120,18 @@ export default async function ArtistBlog({
         <div className="mt-6 grid grid-cols-2 gap-4 sm:grid-cols-3">
           {artworks.map((w: any) => (
             <Link key={w._id} href={`/art-work/${w._id}`}
-              className="group overflow-hidden rounded-xl border border-neutral-200 bg-white transition hover:border-[#cda45c]/50">
+              className="group overflow-hidden rounded-xl border border-neutral-200 bg-white transition hover:border-[#202f9a]/50">
               <div className="flex aspect-[3/4] items-center justify-center overflow-hidden bg-neutral-100">
                 {w.images?.[0] ? (
                   // eslint-disable-next-line @next/next/no-img-element
                   <img src={w.images[0]} alt={w.title || 'Artwork'} className="h-full w-full object-cover" />
                 ) : (
-                  <span className="p-3 text-center font-serif text-sm text-[#a06f1e]/70">{w.title || 'Untitled'}</span>
+                  <span className="p-3 text-center font-serif text-sm text-[#202f9a]/70">{w.title || 'Untitled'}</span>
                 )}
               </div>
               <div className="p-3">
                 <h3 className="truncate text-sm">{w.title || 'Untitled'}</h3>
-                {w.cost ? <p className="text-xs text-[#a06f1e]">{w.currency || 'INR'} {w.cost.toLocaleString()}</p> : null}
+                {w.cost ? <p className="text-xs text-[#202f9a]">{w.currency || 'INR'} {w.cost.toLocaleString()}</p> : null}
               </div>
             </Link>
           ))}
@@ -141,14 +141,14 @@ export default async function ArtistBlog({
         <div className="mt-12 border-t border-neutral-200 pt-6 text-sm text-neutral-600">
           {sameAs.length > 0 && (
             <p>Follow {name}: {Object.entries(socials).filter(([, v]) => v).map(([k, v]) => (
-              <a key={k} href={v as string} target="_blank" rel="noopener" className="mr-3 text-[#a06f1e] hover:underline">{k}</a>
+              <a key={k} href={v as string} target="_blank" rel="noopener" className="mr-3 text-[#202f9a] hover:underline">{k}</a>
             ))}</p>
           )}
           <p className="mt-4">
             KalaCUBE is a home for India’s artists, born on the walls of{' '}
-            <a href={MUSEE} className="text-[#a06f1e] underline" target="_blank" rel="noopener">Musée Art Café</a>.
+            <a href={MUSEE} className="text-[#202f9a] underline" target="_blank" rel="noopener">Musée Art Café</a>.
             View {name}’s live profile on{' '}
-            <Link href={`/artist/${user.username}`} className="text-[#a06f1e] underline">KalaCUBE</Link>.
+            <Link href={`/artist/${user.username}`} className="text-[#202f9a] underline">KalaCUBE</Link>.
           </p>
         </div>
       </article>

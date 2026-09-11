@@ -30,6 +30,15 @@ const DIMENSION_LABEL: Record<string, string> = {
   performing_arts: 'Performing Arts',
 };
 
+// Brand category coding: Visual Art = Orange, Handicraft = Teal, Performing = Magenta.
+const DIMENSION_PILL: Record<string, string> = {
+  visual_art: 'border-orange/40 bg-orange/10 text-orange-deep',
+  handicraft: 'border-teal/40 bg-teal/10 text-teal-deep',
+  performing_arts: 'border-magenta/40 bg-magenta/10 text-magenta',
+};
+const dimPill = (d: string) =>
+  DIMENSION_PILL[d] || 'border-indigo/30 bg-indigo/5 text-indigo';
+
 function initials(a: Artist) {
   const n = `${a.firstName || ''} ${a.lastName || ''}`.trim() || a.username;
   return n.split(/\s+/).slice(0, 2).map((s) => s[0]?.toUpperCase()).join('');
@@ -130,8 +139,8 @@ export default function AllArtistPage() {
       size === 'lg' ? 'px-4 py-1.5 text-sm' : 'px-3 py-1 text-xs'
     } ${
       active
-        ? 'border-[#a06f1e] bg-[#a06f1e] text-white'
-        : 'border-neutral-300 text-neutral-600 hover:border-[#cda45c]'
+        ? 'border-[#202f9a] bg-[#202f9a] text-white'
+        : 'border-neutral-300 text-neutral-600 hover:border-[#202f9a]'
     }`;
 
   const LevelLabel = ({ children }: { children: React.ReactNode }) => (
@@ -141,9 +150,9 @@ export default function AllArtistPage() {
   );
 
   return (
-    <main className="min-h-screen bg-[#faf8f5] text-neutral-900">
+    <main className="min-h-screen bg-[#faf7f2] text-neutral-900">
       <header className="border-b border-neutral-200 px-6 py-10 text-center">
-        <p className="text-xs tracking-[0.3em] text-[#a06f1e] uppercase">
+        <p className="text-xs tracking-[0.3em] text-[#202f9a] uppercase">
           The KalaCUBE Community
         </p>
         <h1 className="mt-3 font-serif text-4xl md:text-5xl">Artists</h1>
@@ -157,8 +166,8 @@ export default function AllArtistPage() {
         {(domain || category || specialist) && (
           <p className="mt-2 text-xs text-neutral-500">
             {domain}
-            {category && <span className="text-[#a06f1e]"> › {category}</span>}
-            {specialist && <span className="text-[#a06f1e]"> › {specialist}</span>}
+            {category && <span className="text-[#202f9a]"> › {category}</span>}
+            {specialist && <span className="text-[#202f9a]"> › {specialist}</span>}
             <button
               onClick={() => selectDomain('')}
               className="ml-3 text-neutral-400 underline hover:text-neutral-700"
@@ -170,7 +179,7 @@ export default function AllArtistPage() {
       </header>
 
       {/* Ladder filter */}
-      <div className="sticky top-16 z-10 space-y-2 border-b border-neutral-200 bg-[#faf8f5]/95 px-6 py-3 backdrop-blur">
+      <div className="sticky top-16 z-10 space-y-2 border-b border-neutral-200 bg-[#faf7f2]/95 px-6 py-3 backdrop-blur">
         <div className="mx-auto max-w-7xl space-y-2">
           <div className="flex flex-wrap items-center gap-2">
             <LevelLabel>Art type</LevelLabel>
@@ -190,7 +199,7 @@ export default function AllArtistPage() {
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               placeholder="Search artists…"
-              className="ml-auto w-48 rounded-full border border-neutral-300 px-4 py-1.5 text-sm outline-none focus:border-[#cda45c] focus:ring-2 focus:ring-[#cda45c]/30"
+              className="ml-auto w-48 rounded-full border border-neutral-300 px-4 py-1.5 text-sm outline-none focus:border-[#202f9a] focus:ring-2 focus:ring-[#202f9a]/30"
             />
           </div>
 
@@ -248,7 +257,7 @@ export default function AllArtistPage() {
                 <Link
                   key={a._id}
                   href={`/artist/${a.username}`}
-                  className="group rounded-xl border border-neutral-200 bg-white p-5 transition hover:border-[#cda45c]/50 hover:bg-neutral-100"
+                  className="group rounded-xl border border-neutral-200 bg-white p-5 transition hover:border-[#202f9a]/50 hover:bg-neutral-100"
                 >
                   {a.avatar?.url ? (
                     // eslint-disable-next-line @next/next/no-img-element
@@ -259,7 +268,7 @@ export default function AllArtistPage() {
                       className="h-20 w-20 rounded-full object-cover"
                     />
                   ) : (
-                    <div className="flex h-20 w-20 items-center justify-center rounded-full bg-gradient-to-br from-[#cda45c]/30 to-[#cda45c]/5 font-serif text-2xl text-[#a06f1e]">
+                    <div className="flex h-20 w-20 items-center justify-center rounded-full bg-gradient-to-br from-[#202f9a]/30 to-[#202f9a]/5 font-serif text-2xl text-[#202f9a]">
                       {initials(a)}
                     </div>
                   )}
@@ -274,7 +283,7 @@ export default function AllArtistPage() {
                     {(a.artDimensions || []).map((d) => (
                       <span
                         key={d}
-                        className="rounded-full border border-[#cda45c]/30 px-2 py-0.5 text-[#a06f1e]"
+                        className={`rounded-full border px-2 py-0.5 font-medium ${dimPill(d)}`}
                       >
                         {DIMENSION_LABEL[d] || d}
                       </span>
@@ -295,7 +304,7 @@ export default function AllArtistPage() {
                 <button
                   onClick={() => fetchPage(page + 1, false)}
                   disabled={loadingMore}
-                  className="rounded-full border border-[#a06f1e] px-8 py-2.5 text-sm font-medium text-[#a06f1e] transition hover:bg-[#a06f1e] hover:text-white disabled:opacity-60"
+                  className="rounded-full border border-[#202f9a] px-8 py-2.5 text-sm font-medium text-[#202f9a] transition hover:bg-[#202f9a] hover:text-white disabled:opacity-60"
                 >
                   {loadingMore ? 'Loading…' : 'Load more'}
                 </button>

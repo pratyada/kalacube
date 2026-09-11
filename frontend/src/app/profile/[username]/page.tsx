@@ -7,6 +7,14 @@ import api from '@/lib/api';
 import { useAuthStore } from '@/stores/authStore';
 import type { User } from '@/types/auth';
 
+// Brand category coding: Visual Art = Orange, Handicraft = Teal, Performing = Magenta.
+const DIMENSION_PILL: Record<string, string> = {
+  visual_art: 'bg-orange/10 text-orange-deep',
+  handicraft: 'bg-teal/10 text-teal-deep',
+  performing_arts: 'bg-magenta/10 text-magenta',
+};
+const dimPill = (d: string) => DIMENSION_PILL[d] || 'bg-indigo/5 text-indigo';
+
 export default function ProfilePage() {
   const params = useParams();
   const username = params.username as string;
@@ -50,12 +58,12 @@ export default function ProfilePage() {
 
   return (
     <>
-      <main className="flex-1 bg-gray-50">
+      <main className="flex-1 bg-cream">
         <div className="max-w-4xl mx-auto px-4 py-8">
           {/* Profile Card */}
           <div className="bg-white rounded-xl border overflow-hidden">
             {/* Cover */}
-            <div className="h-32 bg-gradient-to-r from-rose-400 to-amber-300" />
+            <div className="h-32 bg-gradient-to-r from-navy via-indigo to-teal" />
 
             <div className="px-6 pb-6 -mt-12">
               {/* Avatar */}
@@ -105,18 +113,18 @@ export default function ProfilePage() {
 
               {/* Profile Completeness (owner only) */}
               {isOwner && user.profileCompleteness < 100 && (
-                <div className="mt-4 bg-amber-50 border border-amber-200 rounded-lg p-3">
+                <div className="mt-4 bg-yellow/15 border border-yellow/50 rounded-lg p-3">
                   <div className="flex justify-between text-sm mb-1">
-                    <span className="text-amber-700 font-medium">
+                    <span className="text-navy font-semibold">
                       Profile completeness
                     </span>
-                    <span className="text-amber-600">
+                    <span className="text-navy">
                       {user.profileCompleteness}%
                     </span>
                   </div>
-                  <div className="w-full bg-amber-200 rounded-full h-1.5">
+                  <div className="w-full bg-navy/10 rounded-full h-1.5">
                     <div
-                      className="bg-amber-500 h-1.5 rounded-full"
+                      className="bg-yellow h-1.5 rounded-full"
                       style={{ width: `${user.profileCompleteness}%` }}
                     />
                   </div>
@@ -151,7 +159,7 @@ export default function ProfilePage() {
                       {roleProfile.artDimensions.map((d: string) => (
                         <span
                           key={d}
-                          className="inline-block text-xs bg-gray-100 text-gray-600 px-2 py-0.5 rounded mr-1"
+                          className={`inline-block text-xs font-medium px-2 py-0.5 rounded mr-1 ${dimPill(d)}`}
                         >
                           {d.replace('_', ' ')}
                         </span>

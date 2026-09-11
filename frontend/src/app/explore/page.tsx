@@ -124,8 +124,8 @@ export default function ExplorePage() {
       size === 'lg' ? 'px-4 py-1.5 text-sm' : 'px-3 py-1 text-xs'
     } ${
       active
-        ? 'border-[#a06f1e] bg-[#a06f1e] text-white'
-        : 'border-neutral-300 text-neutral-600 hover:border-[#cda45c]'
+        ? 'border-[#202f9a] bg-[#202f9a] text-white'
+        : 'border-neutral-300 text-neutral-600 hover:border-[#202f9a]'
     }`;
 
   const LevelLabel = ({ children }: { children: React.ReactNode }) => (
@@ -135,9 +135,9 @@ export default function ExplorePage() {
   );
 
   return (
-    <main className="min-h-screen bg-[#faf8f5] text-neutral-900">
+    <main className="min-h-screen bg-[#faf7f2] text-neutral-900">
       <header className="border-b border-neutral-200 px-6 py-10 text-center">
-        <p className="text-xs tracking-[0.3em] text-[#a06f1e] uppercase">Explore</p>
+        <p className="text-xs tracking-[0.3em] text-[#202f9a] uppercase">Explore</p>
         <h1 className="mt-3 font-serif text-4xl md:text-5xl">The Gallery</h1>
         <p className="mt-3 text-neutral-600">
           {loading
@@ -150,8 +150,8 @@ export default function ExplorePage() {
         {(domain || category || specialist) && (
           <p className="mt-2 text-xs text-neutral-500">
             {domain}
-            {category && <span className="text-[#a06f1e]"> › {category}</span>}
-            {specialist && <span className="text-[#a06f1e]"> › {specialist}</span>}
+            {category && <span className="text-[#202f9a]"> › {category}</span>}
+            {specialist && <span className="text-[#202f9a]"> › {specialist}</span>}
             <button
               onClick={() => selectDomain('')}
               className="ml-3 text-neutral-400 underline hover:text-neutral-700"
@@ -163,7 +163,7 @@ export default function ExplorePage() {
       </header>
 
       {/* Ladder filter */}
-      <div className="sticky top-16 z-10 space-y-2 border-b border-neutral-200 bg-[#faf8f5]/95 px-6 py-3 backdrop-blur">
+      <div className="sticky top-16 z-10 space-y-2 border-b border-neutral-200 bg-[#faf7f2]/95 px-6 py-3 backdrop-blur">
         <div className="mx-auto max-w-7xl space-y-2">
           {/* Level 1 — Art type */}
           <div className="flex flex-wrap items-center gap-2">
@@ -185,7 +185,7 @@ export default function ExplorePage() {
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               placeholder="Search…"
-              className="ml-auto w-48 rounded-full border border-neutral-300 px-4 py-1.5 text-sm outline-none focus:border-[#cda45c] focus:ring-2 focus:ring-[#cda45c]/30"
+              className="ml-auto w-48 rounded-full border border-neutral-300 px-4 py-1.5 text-sm outline-none focus:border-[#202f9a] focus:ring-2 focus:ring-[#202f9a]/30"
             />
           </div>
 
@@ -250,7 +250,7 @@ export default function ExplorePage() {
                 <Link
                   key={w._id}
                   href={`/art-work/${w._id}`}
-                  className="group overflow-hidden rounded-xl border border-neutral-200 bg-white transition hover:border-[#cda45c]/50"
+                  className="group overflow-hidden rounded-xl border border-neutral-200 bg-white transition hover:border-[#202f9a]/50"
                 >
                   <div className="relative flex aspect-[3/4] items-center justify-center overflow-hidden bg-gradient-to-br from-neutral-100 to-neutral-200">
                     {w.images && w.images.length > 0 ? (
@@ -282,7 +282,7 @@ export default function ExplorePage() {
                       </p>
                     )}
                     {w.cost ? (
-                      <p className="mt-1 text-xs text-[#a06f1e]">
+                      <p className="mt-1 text-xs text-[#202f9a]">
                         {w.currency || 'INR'} {w.cost.toLocaleString()}
                       </p>
                     ) : null}
@@ -299,7 +299,7 @@ export default function ExplorePage() {
                 <button
                   onClick={() => fetchPage(page + 1, false)}
                   disabled={loadingMore}
-                  className="rounded-full border border-[#a06f1e] px-8 py-2.5 text-sm font-medium text-[#a06f1e] transition hover:bg-[#a06f1e] hover:text-white disabled:opacity-60"
+                  className="rounded-full border border-[#202f9a] px-8 py-2.5 text-sm font-medium text-[#202f9a] transition hover:bg-[#202f9a] hover:text-white disabled:opacity-60"
                 >
                   {loadingMore ? 'Loading…' : 'Load more'}
                 </button>

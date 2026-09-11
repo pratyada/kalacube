@@ -21,11 +21,12 @@ export default function ForgotPasswordPage() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50 px-4">
+    <div className="min-h-screen flex items-center justify-center bg-cream px-4">
       <div className="w-full max-w-md">
         <div className="text-center mb-8">
-          <Link href="/" className="text-3xl font-bold text-gray-900">
-            kala<span className="text-rose-500">CUBE</span>
+          <Link href="/" className="inline-flex justify-center" aria-label="KalaCUBE — Art Lives Here">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img src="/brand/logo-primary.png" alt="KalaCUBE" width={547} height={451} className="h-16 w-auto" />
           </Link>
         </div>
 

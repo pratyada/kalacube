@@ -96,16 +96,16 @@ export default function OnboardingPage() {
 
   if (!ready) {
     return (
-      <main className="min-h-screen bg-[#faf8f5] p-10 text-center text-neutral-600">
+      <main className="min-h-screen bg-[#faf7f2] p-10 text-center text-neutral-600">
         Loading…
       </main>
     );
   }
 
   return (
-    <main className="min-h-screen bg-[#faf8f5] px-4 py-12 text-neutral-900">
+    <main className="min-h-screen bg-[#faf7f2] px-4 py-12 text-neutral-900">
       <div className="mx-auto max-w-xl">
-        <p className="text-xs uppercase tracking-[0.35em] text-[#a06f1e]">Welcome</p>
+        <p className="text-xs uppercase tracking-[0.35em] text-[#202f9a]">Welcome</p>
         <h1 className="mt-2 font-serif text-4xl">Complete your artist profile</h1>
         <p className="mt-2 text-neutral-600">
           A few details so collectors and curators can find your work.
@@ -123,7 +123,7 @@ export default function OnboardingPage() {
             <input
               value={form.username}
               onChange={(e) => setForm({ ...form, username: e.target.value })}
-              className="w-full rounded-lg border border-neutral-300 px-3 py-2 outline-none focus:border-[#cda45c] focus:ring-2 focus:ring-[#cda45c]/30"
+              className="w-full rounded-lg border border-neutral-300 px-3 py-2 outline-none focus:border-[#202f9a] focus:ring-2 focus:ring-[#202f9a]/30"
               placeholder="yourhandle"
             />
           </div>
@@ -134,7 +134,7 @@ export default function OnboardingPage() {
               <input
                 value={form.firstName}
                 onChange={(e) => setForm({ ...form, firstName: e.target.value })}
-                className="w-full rounded-lg border border-neutral-300 px-3 py-2 outline-none focus:border-[#cda45c] focus:ring-2 focus:ring-[#cda45c]/30"
+                className="w-full rounded-lg border border-neutral-300 px-3 py-2 outline-none focus:border-[#202f9a] focus:ring-2 focus:ring-[#202f9a]/30"
               />
             </div>
             <div>
@@ -142,7 +142,7 @@ export default function OnboardingPage() {
               <input
                 value={form.lastName}
                 onChange={(e) => setForm({ ...form, lastName: e.target.value })}
-                className="w-full rounded-lg border border-neutral-300 px-3 py-2 outline-none focus:border-[#cda45c] focus:ring-2 focus:ring-[#cda45c]/30"
+                className="w-full rounded-lg border border-neutral-300 px-3 py-2 outline-none focus:border-[#202f9a] focus:ring-2 focus:ring-[#202f9a]/30"
               />
             </div>
           </div>
@@ -159,8 +159,8 @@ export default function OnboardingPage() {
                     onClick={() => toggleDim(d.key)}
                     className={`rounded-full border px-4 py-2 text-sm transition ${
                       on
-                        ? 'border-[#a06f1e] bg-[#a06f1e] text-white'
-                        : 'border-neutral-300 text-neutral-700 hover:border-[#cda45c]'
+                        ? 'border-[#202f9a] bg-[#202f9a] text-white'
+                        : 'border-neutral-300 text-neutral-700 hover:border-[#202f9a]'
                     }`}
                   >
                     {d.label}
@@ -176,7 +176,7 @@ export default function OnboardingPage() {
               value={form.headline}
               onChange={(e) => setForm({ ...form, headline: e.target.value })}
               maxLength={120}
-              className="w-full rounded-lg border border-neutral-300 px-3 py-2 outline-none focus:border-[#cda45c] focus:ring-2 focus:ring-[#cda45c]/30"
+              className="w-full rounded-lg border border-neutral-300 px-3 py-2 outline-none focus:border-[#202f9a] focus:ring-2 focus:ring-[#202f9a]/30"
               placeholder="e.g. Contemporary miniature painter from Jaipur"
             />
           </div>
@@ -188,7 +188,7 @@ export default function OnboardingPage() {
               onChange={(e) => setForm({ ...form, statement: e.target.value })}
               maxLength={2000}
               rows={4}
-              className="w-full rounded-lg border border-neutral-300 px-3 py-2 outline-none focus:border-[#cda45c] focus:ring-2 focus:ring-[#cda45c]/30"
+              className="w-full rounded-lg border border-neutral-300 px-3 py-2 outline-none focus:border-[#202f9a] focus:ring-2 focus:ring-[#202f9a]/30"
               placeholder="Tell your story…"
             />
           </div>
@@ -196,7 +196,7 @@ export default function OnboardingPage() {
           <button
             type="submit"
             disabled={saving}
-            className="w-full rounded-full bg-[#111] py-3 text-sm font-semibold text-white transition hover:bg-black disabled:opacity-60"
+            className="w-full rounded-full bg-[#0b1f52] py-3 text-sm font-semibold text-white transition hover:bg-[#202f9a] disabled:opacity-60"
           >
             {saving ? 'Setting up…' : 'Enter KalaCUBE'}
           </button>

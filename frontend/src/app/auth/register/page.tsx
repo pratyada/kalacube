@@ -124,13 +124,14 @@ export default function RegisterPage() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50 px-4 py-12">
+    <div className="min-h-screen flex items-center justify-center bg-cream px-4 py-12">
       <div className="w-full max-w-lg">
         <div className="text-center mb-8">
-          <Link href="/" className="text-3xl font-bold text-gray-900">
-            kala<span className="text-rose-500">CUBE</span>
+          <Link href="/" className="inline-flex justify-center" aria-label="KalaCUBE — Art Lives Here">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img src="/brand/logo-primary.png" alt="KalaCUBE" width={547} height={451} className="h-16 w-auto" />
           </Link>
-          <p className="text-gray-500 mt-2">
+          <p className="text-muted mt-3">
             {step === 1
               ? 'Choose your role'
               : step === 2

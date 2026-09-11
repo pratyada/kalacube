@@ -18,8 +18,11 @@ export const configValidationSchema = Joi.object({
 
   // AWS S3
   AWS_STORAGE_BUCKET: Joi.string().required(),
-  AWS_ACCESS_KEY: Joi.string().required(),
-  AWS_SECRET_KEY: Joi.string().required(),
+  // Optional: on Lambda these are omitted (AWS_ACCESS_KEY/AWS_SECRET_KEY are
+  // reserved env names) and S3 uses the execution role via the default provider
+  // chain. Locally they may hold real keys or placeholders.
+  AWS_ACCESS_KEY: Joi.string().allow('').default(''),
+  AWS_SECRET_KEY: Joi.string().allow('').default(''),
   AWS_REGION: Joi.string().required(),
 
   // Redis

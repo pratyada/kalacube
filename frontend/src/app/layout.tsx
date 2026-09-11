@@ -1,24 +1,30 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
+import { Poppins, Fraunces } from "next/font/google";
 import "./globals.css";
 import AmplifyProvider from "@/components/AmplifyProvider";
 import Header from "@/components/layout/Header";
 import Footer from "@/components/layout/Footer";
 
-const geistSans = Geist({
-  variable: "--font-geist-sans",
+// Primary UI family per the KalaCUBE brand guideline (Poppins 400–800).
+const poppins = Poppins({
+  variable: "--font-poppins",
   subsets: ["latin"],
+  weight: ["400", "500", "600", "700", "800"],
+  display: "swap",
 });
 
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
+// Editorial display face — a high-contrast contemporary serif, used sparingly
+// for cultural/magazine-style headlines (brand guideline §05 Typography).
+const fraunces = Fraunces({
+  variable: "--font-fraunces",
   subsets: ["latin"],
+  display: "swap",
 });
 
 export const metadata: Metadata = {
-  title: "kalaCUBE — Where Art Meets Community",
+  title: "KalaCUBE — Art Lives Here",
   description:
-    "India's platform for artists across Handicraft, Visual Art, and Performing Arts. Connect, showcase, and grow.",
+    "A World of Art. In One Cube. Discover visual art, handicraft and performing arts — and connect with the artists behind the work.",
 };
 
 export default function RootLayout({
@@ -30,9 +36,9 @@ export default function RootLayout({
     <html
       lang="en"
       suppressHydrationWarning
-      className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
+      className={`${poppins.variable} ${fraunces.variable} h-full antialiased`}
     >
-      <body className="min-h-full flex flex-col bg-white text-gray-900">
+      <body className="min-h-full flex flex-col bg-cream text-navy-deep">
         <AmplifyProvider>
           <Header />
           {children}

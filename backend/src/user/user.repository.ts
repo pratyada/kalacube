@@ -78,7 +78,9 @@ export class UserRepository {
   }
 
   async findArtistProfile(userId: string) {
-    return this.artistProfileModel.findOne({ user: userId });
+    return this.artistProfileModel.findOne({
+      user: new Types.ObjectId(userId),
+    });
   }
 
   // Curator Profile
@@ -91,7 +93,9 @@ export class UserRepository {
   }
 
   async findCuratorProfile(userId: string) {
-    return this.curatorProfileModel.findOne({ user: userId });
+    return this.curatorProfileModel.findOne({
+      user: new Types.ObjectId(userId),
+    });
   }
 
   // Art Space Profile
@@ -107,6 +111,8 @@ export class UserRepository {
   }
 
   async findArtSpaceProfile(userId: string) {
-    return this.artSpaceProfileModel.findOne({ user: userId });
+    return this.artSpaceProfileModel.findOne({
+      user: new Types.ObjectId(userId),
+    });
   }
 }

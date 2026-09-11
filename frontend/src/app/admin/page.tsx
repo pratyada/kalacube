@@ -85,8 +85,16 @@ export default function AdminPage() {
       <div className="sticky top-0 z-20 flex items-center justify-between border-b border-[#132030] bg-[#070d14]/95 px-4 py-2 backdrop-blur">
         <div className="flex items-center gap-3">
           <StatusDot color="green" />
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src="/brand/logo-dark-bg.png"
+            alt="KalaCUBE"
+            width={611}
+            height={515}
+            className="h-6 w-auto rounded"
+          />
           <span className="text-sm font-semibold tracking-[0.3em] text-[#c2d0dc]">
-            KALACUBE<span className="text-[#3ef2a1]"> // </span>MISSION CONTROL
+            <span className="text-[#3ef2a1]">// </span>MISSION CONTROL
           </span>
         </div>
         <div className="hidden items-center gap-4 text-[11px] text-[#5f7285] md:flex">

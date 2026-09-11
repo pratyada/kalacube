@@ -52,3 +52,5 @@ kalaCUBE-backend/
 
 # Local-only compose overrides
 docker-compose.override.yml
+backend/.serverless/
+backend/package-lock.json

@@ -14,6 +14,9 @@ export class RolesGuard implements CanActivate {
     if (!requiredRoles) return true;
 
     const { user } = context.switchToHttp().getRequest();
+    // Superadmin/admin bypass role gates (ownership is still enforced in the
+    // service layer, so this does not let them edit other users' resources).
+    if (user?.role === 'superadmin' || user?.role === 'admin') return true;
     return requiredRoles.includes(user?.role);
   }
 }
