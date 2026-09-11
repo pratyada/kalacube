@@ -12,11 +12,13 @@ const ROLES = [
     value: 'artist',
     label: 'Artist',
     desc: 'Showcase your work, build your portfolio, and grow your audience.',
+    disabled: false,
   },
   {
     value: 'user',
     label: 'Guest',
     desc: 'Explore art, discover artists, and follow the work you love.',
+    disabled: true, // visible but not yet available — artist signup only for now
   },
 ];
 
@@ -116,19 +118,35 @@ export default function RegisterPage() {
               <p className="mb-1 text-center text-sm text-neutral-500">
                 How do you want to join?
               </p>
-              {ROLES.map((r) => (
-                <button
-                  key={r.value}
-                  onClick={() => {
-                    setRole(r.value as 'artist' | 'user');
-                    setStep(2);
-                  }}
-                  className="w-full rounded-xl border border-neutral-200 p-4 text-left transition hover:border-[#202f9a] hover:bg-[#eef1ff]"
-                >
-                  <div className="font-semibold text-neutral-900">{r.label}</div>
-                  <div className="mt-0.5 text-sm text-neutral-500">{r.desc}</div>
-                </button>
-              ))}
+              {ROLES.map((r) =>
+                r.disabled ? (
+                  <div
+                    key={r.value}
+                    aria-disabled="true"
+                    className="w-full cursor-not-allowed rounded-xl border border-neutral-200 bg-neutral-50 p-4 text-left opacity-60"
+                  >
+                    <div className="flex items-center gap-2">
+                      <span className="font-semibold text-neutral-500">{r.label}</span>
+                      <span className="rounded-full bg-neutral-200 px-2 py-0.5 text-[11px] font-medium uppercase tracking-wide text-neutral-500">
+                        Coming soon
+                      </span>
+                    </div>
+                    <div className="mt-0.5 text-sm text-neutral-400">{r.desc}</div>
+                  </div>
+                ) : (
+                  <button
+                    key={r.value}
+                    onClick={() => {
+                      setRole(r.value as 'artist' | 'user');
+                      setStep(2);
+                    }}
+                    className="w-full rounded-xl border border-neutral-200 p-4 text-left transition hover:border-[#202f9a] hover:bg-[#eef1ff]"
+                  >
+                    <div className="font-semibold text-neutral-900">{r.label}</div>
+                    <div className="mt-0.5 text-sm text-neutral-500">{r.desc}</div>
+                  </button>
+                )
+              )}
             </div>
           )}
 
