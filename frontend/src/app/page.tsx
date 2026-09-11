@@ -82,11 +82,11 @@ export default function Home() {
 
         <div className="relative z-10 mx-auto max-w-4xl px-6 text-center">
           <motion.p custom={0} variants={fadeUp} initial="hidden" animate="show"
-            className="text-xs uppercase tracking-[0.45em] text-[#202f9a]">
+            className="text-xs uppercase tracking-[0.25em] text-[#202f9a] sm:tracking-[0.45em]">
             Kala · Art in three dimensions
           </motion.p>
           <motion.h1 custom={1} variants={fadeUp} initial="hidden" animate="show"
-            className="mt-6 font-serif text-5xl leading-[1.05] md:text-7xl">
+            className="mt-6 font-serif text-4xl leading-[1.08] sm:text-5xl md:text-7xl">
             Where India&apos;s artists <span className="italic text-[#202f9a]">come alive</span>
           </motion.h1>
           <motion.p custom={2} variants={fadeUp} initial="hidden" animate="show"

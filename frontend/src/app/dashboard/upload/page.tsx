@@ -114,14 +114,43 @@ export default function UploadArtworkPage() {
           </div>
 
           <div>
-            <label className="mb-1 block text-sm font-medium">Images *</label>
-            <input
-              type="file"
-              accept="image/*"
-              multiple
-              onChange={(e) => onPick(e.target.files)}
-              className="block w-full text-sm text-neutral-600 file:mr-4 file:rounded-full file:border-0 file:bg-[#202f9a]/20 file:px-4 file:py-2 file:text-sm file:font-medium file:text-[#202f9a] hover:file:bg-[#202f9a]/40"
-            />
+            <p className="mb-1 block text-sm font-medium">Images *</p>
+            <label className="flex min-h-[44px] cursor-pointer flex-col items-center justify-center gap-2 rounded-xl border-2 border-dashed border-[#202f9a]/40 bg-white px-4 py-8 text-center transition hover:border-[#202f9a] hover:bg-[#202f9a]/5">
+              <svg
+                width="28"
+                height="28"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="1.8"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                className="text-[#202f9a]"
+                aria-hidden="true"
+              >
+                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+                <polyline points="17 8 12 3 7 8" />
+                <line x1="12" y1="3" x2="12" y2="15" />
+              </svg>
+              <span className="text-sm font-semibold text-[#202f9a]">
+                Tap to choose images
+              </span>
+              <span className="text-xs text-neutral-500">
+                or drag &amp; drop — up to 8 images
+              </span>
+              {files.length > 0 && (
+                <span className="mt-1 rounded-full bg-[#202f9a]/10 px-3 py-1 text-xs font-medium text-[#202f9a]">
+                  {files.length} image{files.length === 1 ? '' : 's'} selected
+                </span>
+              )}
+              <input
+                type="file"
+                accept="image/*"
+                multiple
+                onChange={(e) => onPick(e.target.files)}
+                className="sr-only"
+              />
+            </label>
             {previews.length > 0 && (
               <div className="mt-3 grid grid-cols-4 gap-2">
                 {previews.map((src, i) => (
@@ -148,7 +177,7 @@ export default function UploadArtworkPage() {
             />
           </div>
 
-          <div className="grid grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
             <div>
               <label className="mb-1 block text-sm font-medium">Medium</label>
               <input
@@ -176,7 +205,7 @@ export default function UploadArtworkPage() {
             </div>
           </div>
 
-          <div className="grid grid-cols-4 gap-4">
+          <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
             <div className="col-span-2">
               <label className="mb-1 block text-sm font-medium">Price</label>
               <input

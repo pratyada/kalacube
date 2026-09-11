@@ -30,7 +30,7 @@ export default function ForgotPasswordPage() {
           </Link>
         </div>
 
-        <div className="bg-white rounded-xl shadow-sm border p-8">
+        <div className="bg-white rounded-xl shadow-sm border p-6 sm:p-8">
           {sent ? (
             <div className="text-center">
               <h2 className="text-lg font-semibold mb-2">Check your email</h2>

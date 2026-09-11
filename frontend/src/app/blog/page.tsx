@@ -1,6 +1,6 @@
 import type { Metadata } from 'next';
-import Link from 'next/link';
-import { fetchArtists, slugify } from '@/lib/blog';
+import { fetchArtists } from '@/lib/blog';
+import JournalExplorer, { type JournalArtist } from '@/components/JournalExplorer';
 
 export const metadata: Metadata = {
   title: 'KalaCUBE Journal — Stories of India’s Artists & Handmade Art',
@@ -18,12 +18,14 @@ export const metadata: Metadata = {
 export const dynamic = 'force-dynamic';
 
 export default async function BlogIndex() {
-  const artists = await fetchArtists(60);
+  // Server-fetch the default (unfiltered) page so the artist links are in the
+  // initial HTML for SEO; the client island hydrates the filters on top.
+  const initialArtists = (await fetchArtists(48)) as JournalArtist[];
 
   return (
     <main className="min-h-screen bg-[#faf7f2] text-neutral-900">
       <section className="border-b border-neutral-200 px-6 py-16 text-center">
-        <p className="text-xs uppercase tracking-[0.4em] text-[#202f9a]">The KalaCUBE Journal</p>
+        <p className="text-xs tracking-[0.4em] text-[#202f9a] uppercase">The KalaCUBE Journal</p>
         <h1 className="mx-auto mt-4 max-w-3xl font-serif text-4xl leading-tight md:text-6xl">
           Where handmade art meets its story
         </h1>
@@ -33,37 +35,7 @@ export default async function BlogIndex() {
         </p>
       </section>
 
-      <section className="mx-auto max-w-7xl px-6 py-14">
-        <h2 className="mb-8 font-serif text-3xl">Artist Portfolios</h2>
-        <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
-          {artists.map((a: any) => (
-            <Link
-              key={a._id}
-              href={`/blog/${a.username}`}
-              className="group rounded-2xl border border-neutral-200 bg-white p-6 shadow-sm transition hover:-translate-y-1 hover:shadow-md"
-            >
-              <div className="flex items-center gap-4">
-                {a.avatar?.url ? (
-                  // eslint-disable-next-line @next/next/no-img-element
-                  <img src={a.avatar.url} alt={a.username} className="h-14 w-14 rounded-full object-cover" />
-                ) : (
-                  <div className="flex h-14 w-14 items-center justify-center rounded-full bg-[#202f9a]/20 font-serif text-lg text-[#202f9a]">
-                    {(a.firstName?.[0] || a.username?.[0] || 'A').toUpperCase()}
-                  </div>
-                )}
-                <div>
-                  <h3 className="font-serif text-lg">
-                    {`${a.firstName || ''} ${a.lastName || ''}`.trim() || a.username}
-                  </h3>
-                  <p className="text-sm text-neutral-500">{a.artworkCount} works</p>
-                </div>
-              </div>
-              {a.headline && <p className="mt-4 line-clamp-2 text-sm text-neutral-600">{a.headline}</p>}
-              <span className="mt-4 inline-block text-sm text-[#202f9a] group-hover:underline">Read portfolio →</span>
-            </Link>
-          ))}
-        </div>
-      </section>
+      <JournalExplorer initialArtists={initialArtists} />
     </main>
   );
 }

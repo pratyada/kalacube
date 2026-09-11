@@ -16,6 +16,7 @@ export default function Header() {
   const pathname = usePathname();
   const { user, isAuthenticated, logout } = useAuthStore();
   const [menuOpen, setMenuOpen] = useState(false);
+  const [navOpen, setNavOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
 
   const isAdmin = !!user && ['admin', 'superadmin'].includes(user.role);
@@ -40,7 +41,16 @@ export default function Header() {
 
   useEffect(() => {
     setMenuOpen(false);
+    setNavOpen(false);
   }, [pathname]);
+
+  // Close the mobile nav sheet on Escape.
+  useEffect(() => {
+    if (!navOpen) return;
+    const onKey = (e: KeyboardEvent) => e.key === 'Escape' && setNavOpen(false);
+    document.addEventListener('keydown', onKey);
+    return () => document.removeEventListener('keydown', onKey);
+  }, [navOpen]);
 
   // The admin console is a full-screen dark app — no public site chrome.
   // (Must be AFTER all hooks to keep hook order stable across routes.)
@@ -48,7 +58,7 @@ export default function Header() {
 
   return (
     <header className="sticky top-0 z-50 border-b border-line bg-cream/85 backdrop-blur">
-      <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-6">
+      <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4 sm:px-6">
         <Link href="/" className="flex items-center" aria-label="KalaCUBE — Art Lives Here">
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
@@ -60,21 +70,23 @@ export default function Header() {
           />
         </Link>
 
-        <nav className="flex items-center gap-6">
-          {NAV.map((n) => {
-            const active = n.href === '/' ? pathname === '/' : pathname.startsWith(n.href);
-            return (
-              <Link
-                key={n.href}
-                href={n.href}
-                className={`text-sm font-medium transition ${
-                  active ? 'text-indigo' : 'text-muted hover:text-navy'
-                }`}
-              >
-                {n.label}
-              </Link>
-            );
-          })}
+        <nav className="flex items-center gap-3 sm:gap-6">
+          <div className="hidden items-center gap-6 md:flex">
+            {NAV.map((n) => {
+              const active = n.href === '/' ? pathname === '/' : pathname.startsWith(n.href);
+              return (
+                <Link
+                  key={n.href}
+                  href={n.href}
+                  className={`text-sm font-medium transition ${
+                    active ? 'text-indigo' : 'text-muted hover:text-navy'
+                  }`}
+                >
+                  {n.label}
+                </Link>
+              );
+            })}
+          </div>
 
           {isAuthenticated ? (
             <div className="relative" ref={menuRef}>
@@ -158,13 +170,60 @@ export default function Header() {
           ) : (
             <Link
               href="/auth/login"
-              className="rounded-full border border-navy/25 px-4 py-1.5 text-sm font-semibold text-navy transition hover:bg-navy hover:text-white"
+              className="rounded-full border border-navy/25 px-3 py-1.5 text-sm font-semibold text-navy transition hover:bg-navy hover:text-white sm:px-4"
             >
               Sign in
             </Link>
           )}
+
+          {/* Hamburger — mobile only */}
+          <button
+            type="button"
+            onClick={() => setNavOpen((o) => !o)}
+            aria-label={navOpen ? 'Close menu' : 'Open menu'}
+            aria-expanded={navOpen}
+            className="flex h-10 w-10 items-center justify-center rounded-lg text-navy transition hover:bg-brand-100 focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo md:hidden"
+          >
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden="true">
+              {navOpen ? (
+                <>
+                  <line x1="6" y1="6" x2="18" y2="18" />
+                  <line x1="6" y1="18" x2="18" y2="6" />
+                </>
+              ) : (
+                <>
+                  <line x1="3" y1="6" x2="21" y2="6" />
+                  <line x1="3" y1="12" x2="21" y2="12" />
+                  <line x1="3" y1="18" x2="21" y2="18" />
+                </>
+              )}
+            </svg>
+          </button>
         </nav>
       </div>
+
+      {/* Mobile nav sheet */}
+      {navOpen && (
+        <nav className="border-t border-line bg-cream/95 backdrop-blur md:hidden">
+          <div className="mx-auto flex max-w-7xl flex-col px-4 py-2">
+            {NAV.map((n) => {
+              const active = n.href === '/' ? pathname === '/' : pathname.startsWith(n.href);
+              return (
+                <Link
+                  key={n.href}
+                  href={n.href}
+                  onClick={() => setNavOpen(false)}
+                  className={`rounded-lg px-3 py-3 text-base font-medium transition ${
+                    active ? 'bg-brand-100 text-indigo' : 'text-navy hover:bg-brand-50'
+                  }`}
+                >
+                  {n.label}
+                </Link>
+              );
+            })}
+          </div>
+        </nav>
+      )}
     </header>
   );
 }

@@ -135,7 +135,7 @@ export default function AllArtistPage() {
   const hasMore = artists.length < total;
 
   const rung = (active: boolean, size: 'lg' | 'sm' = 'lg') =>
-    `rounded-full border transition ${
+    `shrink-0 whitespace-nowrap rounded-full border transition ${
       size === 'lg' ? 'px-4 py-1.5 text-sm' : 'px-3 py-1 text-xs'
     } ${
       active
@@ -181,30 +181,32 @@ export default function AllArtistPage() {
       {/* Ladder filter */}
       <div className="sticky top-16 z-10 space-y-2 border-b border-neutral-200 bg-[#faf7f2]/95 px-6 py-3 backdrop-blur">
         <div className="mx-auto max-w-7xl space-y-2">
-          <div className="flex flex-wrap items-center gap-2">
-            <LevelLabel>Art type</LevelLabel>
-            <button onClick={() => selectDomain('')} className={rung(domain === '')}>
-              All
-            </button>
-            {artTypes.map((t) => (
-              <button
-                key={t.name}
-                onClick={() => selectDomain(t.name)}
-                className={rung(domain === t.name)}
-              >
-                {t.name}
+          <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
+            <div className="no-scrollbar flex min-w-0 flex-1 items-center gap-2 overflow-x-auto">
+              <LevelLabel>Art type</LevelLabel>
+              <button onClick={() => selectDomain('')} className={rung(domain === '')}>
+                All
               </button>
-            ))}
+              {artTypes.map((t) => (
+                <button
+                  key={t.name}
+                  onClick={() => selectDomain(t.name)}
+                  className={rung(domain === t.name)}
+                >
+                  {t.name}
+                </button>
+              ))}
+            </div>
             <input
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               placeholder="Search artists…"
-              className="ml-auto w-48 rounded-full border border-neutral-300 px-4 py-1.5 text-sm outline-none focus:border-[#202f9a] focus:ring-2 focus:ring-[#202f9a]/30"
+              className="w-full shrink-0 rounded-full border border-neutral-300 px-4 py-1.5 text-sm outline-none focus:border-[#202f9a] focus:ring-2 focus:ring-[#202f9a]/30 sm:w-48"
             />
           </div>
 
           {domain && domainCategories.length > 0 && (
-            <div className="flex flex-wrap items-center gap-2 border-t border-neutral-100 pt-2">
+            <div className="no-scrollbar flex items-center gap-2 overflow-x-auto border-t border-neutral-100 pt-2">
               <LevelLabel>Category</LevelLabel>
               <button onClick={() => selectCategory('')} className={rung(category === '', 'sm')}>
                 All {domain}
@@ -222,7 +224,7 @@ export default function AllArtistPage() {
           )}
 
           {activeCat && activeCat.specialists.length > 0 && (
-            <div className="flex flex-wrap items-center gap-2 border-t border-neutral-100 pt-2">
+            <div className="no-scrollbar flex items-center gap-2 overflow-x-auto border-t border-neutral-100 pt-2">
               <LevelLabel>Art style</LevelLabel>
               <button onClick={() => setSpecialist('')} className={rung(specialist === '', 'sm')}>
                 All {activeCat.category}

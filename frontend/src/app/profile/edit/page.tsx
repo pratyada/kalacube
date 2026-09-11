@@ -254,7 +254,7 @@ export default function EditProfilePage() {
                 />
               </div>
 
-              <div className="grid grid-cols-3 gap-3">
+              <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">
                     City
@@ -375,7 +375,7 @@ export default function EditProfilePage() {
                 <label className="block text-sm font-medium text-gray-700 mb-2">
                   Art Dimensions
                 </label>
-                <div className="flex gap-3">
+                <div className="flex flex-wrap gap-3">
                   {[
                     { value: 'handicraft', label: 'Handicraft' },
                     { value: 'visual_art', label: 'Visual Art' },

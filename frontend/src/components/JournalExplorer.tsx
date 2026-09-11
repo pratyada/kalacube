@@ -4,16 +4,15 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import Link from 'next/link';
 import api from '@/lib/api';
 
-interface Artwork {
+export interface JournalArtist {
   _id: string;
-  title?: string;
-  cost?: number;
-  currency?: string;
-  medium?: string;
-  theme?: string;
-  imagePrefix?: string | null;
-  images?: string[];
-  artist?: { username: string; firstName?: string; lastName?: string };
+  username: string;
+  firstName?: string;
+  lastName?: string;
+  headline?: string;
+  artDimensions?: string[];
+  artworkCount?: number;
+  avatar?: { url?: string };
 }
 
 interface Category {
@@ -25,22 +24,27 @@ interface Category {
 
 const PAGE_SIZE = 48;
 
-export default function ExplorePage() {
-  const [items, setItems] = useState<Artwork[]>([]);
-  const [total, setTotal] = useState(0);
+export default function JournalExplorer({
+  initialArtists = [],
+}: {
+  initialArtists?: JournalArtist[];
+}) {
+  const [artists, setArtists] = useState<JournalArtist[]>(initialArtists);
+  const [total, setTotal] = useState(initialArtists.length);
   const [page, setPage] = useState(1);
   const [categories, setCategories] = useState<Category[]>([]);
 
-  // The three ladder levels.
   const [domain, setDomain] = useState('');
   const [category, setCategory] = useState('');
   const [specialist, setSpecialist] = useState('');
-
   const [search, setSearch] = useState('');
   const [debounced, setDebounced] = useState('');
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
   const [loadingMore, setLoadingMore] = useState(false);
   const reqId = useRef(0);
+  // Skip the very first fetch effect if the server already handed us artists;
+  // this avoids a load flicker while still hydrating filters/categories.
+  const skipFirstFetch = useRef(initialArtists.length > 0);
 
   useEffect(() => {
     api
@@ -57,9 +61,10 @@ export default function ExplorePage() {
   const fetchPage = useCallback(
     async (nextPage: number, replace: boolean) => {
       const id = ++reqId.current;
-      replace ? setLoading(true) : setLoadingMore(true);
+      if (replace) setLoading(true);
+      else setLoadingMore(true);
       try {
-        const { data } = await api.get('/api/explore/artworks', {
+        const { data } = await api.get('/api/explore/artists', {
           params: {
             page: nextPage,
             limit: PAGE_SIZE,
@@ -71,12 +76,12 @@ export default function ExplorePage() {
         });
         if (id !== reqId.current) return;
         const p = data.data || {};
-        const incoming: Artwork[] = p.items || [];
+        const incoming: JournalArtist[] = p.items || [];
         setTotal(p.total || 0);
-        setItems((prev) => (replace ? incoming : [...prev, ...incoming]));
+        setArtists((prev) => (replace ? incoming : [...prev, ...incoming]));
         setPage(nextPage);
       } catch {
-        if (id === reqId.current && replace) setItems([]);
+        if (id === reqId.current && replace) setArtists([]);
       } finally {
         if (id === reqId.current) {
           setLoading(false);
@@ -88,14 +93,17 @@ export default function ExplorePage() {
   );
 
   useEffect(() => {
+    // First run: if the server pre-rendered the default list, don't re-fetch it.
+    if (skipFirstFetch.current) {
+      skipFirstFetch.current = false;
+      return;
+    }
     fetchPage(1, true);
   }, [fetchPage]);
 
-  // Ladder derivations.
   const artTypes = useMemo(() => {
     const map = new Map<string, number>();
-    for (const c of categories)
-      map.set(c.domain, (map.get(c.domain) || 0) + c.count);
+    for (const c of categories) map.set(c.domain, (map.get(c.domain) || 0) + c.count);
     return Array.from(map, ([name, count]) => ({ name, count })).sort(
       (a, b) => b.count - a.count,
     );
@@ -117,10 +125,10 @@ export default function ExplorePage() {
     setSpecialist('');
   };
 
-  const hasMore = items.length < total;
+  const hasMore = artists.length < total;
 
   const rung = (active: boolean, size: 'lg' | 'sm' = 'lg') =>
-    `shrink-0 whitespace-nowrap rounded-full border transition ${
+    `whitespace-nowrap rounded-full border transition ${
       size === 'lg' ? 'px-4 py-1.5 text-sm' : 'px-3 py-1 text-xs'
     } ${
       active
@@ -129,45 +137,19 @@ export default function ExplorePage() {
     }`;
 
   const LevelLabel = ({ children }: { children: React.ReactNode }) => (
-    <span className="w-20 shrink-0 text-[10px] font-medium uppercase tracking-widest text-neutral-400">
+    <span className="w-20 shrink-0 text-[10px] font-medium tracking-widest text-neutral-400 uppercase">
       {children}
     </span>
   );
 
   return (
-    <main className="min-h-screen bg-[#faf7f2] text-neutral-900">
-      <header className="border-b border-neutral-200 px-6 py-10 text-center">
-        <p className="text-xs tracking-[0.3em] text-[#202f9a] uppercase">Explore</p>
-        <h1 className="mt-3 font-serif text-4xl md:text-5xl">The Gallery</h1>
-        <p className="mt-3 text-neutral-600">
-          {loading
-            ? 'Loading…'
-            : `${total.toLocaleString()} artworks${
-                domain || debounced ? ' match your filters' : ' from the KalaCUBE community'
-              }`}
-        </p>
-        {/* Breadcrumb of the current ladder selection */}
-        {(domain || category || specialist) && (
-          <p className="mt-2 text-xs text-neutral-500">
-            {domain}
-            {category && <span className="text-[#202f9a]"> › {category}</span>}
-            {specialist && <span className="text-[#202f9a]"> › {specialist}</span>}
-            <button
-              onClick={() => selectDomain('')}
-              className="ml-3 text-neutral-400 underline hover:text-neutral-700"
-            >
-              clear
-            </button>
-          </p>
-        )}
-      </header>
-
-      {/* Ladder filter */}
+    <>
+      {/* Ladder filter + search — sticky, mobile-responsive */}
       <div className="sticky top-16 z-10 space-y-2 border-b border-neutral-200 bg-[#faf7f2]/95 px-6 py-3 backdrop-blur">
         <div className="mx-auto max-w-7xl space-y-2">
-          {/* Level 1 — Art type + search (search stacks full-width on mobile) */}
+          {/* Search: full width on mobile, inline-right on desktop */}
           <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
-            <div className="no-scrollbar flex min-w-0 flex-1 items-center gap-2 overflow-x-auto">
+            <div className="-mx-1 flex items-center gap-2 overflow-x-auto px-1 pb-1 sm:mx-0 sm:flex-wrap sm:px-0 sm:pb-0">
               <LevelLabel>Art type</LevelLabel>
               <button onClick={() => selectDomain('')} className={rung(domain === '')}>
                 All
@@ -179,21 +161,20 @@ export default function ExplorePage() {
                   className={rung(domain === t.name)}
                 >
                   {t.name}
-                  <span className="ml-1.5 text-xs opacity-70">{t.count}</span>
                 </button>
               ))}
             </div>
             <input
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              placeholder="Search…"
-              className="w-full shrink-0 rounded-full border border-neutral-300 px-4 py-1.5 text-sm outline-none focus:border-[#202f9a] focus:ring-2 focus:ring-[#202f9a]/30 sm:w-48"
+              placeholder="Search artists…"
+              aria-label="Search the Journal's artists"
+              className="w-full rounded-full border border-neutral-300 px-4 py-1.5 text-sm outline-none focus:border-[#202f9a] focus:ring-2 focus:ring-[#202f9a]/30 sm:ml-auto sm:w-56"
             />
           </div>
 
-          {/* Level 2 — Category (appears once an art type is chosen) */}
           {domain && domainCategories.length > 0 && (
-            <div className="no-scrollbar flex items-center gap-2 overflow-x-auto border-t border-neutral-100 pt-2">
+            <div className="-mx-1 flex items-center gap-2 overflow-x-auto border-t border-neutral-100 px-1 pt-2 sm:mx-0 sm:flex-wrap sm:px-0">
               <LevelLabel>Category</LevelLabel>
               <button onClick={() => selectCategory('')} className={rung(category === '', 'sm')}>
                 All {domain}
@@ -205,20 +186,15 @@ export default function ExplorePage() {
                   className={rung(category === c.category, 'sm')}
                 >
                   {c.category}
-                  <span className="ml-1 opacity-60">{c.count}</span>
                 </button>
               ))}
             </div>
           )}
 
-          {/* Level 3 — Art style (appears once a category is chosen) */}
           {activeCat && activeCat.specialists.length > 0 && (
-            <div className="no-scrollbar flex items-center gap-2 overflow-x-auto border-t border-neutral-100 pt-2">
+            <div className="-mx-1 flex items-center gap-2 overflow-x-auto border-t border-neutral-100 px-1 pt-2 sm:mx-0 sm:flex-wrap sm:px-0">
               <LevelLabel>Art style</LevelLabel>
-              <button
-                onClick={() => setSpecialist('')}
-                className={rung(specialist === '', 'sm')}
-              >
+              <button onClick={() => setSpecialist('')} className={rung(specialist === '', 'sm')}>
                 All {activeCat.category}
               </button>
               {activeCat.specialists.map((s) => (
@@ -228,74 +204,89 @@ export default function ExplorePage() {
                   className={rung(specialist === s.name, 'sm')}
                 >
                   {s.name}
-                  <span className="ml-1 opacity-60">{s.count}</span>
                 </button>
               ))}
             </div>
           )}
+
+          {(domain || category || specialist) && (
+            <p className="px-1 text-xs text-neutral-500">
+              {domain}
+              {category && <span className="text-[#202f9a]"> › {category}</span>}
+              {specialist && <span className="text-[#202f9a]"> › {specialist}</span>}
+              <button
+                onClick={() => selectDomain('')}
+                className="ml-3 text-neutral-400 underline hover:text-neutral-700"
+              >
+                clear
+              </button>
+            </p>
+          )}
         </div>
       </div>
 
-      <section className="mx-auto max-w-7xl px-6 py-10">
+      <section className="mx-auto max-w-7xl px-6 py-14">
+        <div className="mb-8 flex flex-wrap items-end justify-between gap-2">
+          <h2 className="font-serif text-3xl">Artist Portfolios</h2>
+          {!loading && (
+            <p className="text-sm text-neutral-500">
+              {total.toLocaleString()} artist{total === 1 ? '' : 's'}
+              {domain || debounced ? ' match your filters' : ''}
+            </p>
+          )}
+        </div>
+
         {loading ? (
-          <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4">
-            {Array.from({ length: 12 }).map((_, i) => (
-              <div key={i} className="aspect-[3/4] animate-pulse rounded-xl bg-neutral-100" />
+          <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
+            {Array.from({ length: 6 }).map((_, i) => (
+              <div key={i} className="h-40 animate-pulse rounded-2xl bg-neutral-100" />
             ))}
           </div>
-        ) : items.length === 0 ? (
-          <p className="py-20 text-center text-neutral-500">No artworks match your filters.</p>
+        ) : artists.length === 0 ? (
+          <p className="py-20 text-center text-neutral-500">No artists match your filters.</p>
         ) : (
           <>
-            <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4">
-              {items.map((w) => (
+            <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
+              {artists.map((a) => (
                 <Link
-                  key={w._id}
-                  href={`/art-work/${w._id}`}
-                  className="group overflow-hidden rounded-xl border border-neutral-200 bg-white transition hover:border-[#202f9a]/50"
+                  key={a._id}
+                  href={`/blog/${a.username}`}
+                  className="group rounded-2xl border border-neutral-200 bg-white p-6 shadow-sm transition hover:-translate-y-1 hover:shadow-md"
                 >
-                  <div className="relative flex aspect-[3/4] items-center justify-center overflow-hidden bg-gradient-to-br from-neutral-100 to-neutral-200">
-                    {w.images && w.images.length > 0 ? (
+                  <div className="flex items-center gap-4">
+                    {a.avatar?.url ? (
                       // eslint-disable-next-line @next/next/no-img-element
                       <img
-                        src={w.images[0]}
-                        alt={w.title || 'Artwork'}
+                        src={a.avatar.url}
+                        alt={a.username}
                         loading="lazy"
-                        className="h-full w-full object-cover transition group-hover:scale-105"
+                        className="h-14 w-14 rounded-full object-cover"
                       />
                     ) : (
-                      <div className="flex flex-col items-center px-4 text-center">
-                        <span className="text-2xl">🎨</span>
-                        <span className="mt-2 font-serif text-base text-neutral-800 line-clamp-3">
-                          {w.title || 'Untitled'}
-                        </span>
+                      <div className="flex h-14 w-14 items-center justify-center rounded-full bg-[#202f9a]/20 font-serif text-lg text-[#202f9a]">
+                        {(a.firstName?.[0] || a.username?.[0] || 'A').toUpperCase()}
                       </div>
                     )}
-                    <span className="absolute right-2 top-2 rounded bg-black/40 px-1.5 py-0.5 text-[10px] uppercase tracking-wide text-white">
-                      {w.medium || 'art'}
-                    </span>
+                    <div>
+                      <h3 className="font-serif text-lg">
+                        {`${a.firstName || ''} ${a.lastName || ''}`.trim() || a.username}
+                      </h3>
+                      <p className="text-sm text-neutral-500">{a.artworkCount ?? 0} works</p>
+                    </div>
                   </div>
-                  <div className="p-3">
-                    <h3 className="truncate font-serif text-sm">{w.title || 'Untitled'}</h3>
-                    {w.artist && (
-                      <p className="truncate text-xs text-neutral-500">
-                        {`${w.artist.firstName || ''} ${w.artist.lastName || ''}`.trim() ||
-                          '@' + w.artist.username}
-                      </p>
-                    )}
-                    {w.cost ? (
-                      <p className="mt-1 text-xs text-[#202f9a]">
-                        {w.currency || 'INR'} {w.cost.toLocaleString()}
-                      </p>
-                    ) : null}
-                  </div>
+                  {a.headline && (
+                    <p className="mt-4 line-clamp-2 text-sm text-neutral-600">{a.headline}</p>
+                  )}
+                  <span className="mt-4 inline-block text-sm text-[#202f9a] group-hover:underline">
+                    Read portfolio →
+                  </span>
                 </Link>
               ))}
             </div>
 
             <div className="mt-10 flex flex-col items-center gap-3">
               <p className="text-xs text-neutral-500">
-                Showing {items.length.toLocaleString()} of {total.toLocaleString()}
+                Showing {artists.length.toLocaleString()} of {total.toLocaleString()}
               </p>
               {hasMore && (
                 <button
@@ -310,6 +301,6 @@ export default function ExplorePage() {
           </>
         )}
       </section>
-    </main>
+    </>
   );
 }
