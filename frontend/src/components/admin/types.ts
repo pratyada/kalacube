@@ -73,6 +73,7 @@ export type AdminSection =
   | 'artworks'
   | 'featured'
   | 'email'
+  | 'campaigns'
   | 'artspaces'
   | 'events';
 

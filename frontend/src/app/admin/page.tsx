@@ -8,6 +8,7 @@ import ArtistsSection from '@/components/admin/ArtistsSection';
 import ArtworksSection from '@/components/admin/ArtworksSection';
 import FeaturedSection from '@/components/admin/FeaturedSection';
 import EmailSection from '@/components/admin/EmailSection';
+import EmailCampaignsSection from '@/components/admin/EmailCampaignsSection';
 import SimpleTableSection from '@/components/admin/SimpleTableSection';
 import type { AdminSection } from '@/components/admin/types';
 import { StatusDot, ui, cx } from '@/components/admin/console';
@@ -18,6 +19,7 @@ const NAV: { key: AdminSection; label: string; code: string }[] = [
   { key: 'artworks', label: 'Artworks', code: 'ART' },
   { key: 'featured', label: 'Featured', code: 'FTR' },
   { key: 'email', label: 'Email & Marketing', code: 'COMM' },
+  { key: 'campaigns', label: 'Email Campaigns', code: 'MAIL' },
   { key: 'artspaces', label: 'Art Spaces', code: 'SPACE' },
   { key: 'events', label: 'Events', code: 'EVT' },
 ];
@@ -196,6 +198,7 @@ export default function AdminPage() {
             {section === 'artworks' && <ArtworksSection />}
             {section === 'featured' && <FeaturedSection />}
             {section === 'email' && <EmailSection userEmail={user.email} />}
+            {section === 'campaigns' && <EmailCampaignsSection />}
             {section === 'artspaces' && (
               <SimpleTableSection
                 title="Art Spaces"
