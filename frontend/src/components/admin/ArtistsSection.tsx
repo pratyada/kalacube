@@ -63,12 +63,12 @@ export default function ArtistsSection() {
             {total === 1 ? '' : 's'}
           </p>
         </div>
-        <div className="flex flex-wrap items-center gap-3">
+        <div className="flex w-full flex-wrap items-center gap-3 sm:w-auto">
           <input
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             placeholder="Search name, username, email…"
-            className={cx(ui.input, 'w-72')}
+            className={cx(ui.input, 'w-full sm:w-72')}
           />
           <select
             value={roleFilter}
@@ -87,8 +87,8 @@ export default function ArtistsSection() {
 
       <Panel title="USER REGISTRY" bodyClassName="p-0">
         <div className="overflow-x-auto">
-          <table className="w-full">
-            <thead>
+          <table className={ui.rTable}>
+            <thead className={ui.rThead}>
               <tr>
                 <th className={ui.th}>User</th>
                 <th className={ui.th}>Email</th>
@@ -97,17 +97,23 @@ export default function ArtistsSection() {
                 <th className={ui.th}>Featured</th>
               </tr>
             </thead>
-            <tbody>
+            <tbody className={ui.rTbody}>
               {users.map((u) => (
-                <tr key={u._id} className={ui.rowHover}>
-                  <td className={ui.td}>
-                    <span className="font-medium text-[#c2d0dc]">
-                      {displayName(u)}
+                <tr key={u._id} className={cx(ui.rowHover, ui.rTr)}>
+                  <td data-label="User" className={ui.rTd}>
+                    <span className="text-left max-sm:text-right">
+                      <span className="font-medium text-[#c2d0dc]">
+                        {displayName(u)}
+                      </span>
+                      <span className={cx('block text-xs', ui.mut)}>
+                        @{u.username}
+                      </span>
                     </span>
-                    <div className={cx('text-xs', ui.mut)}>@{u.username}</div>
                   </td>
-                  <td className={cx(ui.td, ui.mut)}>{u.email}</td>
-                  <td className={ui.td}>
+                  <td data-label="Email" className={cx(ui.rTd, ui.mut)}>
+                    {u.email}
+                  </td>
+                  <td data-label="Role" className={ui.rTd}>
                     <select
                       value={u.role}
                       onChange={(e) => patch(u._id, { role: e.target.value })}
@@ -120,7 +126,7 @@ export default function ArtistsSection() {
                       ))}
                     </select>
                   </td>
-                  <td className={ui.td}>
+                  <td data-label="Active" className={ui.rTd}>
                     <button
                       onClick={() => patch(u._id, { isActive: !u.isActive })}
                       className={cx(
@@ -133,7 +139,7 @@ export default function ArtistsSection() {
                       {u.isActive ? 'Active' : 'Inactive'}
                     </button>
                   </td>
-                  <td className={ui.td}>
+                  <td data-label="Featured" className={ui.rTd}>
                     <button
                       onClick={() => patch(u._id, { isFeatured: !u.isFeatured })}
                       className={cx(
@@ -152,7 +158,7 @@ export default function ArtistsSection() {
                 <tr>
                   <td
                     colSpan={5}
-                    className={cx('px-3 py-6 text-center', ui.mut)}
+                    className={cx(ui.rTdEmpty, ui.mut)}
                   >
                     No users found.
                   </td>

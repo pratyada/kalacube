@@ -84,8 +84,8 @@ export default function AdminPage() {
   return (
     <div className={cx('min-h-screen', ui.screen)}>
       {/* top status bar */}
-      <div className="sticky top-0 z-20 flex items-center justify-between border-b border-[#132030] bg-[#070d14]/95 px-4 py-2 backdrop-blur">
-        <div className="flex items-center gap-3">
+      <div className="sticky top-0 z-20 flex items-center justify-between gap-3 border-b border-[#132030] bg-[#070d14]/95 px-3 py-2 backdrop-blur sm:px-4">
+        <div className="flex min-w-0 items-center gap-2 sm:gap-3">
           <StatusDot color="green" />
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
@@ -93,9 +93,9 @@ export default function AdminPage() {
             alt="KalaCUBE"
             width={611}
             height={515}
-            className="h-6 w-auto rounded"
+            className="h-6 w-auto shrink-0 rounded"
           />
-          <span className="text-sm font-semibold tracking-[0.3em] text-[#c2d0dc]">
+          <span className="hidden truncate text-sm font-semibold tracking-[0.3em] text-[#c2d0dc] sm:inline">
             <span className="text-[#3ef2a1]">// </span>MISSION CONTROL
           </span>
         </div>
@@ -169,24 +169,36 @@ export default function AdminPage() {
         {/* main */}
         <main className="min-w-0 flex-1">
           {/* mobile nav */}
-          <div className="flex gap-1 overflow-x-auto border-b border-[#132030] bg-[#070d14] px-3 py-2 md:hidden">
-            {NAV.map((n) => (
-              <button
-                key={n.key}
-                onClick={() => setSection(n.key)}
-                className={cx(
-                  'whitespace-nowrap rounded px-3 py-1.5 text-xs',
-                  section === n.key
-                    ? 'bg-[#3ef2a1]/10 text-[#3ef2a1]'
-                    : 'text-[#7d8fa0]',
-                )}
-              >
-                {n.label}
-              </button>
-            ))}
+          <div className="sticky top-[41px] z-10 flex gap-1.5 overflow-x-auto scroll-smooth border-b border-[#132030] bg-[#070d14] px-3 py-2 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden md:hidden">
+            {NAV.map((n) => {
+              const on = section === n.key;
+              return (
+                <button
+                  key={n.key}
+                  onClick={() => setSection(n.key)}
+                  aria-current={on ? 'page' : undefined}
+                  className={cx(
+                    'flex min-h-[40px] shrink-0 items-center gap-1.5 whitespace-nowrap rounded border px-3 text-xs transition',
+                    on
+                      ? 'border-[#3ef2a1]/50 bg-[#3ef2a1]/10 text-[#3ef2a1]'
+                      : 'border-transparent text-[#7d8fa0] hover:text-[#c2d0dc]',
+                  )}
+                >
+                  <span
+                    className={cx(
+                      'text-[10px] tracking-widest',
+                      on ? 'text-[#3ef2a1]' : 'text-[#4f6577]',
+                    )}
+                  >
+                    {n.code}
+                  </span>
+                  <span>{n.label}</span>
+                </button>
+              );
+            })}
             <Link
               href="/"
-              className="ml-auto whitespace-nowrap rounded border border-[#1b2c3d] px-3 py-1.5 text-xs text-[#8fa4b6]"
+              className="flex min-h-[40px] shrink-0 items-center whitespace-nowrap rounded border border-[#1b2c3d] px-3 text-xs text-[#8fa4b6]"
             >
               ⏎ Exit
             </Link>

@@ -47,8 +47,8 @@ export default function SimpleTableSection({
 
       <Panel title={title.toUpperCase()} bodyClassName="p-0">
         <div className="overflow-x-auto">
-          <table className="w-full">
-            <thead>
+          <table className={ui.rTable}>
+            <thead className={ui.rThead}>
               <tr>
                 {columns.map((c) => (
                   <th key={c.header} className={ui.th}>
@@ -57,11 +57,14 @@ export default function SimpleTableSection({
                 ))}
               </tr>
             </thead>
-            <tbody>
+            <tbody className={ui.rTbody}>
               {rows.map((row, i) => (
-                <tr key={(row._id as string) || i} className={ui.rowHover}>
+                <tr
+                  key={(row._id as string) || i}
+                  className={cx(ui.rowHover, ui.rTr)}
+                >
                   {columns.map((c) => (
-                    <td key={c.header} className={ui.td}>
+                    <td key={c.header} data-label={c.header} className={ui.rTd}>
                       {c.render(row) || '—'}
                     </td>
                   ))}
@@ -71,7 +74,7 @@ export default function SimpleTableSection({
                 <tr>
                   <td
                     colSpan={columns.length}
-                    className={cx('px-3 py-6 text-center', ui.mut)}
+                    className={cx(ui.rTdEmpty, ui.mut)}
                   >
                     No records found.
                   </td>

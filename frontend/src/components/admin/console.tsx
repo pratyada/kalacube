@@ -13,7 +13,7 @@ export const ui = {
   screen: 'bg-[#05080c] text-[#c2d0dc] font-mono',
   panel: 'rounded-md border border-[#132030] bg-[#0a1119]',
   head:
-    'flex items-center justify-between border-b border-[#132030] px-3 py-2 ' +
+    'flex flex-wrap items-center justify-between gap-2 border-b border-[#132030] px-3 py-2 ' +
     'text-[11px] uppercase tracking-[0.25em] text-[#4f6577]',
   input:
     'w-full rounded border border-[#1b2c3d] bg-[#0a1119] px-3 py-2 text-sm ' +
@@ -34,6 +34,27 @@ export const ui = {
   th: 'px-3 py-2 text-left text-[10px] font-normal uppercase tracking-widest text-[#4f6577] border-b border-[#132030]',
   td: 'px-3 py-2 text-sm text-[#aab8c6] border-b border-[#0f1a26]',
   rowHover: 'transition hover:bg-[#0e1926]',
+  // Responsive "reflow" table: at `sm`+ it is a normal <table>; below `sm`
+  // every row collapses into a stacked label:value card so phones never need
+  // horizontal scrolling. Pair `rTd` with a `data-label` on each <td> — the
+  // label is drawn from that attribute via a ::before pseudo-element. Desktop
+  // (sm+) is completely unaffected by these tokens.
+  rTable: 'w-full max-sm:block',
+  rThead: 'max-sm:hidden',
+  rTbody: 'max-sm:block',
+  rTr:
+    'max-sm:mb-3 max-sm:block max-sm:rounded-md max-sm:border ' +
+    'max-sm:border-[#132030] max-sm:bg-[#0a1119] max-sm:p-1 last:max-sm:mb-0',
+  rTd:
+    'px-3 py-2 text-sm text-[#aab8c6] border-b border-[#0f1a26] ' +
+    'max-sm:flex max-sm:items-center max-sm:justify-between max-sm:gap-4 ' +
+    'max-sm:border-b-0 max-sm:px-3 max-sm:py-2 max-sm:text-right ' +
+    'max-sm:[overflow-wrap:anywhere] ' +
+    'max-sm:before:content-[attr(data-label)] max-sm:before:shrink-0 ' +
+    'max-sm:before:text-left max-sm:before:text-[10px] max-sm:before:font-normal ' +
+    'max-sm:before:uppercase max-sm:before:tracking-widest max-sm:before:text-[#4f6577] ' +
+    'max-sm:not-last:border-b max-sm:not-last:border-[#0f1a26]',
+  rTdEmpty: 'px-3 py-6 text-center max-sm:block',
   green: 'text-[#3ef2a1]',
   amber: 'text-[#f5c451]',
   cyan: 'text-[#5cc8ff]',

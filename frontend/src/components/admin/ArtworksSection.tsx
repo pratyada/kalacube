@@ -68,12 +68,12 @@ export default function ArtworksSection() {
             {total === 1 ? '' : 's'}
           </p>
         </div>
-        <div className="flex flex-wrap items-center gap-3">
+        <div className="flex w-full flex-wrap items-center gap-3 sm:w-auto">
           <input
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             placeholder="Search by title…"
-            className={cx(ui.input, 'w-72')}
+            className={cx(ui.input, 'w-full sm:w-72')}
           />
           <select
             value={statusFilter}
@@ -92,8 +92,8 @@ export default function ArtworksSection() {
 
       <Panel title="ARTWORK CATALOG" bodyClassName="p-0">
         <div className="overflow-x-auto">
-          <table className="w-full">
-            <thead>
+          <table className={ui.rTable}>
+            <thead className={ui.rThead}>
               <tr>
                 <th className={ui.th}>Thumb</th>
                 <th className={ui.th}>Artwork</th>
@@ -102,10 +102,10 @@ export default function ArtworksSection() {
                 <th className={ui.th}></th>
               </tr>
             </thead>
-            <tbody>
+            <tbody className={ui.rTbody}>
               {items.map((w) => (
-                <tr key={w._id} className={ui.rowHover}>
-                  <td className={ui.td}>
+                <tr key={w._id} className={cx(ui.rowHover, ui.rTr)}>
+                  <td data-label="Thumb" className={ui.rTd}>
                     {w.images && w.images[0] ? (
                       // eslint-disable-next-line @next/next/no-img-element
                       <img
@@ -119,13 +119,16 @@ export default function ArtworksSection() {
                       </div>
                     )}
                   </td>
-                  <td className={cx(ui.td, 'font-medium text-[#c2d0dc]')}>
+                  <td
+                    data-label="Artwork"
+                    className={cx(ui.rTd, 'font-medium text-[#c2d0dc]')}
+                  >
                     {w.title || 'Untitled'}
                   </td>
-                  <td className={cx(ui.td, ui.mut)}>
+                  <td data-label="Artist" className={cx(ui.rTd, ui.mut)}>
                     {w.artist ? displayName(w.artist) : '—'}
                   </td>
-                  <td className={ui.td}>
+                  <td data-label="Status" className={ui.rTd}>
                     <select
                       value={w.status || ''}
                       onChange={(e) => setStatus(w._id, e.target.value)}
@@ -139,7 +142,7 @@ export default function ArtworksSection() {
                       ))}
                     </select>
                   </td>
-                  <td className={ui.td}>
+                  <td data-label="Actions" className={ui.rTd}>
                     <button
                       onClick={() => remove(w._id)}
                       className={ui.btnDanger}
@@ -153,7 +156,7 @@ export default function ArtworksSection() {
                 <tr>
                   <td
                     colSpan={5}
-                    className={cx('px-3 py-6 text-center', ui.mut)}
+                    className={cx(ui.rTdEmpty, ui.mut)}
                   >
                     No artworks found.
                   </td>

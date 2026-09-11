@@ -226,14 +226,14 @@ export default function EmailCampaignsSection() {
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             placeholder="filter email / name…"
-            className={cx(ui.input, 'w-56 !py-1 text-xs')}
+            className={cx(ui.input, 'w-full !py-1 text-xs sm:w-56')}
           />
         }
         bodyClassName="p-0"
       >
         <div className="overflow-x-auto">
-          <table className="w-full border-collapse">
-            <thead>
+          <table className={cx(ui.rTable, 'border-collapse')}>
+            <thead className={ui.rThead}>
               <tr>
                 <th className={ui.th}>Email</th>
                 <th className={ui.th}>Name</th>
@@ -243,25 +243,35 @@ export default function EmailCampaignsSection() {
                 <th className={cx(ui.th, 'text-right')}>Opens</th>
               </tr>
             </thead>
-            <tbody>
+            <tbody className={ui.rTbody}>
               {recipients.length === 0 ? (
                 <tr>
                   <td
                     colSpan={6}
-                    className="px-3 py-8 text-center text-sm text-[#5f7285]"
+                    className={cx(ui.rTdEmpty, 'py-8 text-sm text-[#5f7285]')}
                   >
                     {loading ? '▸ loading telemetry…' : 'no recipients on this campaign'}
                   </td>
                 </tr>
               ) : (
                 recipients.map((r) => (
-                  <tr key={r.email} className={ui.rowHover}>
-                    <td className={cx(ui.td, 'text-[#c2d0dc]')}>{r.email}</td>
-                    <td className={ui.td}>{r.name || '—'}</td>
-                    <td className={cx(ui.td, 'tabular-nums')}>
+                  <tr key={r.email} className={cx(ui.rowHover, ui.rTr)}>
+                    <td
+                      data-label="Email"
+                      className={cx(ui.rTd, 'text-[#c2d0dc]')}
+                    >
+                      {r.email}
+                    </td>
+                    <td data-label="Name" className={ui.rTd}>
+                      {r.name || '—'}
+                    </td>
+                    <td
+                      data-label="Sent At"
+                      className={cx(ui.rTd, 'tabular-nums')}
+                    >
                       {fmtTime(r.sentAt)}
                     </td>
-                    <td className={ui.td}>
+                    <td data-label="Status" className={ui.rTd}>
                       {r.opened ? (
                         <span className="inline-flex items-center gap-1.5 rounded-full border border-[#3ef2a1]/40 bg-[#3ef2a1]/10 px-2 py-0.5 text-[10px] uppercase tracking-widest text-[#3ef2a1]">
                           <StatusDot color="green" /> opened
@@ -273,10 +283,16 @@ export default function EmailCampaignsSection() {
                         </span>
                       )}
                     </td>
-                    <td className={cx(ui.td, 'tabular-nums')}>
+                    <td
+                      data-label="First Open"
+                      className={cx(ui.rTd, 'tabular-nums')}
+                    >
                       {fmtTime(r.firstOpenAt)}
                     </td>
-                    <td className={cx(ui.td, 'text-right tabular-nums')}>
+                    <td
+                      data-label="Opens"
+                      className={cx(ui.rTd, 'text-right tabular-nums')}
+                    >
                       {r.openCount}
                     </td>
                   </tr>

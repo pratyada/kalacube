@@ -215,8 +215,8 @@ export default function EmailSection({ userEmail }: { userEmail: string }) {
       {/* History */}
       <Panel title="CAMPAIGN HISTORY" bodyClassName="p-0">
         <div className="overflow-x-auto">
-          <table className="w-full">
-            <thead>
+          <table className={ui.rTable}>
+            <thead className={ui.rThead}>
               <tr>
                 <th className={ui.th}>Subject</th>
                 <th className={ui.th}>Segment</th>
@@ -225,18 +225,28 @@ export default function EmailSection({ userEmail }: { userEmail: string }) {
                 <th className={ui.th}>Date</th>
               </tr>
             </thead>
-            <tbody>
+            <tbody className={ui.rTbody}>
               {campaigns.map((c) => (
-                <tr key={c._id} className={ui.rowHover}>
-                  <td className={cx(ui.td, 'font-medium text-[#c2d0dc]')}>
+                <tr key={c._id} className={cx(ui.rowHover, ui.rTr)}>
+                  <td
+                    data-label="Subject"
+                    className={cx(ui.rTd, 'font-medium text-[#c2d0dc]')}
+                  >
                     {c.subject}
                   </td>
-                  <td className={cx(ui.td, ui.cyan)}>{c.segment}</td>
-                  <td className={cx(ui.td, 'tabular-nums', ui.green)}>
+                  <td data-label="Segment" className={cx(ui.rTd, ui.cyan)}>
+                    {c.segment}
+                  </td>
+                  <td
+                    data-label="Recipients"
+                    className={cx(ui.rTd, 'tabular-nums', ui.green)}
+                  >
                     {c.recipientCount}
                   </td>
-                  <td className={cx(ui.td, ui.mut)}>{c.sentBy}</td>
-                  <td className={cx(ui.td, ui.mut)}>
+                  <td data-label="Sent by" className={cx(ui.rTd, ui.mut)}>
+                    {c.sentBy}
+                  </td>
+                  <td data-label="Date" className={cx(ui.rTd, ui.mut)}>
                     {c.createdAt
                       ? new Date(c.createdAt).toLocaleString()
                       : '—'}
@@ -247,7 +257,7 @@ export default function EmailSection({ userEmail }: { userEmail: string }) {
                 <tr>
                   <td
                     colSpan={5}
-                    className={cx('px-3 py-6 text-center', ui.mut)}
+                    className={cx(ui.rTdEmpty, ui.mut)}
                   >
                     No campaigns sent yet.
                   </td>
