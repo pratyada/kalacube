@@ -30,6 +30,23 @@ export function clamp(text: string, max = 158): string {
   return t.slice(0, max - 1).replace(/\s+\S*$/, '') + '…';
 }
 
+/**
+ * Build a schema.org BreadcrumbList JSON-LD object from an ordered list of
+ * [name, path] pairs. Paths are resolved against the canonical SITE origin.
+ */
+export function breadcrumbJsonLd(trail: Array<[string, string]>) {
+  return {
+    '@context': 'https://schema.org',
+    '@type': 'BreadcrumbList',
+    itemListElement: trail.map(([name, path], i) => ({
+      '@type': 'ListItem',
+      position: i + 1,
+      name,
+      item: path.startsWith('http') ? path : `${SITE}${path}`,
+    })),
+  };
+}
+
 export async function fetchArtwork(id: string): Promise<any | null> {
   try {
     const res = await fetch(

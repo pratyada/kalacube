@@ -42,6 +42,37 @@ export default function AllCategoriesPage() {
         </p>
       </header>
 
+      <section className="mx-auto max-w-5xl px-4 pt-10 sm:px-6">
+        <h2 className="font-serif text-2xl">Traditional Indian art styles</h2>
+        <p className="mt-3 max-w-3xl text-neutral-600">
+          India&apos;s folk and classical traditions each carry the story of a
+          region and its makers. Here are some of the styles you can discover on
+          KalaCUBE — every piece an original, made by human hands.
+        </p>
+        <div className="mt-6 grid gap-4 sm:grid-cols-2">
+          {[
+            { name: 'Madhubani (Mithila)', desc: 'Bright, symbolic line painting from Bihar, filling every space with nature and myth.' },
+            { name: 'Pichwai', desc: 'Devotional cloth paintings of Krishna from Nathdwara, Rajasthan, rich in detail and gold.' },
+            { name: 'Warli', desc: 'White tribal painting from Maharashtra built from simple circles, triangles and lines.' },
+            { name: 'Gond', desc: 'Vivid dot-and-line storytelling art of the Gond community of central India.' },
+            { name: 'Pattachitra', desc: 'Intricate scroll painting from Odisha and Bengal, drawn with natural pigments.' },
+            { name: 'Kalamkari', desc: 'Hand-painted and block-printed narrative textile art from Andhra Pradesh.' },
+          ].map((s) => (
+            <div key={s.name} className="rounded-2xl border border-neutral-200 bg-white p-5">
+              <h3 className="font-serif text-lg text-[#0b1f52]">{s.name}</h3>
+              <p className="mt-2 text-sm leading-relaxed text-neutral-600">{s.desc}</p>
+            </div>
+          ))}
+        </div>
+        <p className="mt-6 text-sm text-neutral-600">
+          Looking for a particular tradition?{' '}
+          <Link href="/explore" className="font-medium text-[#202f9a] hover:underline">
+            Browse original work in the gallery
+          </Link>
+          .
+        </p>
+      </section>
+
       <section className="mx-auto max-w-6xl px-4 py-10 sm:px-6">
         {loading ? (
           <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">

@@ -1,19 +1,33 @@
 import type { Metadata } from 'next';
+import { breadcrumbJsonLd } from '@/lib/seo';
 
 export const metadata: Metadata = {
-  title: 'Categories',
+  title: 'Indian Art Styles & Categories',
   description:
-    "Explore India's art by category — painting, photography, jewellery, textiles, sculpture and more across Handicraft, Visual Art and Performing Arts on KalaCUBE.",
+    "Explore India's art by style and category — Madhubani, Pichwai, Warli and Gond to painting, photography, jewellery, textiles and sculpture — on KalaCUBE.",
   alternates: { canonical: '/all-categories' },
   openGraph: {
-    title: 'Categories — KalaCUBE',
+    title: 'Indian Art Styles & Categories — KalaCUBE',
     description:
-      "Explore India's art by category across Handicraft, Visual Art and Performing Arts.",
+      "Explore India's art by style and category across Handicraft, Visual Art and Performing Arts.",
     url: '/all-categories',
     type: 'website',
   },
 };
 
+const jsonLd = breadcrumbJsonLd([
+  ['Home', '/'],
+  ['Categories', '/all-categories'],
+]);
+
 export default function CategoriesLayout({ children }: { children: React.ReactNode }) {
-  return children;
+  return (
+    <>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+      />
+      {children}
+    </>
+  );
 }

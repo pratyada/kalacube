@@ -67,7 +67,15 @@ export default async function ArtworkLayout({
       '@type': 'VisualArtwork',
       name: title,
       url,
-      ...(art.images?.length ? { image: art.images } : {}),
+      ...(art.images?.length
+        ? {
+            image: art.images.map((src: string) => ({
+              '@type': 'ImageObject',
+              contentUrl: src,
+              ...(art.title ? { caption: art.title } : {}),
+            })),
+          }
+        : {}),
       ...(art.description ? { description: art.description } : {}),
       ...(art.medium ? { artMedium: art.medium } : {}),
       ...(art.material ? { artworkSurface: art.material } : {}),

@@ -163,6 +163,64 @@ export default function Home() {
         </div>
       </section>
 
+      {/* ===== Why KalaCUBE — AEO / artists in the AI age ===== */}
+      <section className="border-t border-neutral-200 bg-white">
+        <div className="mx-auto max-w-5xl px-6 py-20">
+          <motion.div variants={fadeUp} initial="hidden" whileInView="show" viewport={{ once: true, amount: 0.3 }}>
+            <p className="text-xs uppercase tracking-[0.4em] text-[#202f9a]">Why KalaCUBE</p>
+            <h2 className="mt-4 font-serif text-3xl leading-tight md:text-4xl">
+              A home for India&apos;s artists in the age of AI
+            </h2>
+            <p className="mt-5 max-w-3xl text-lg leading-relaxed text-neutral-700">
+              As screens fill with AI-generated images, original, human-made art
+              matters more than ever. KalaCUBE gives Indian artists, creators and
+              artisans a place to build a portfolio, showcase and sell their work,
+              and be discovered by people who specifically want art made by human
+              hands — across Handicraft, Visual Art and Performing Arts.
+            </p>
+          </motion.div>
+
+          <div className="mt-12 grid gap-6 md:grid-cols-3">
+            {[
+              {
+                h: 'How do I showcase my art online?',
+                b: 'Create a free profile, upload your work, and get a ready-made online portfolio you can share anywhere — no website needed. Your pieces appear in the gallery for collectors to discover.',
+                cta: 'Showcase your art',
+                href: '/all-artist',
+              },
+              {
+                h: 'What should artists do in the AI age?',
+                b: 'Lean into what only human hands can make — original, culturally rooted work with a story. On KalaCUBE, that authenticity is the whole point, and it is what keeps you discoverable.',
+                cta: 'Read the FAQs',
+                href: '/faqs',
+              },
+              {
+                h: 'Where can I buy original Indian art?',
+                b: 'Explore the gallery to discover original work — from Madhubani, Pichwai, Warli and Gond to photography and sculpture — and connect directly with the artist who made it.',
+                cta: 'Explore the gallery',
+                href: '/explore',
+              },
+            ].map((c, i) => (
+              <motion.div
+                key={c.h}
+                custom={i}
+                variants={fadeUp}
+                initial="hidden"
+                whileInView="show"
+                viewport={{ once: true, amount: 0.3 }}
+                className="flex flex-col rounded-2xl border border-neutral-200 bg-[#faf7f2] p-6"
+              >
+                <h3 className="font-serif text-lg leading-snug text-[#0b1f52]">{c.h}</h3>
+                <p className="mt-3 flex-1 text-sm leading-relaxed text-neutral-600">{c.b}</p>
+                <Link href={c.href} className="mt-4 text-sm font-semibold text-[#202f9a] hover:underline">
+                  {c.cta} →
+                </Link>
+              </motion.div>
+            ))}
+          </div>
+        </div>
+      </section>
+
       {/* ===== Our Story ===== */}
       <section className="border-t border-neutral-200 bg-[#eef1ff]">
         <div className="mx-auto max-w-5xl px-6 py-24">
