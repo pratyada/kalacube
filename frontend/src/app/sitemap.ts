@@ -23,17 +23,21 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     fetchArtworksList(1000),
   ]);
 
+  // Percent-encode dynamic path segments so special characters (e.g. a username
+  // like "ruffle&clay") produce valid URLs and don't break the sitemap XML.
+  const enc = (s: string) => encodeURIComponent(String(s));
+
   const artistRoutes: MetadataRoute.Sitemap = artists
     .filter((a: any) => a?.username)
     .flatMap((a: any) => [
       {
-        url: `${SITE}/artist/${a.username}`,
+        url: `${SITE}/artist/${enc(a.username)}`,
         lastModified: now,
         changeFrequency: 'weekly' as const,
         priority: 0.8,
       },
       {
-        url: `${SITE}/blog/${a.username}`,
+        url: `${SITE}/blog/${enc(a.username)}`,
         lastModified: now,
         changeFrequency: 'monthly' as const,
         priority: 0.6,
@@ -43,7 +47,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const artworkRoutes: MetadataRoute.Sitemap = artworks
     .filter((w: any) => w?._id)
     .map((w: any) => ({
-      url: `${SITE}/art-work/${w._id}`,
+      url: `${SITE}/art-work/${enc(w._id)}`,
       lastModified: now,
       changeFrequency: 'monthly' as const,
       priority: 0.6,
