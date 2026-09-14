@@ -16,6 +16,7 @@
 - [Artists](https://kalacube.com/all-artist): Discover artists and their portfolios.
 - [Categories](https://kalacube.com/all-categories): Browse art by style and category.
 - [Journal](https://kalacube.com/blog): Stories of India's artists and handmade art.
+- [AI and the Future of Human Art](https://kalacube.com/blog/ai-and-the-future-of-human-art): Why human-made art, and platforms that support real artists, matter in the age of AI.
 - [Events](https://kalacube.com/events): Exhibitions, live demos, and workshops (coming soon).
 - [FAQs](https://kalacube.com/faqs): Answers for artists and buyers.
 
