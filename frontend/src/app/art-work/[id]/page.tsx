@@ -74,12 +74,6 @@ export default function ArtworkPage() {
                 <dd>{art.dimensions?.height} × {art.dimensions?.width}</dd></div>
             )}
           </dl>
-
-          {art.imagePrefix && (
-            <p className="mt-8 rounded-lg border border-neutral-200 bg-white p-3 text-xs text-neutral-500">
-              Image source: <code className="text-neutral-600">{art.imagePrefix}</code> (S3 wiring pending)
-            </p>
-          )}
         </div>
       </div>
     </main>

@@ -1,0 +1,26 @@
+# KalaCUBE
+
+> KalaCUBE is a home for India's artists — an online platform and marketplace to discover, showcase, and buy original Indian art across Handicraft, Visual Art, and Performing Arts. Art Lives Here.
+
+## What KalaCUBE does
+
+- Showcases artist portfolios and original artworks from artists across India.
+- Lets visitors browse and buy original art by art style, category, and medium.
+- Gives artists a home to build a portfolio, tell their story, and reach an audience.
+- Organizes work across three dimensions: Handicraft, Visual Art, and Performing Arts.
+
+## Key pages
+
+- [Home](https://kalacube.com): Overview of KalaCUBE and featured work.
+- [Explore the Gallery](https://kalacube.com/explore): Browse all original artworks, filter by art type, and search.
+- [Artists](https://kalacube.com/all-artist): Discover artists and their portfolios.
+- [Categories](https://kalacube.com/all-categories): Browse art by style and category.
+- [Journal](https://kalacube.com/blog): Stories of India's artists and handmade art.
+- [Events](https://kalacube.com/events): Exhibitions, live demos, and workshops (coming soon).
+- [FAQs](https://kalacube.com/faqs): Answers for artists and buyers.
+
+## Join & contact
+
+- [Join KalaCUBE](https://kalacube.com/auth/register): Create an artist account.
+- [Sign in](https://kalacube.com/auth/login): Access your account.
+- For questions, see the [FAQs](https://kalacube.com/faqs).

@@ -18,7 +18,7 @@ export async function generateMetadata({
 }): Promise<Metadata> {
   const { slug } = await params;
   const data = await fetchArtist(slug);
-  if (!data) return { title: 'Artist not found — KalaCUBE Journal' };
+  if (!data) return { title: { absolute: 'Artist not found — KalaCUBE Journal' } };
   const { user, profile, artworks } = data;
   const name = `${user.firstName || ''} ${user.lastName || ''}`.trim() || user.username;
   const desc =
@@ -26,13 +26,15 @@ export async function generateMetadata({
     `Explore the portfolio of ${name} on KalaCUBE — ${artworks.length} original works across ${(profile?.artDimensions || []).map((d: string) => DIMENSION_LABEL[d] || d).join(', ') || 'art'}.`;
   const image = user.avatar?.url || artworks.find((a: any) => a.images?.[0])?.images?.[0];
   return {
-    title: `${name} — Artist Portfolio | KalaCUBE`,
+    title: { absolute: `${name} — Artist Portfolio — KalaCUBE` },
     description: desc,
-    alternates: { canonical: `${SITE}/blog/${user.username}` },
+    // Canonical points to the artist page: /blog/{slug} and /artist/{slug}
+    // render the same portfolio, so consolidate ranking signals there.
+    alternates: { canonical: `${SITE}/artist/${user.username}` },
     openGraph: {
-      title: `${name} — Artist Portfolio | KalaCUBE`,
+      title: `${name} — Artist Portfolio — KalaCUBE`,
       description: desc,
-      url: `${SITE}/blog/${user.username}`,
+      url: `${SITE}/artist/${user.username}`,
       type: 'profile',
       images: image ? [{ url: image }] : [],
     },
