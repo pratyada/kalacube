@@ -36,15 +36,15 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const artistRoutes: MetadataRoute.Sitemap = artists
     .filter((a: any) => a?.username)
     .flatMap((a: any) => [
+      // No reliable per-artist timestamp from the API — omit lastModified
+      // rather than stamp a misleading "now" on every artist page.
       {
         url: `${SITE}/artist/${enc(a.username)}`,
-        lastModified: now,
         changeFrequency: 'weekly' as const,
         priority: 0.8,
       },
       {
         url: `${SITE}/blog/${enc(a.username)}`,
-        lastModified: now,
         changeFrequency: 'monthly' as const,
         priority: 0.6,
       },
@@ -54,7 +54,8 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     .filter((w: any) => w?._id)
     .map((w: any) => ({
       url: `${SITE}/art-work/${enc(w._id)}`,
-      lastModified: now,
+      // Real per-artwork date so the sitemap signal is honest (not "always now").
+      lastModified: w.createdAt ? new Date(w.createdAt) : now,
       changeFrequency: 'monthly' as const,
       priority: 0.6,
       ...(w.images?.[0] ? { images: [w.images[0] as string] } : {}),
