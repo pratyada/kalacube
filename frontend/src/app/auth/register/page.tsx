@@ -81,7 +81,10 @@ export default function RegisterPage() {
         role,
       });
       await useAuthStore.getState().fetchUser();
-      router.push('/dashboard');
+      // New artists land in the short guided activation flow (art dimensions,
+      // headline, statement) that ends on their live shareable page. It's fully
+      // skippable — they can reach the dashboard anytime.
+      router.push('/onboarding');
     } catch (err: unknown) {
       setError((err as Error)?.message || 'Invalid confirmation code');
     } finally {
