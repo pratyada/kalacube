@@ -16,6 +16,8 @@ import { AdminModule } from './admin/admin.module';
 import { ArtworkModule } from './artwork/artwork.module';
 import { S3Module } from './s3/s3.module';
 import { EmailModule } from './email/email.module';
+import { EmailTrackingModule } from './email-tracking/email-tracking.module';
+import { EnquiryModule } from './enquiry/enquiry.module';
 
 @Module({
   imports: [
@@ -65,6 +67,8 @@ import { EmailModule } from './email/email.module';
     ArtworkModule,
     S3Module,
     EmailModule,
+    EmailTrackingModule,
+    EnquiryModule,
   ],
   providers: [
     { provide: APP_GUARD, useClass: JwtAuthGuard },
