@@ -10,6 +10,14 @@ const DIMENSIONS = [
   { href: '/events', label: 'Events' },
 ];
 
+const LEGAL = [
+  { href: '/contact', label: 'Contact Us' },
+  { href: '/privacy', label: 'Privacy Policy' },
+  { href: '/terms', label: 'Terms & Conditions' },
+  { href: '/refund-policy', label: 'Refund & Cancellation' },
+  { href: '/shipping-policy', label: 'Shipping Policy' },
+];
+
 export default function Footer() {
   const pathname = usePathname();
   // Hidden inside the full-screen admin console.
@@ -17,7 +25,7 @@ export default function Footer() {
 
   return (
     <footer className="bg-navy-deep text-white/70">
-      <div className="mx-auto grid max-w-7xl gap-8 px-6 py-16 md:grid-cols-4">
+      <div className="mx-auto grid max-w-7xl gap-8 px-6 py-16 md:grid-cols-5">
         <div className="md:col-span-2">
           <Link href="/" className="inline-flex items-center" aria-label="KalaCUBE — Art Lives Here">
             {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -60,6 +68,17 @@ export default function Footer() {
             <li><Link href="/auth/register" className="transition hover:text-yellow">Join KalaCUBE</Link></li>
             <li><Link href="/auth/login" className="transition hover:text-yellow">Sign in</Link></li>
             <li><Link href="/faqs" className="transition hover:text-yellow">FAQs</Link></li>
+          </ul>
+        </div>
+
+        <div>
+          <h4 className="font-semibold text-white">Legal</h4>
+          <ul className="mt-4 space-y-2.5 text-sm">
+            {LEGAL.map((l) => (
+              <li key={l.href}>
+                <Link href={l.href} className="transition hover:text-yellow">{l.label}</Link>
+              </li>
+            ))}
           </ul>
         </div>
       </div>

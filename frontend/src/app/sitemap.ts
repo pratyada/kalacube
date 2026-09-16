@@ -17,6 +17,11 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     { url: `${SITE}/blog/ai-and-the-future-of-human-art`, lastModified: now, changeFrequency: 'monthly', priority: 0.7 },
     { url: `${SITE}/events`, lastModified: now, changeFrequency: 'monthly', priority: 0.4 },
     { url: `${SITE}/faqs`, lastModified: now, changeFrequency: 'monthly', priority: 0.5 },
+    { url: `${SITE}/contact`, lastModified: now, changeFrequency: 'yearly', priority: 0.4 },
+    { url: `${SITE}/privacy`, lastModified: now, changeFrequency: 'yearly', priority: 0.3 },
+    { url: `${SITE}/terms`, lastModified: now, changeFrequency: 'yearly', priority: 0.3 },
+    { url: `${SITE}/refund-policy`, lastModified: now, changeFrequency: 'yearly', priority: 0.3 },
+    { url: `${SITE}/shipping-policy`, lastModified: now, changeFrequency: 'yearly', priority: 0.3 },
   ];
 
   const [artists, artworks] = await Promise.all([
