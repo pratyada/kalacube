@@ -41,7 +41,7 @@ export default function PrivacyPolicyPage() {
             KalaCUBE (&ldquo;KalaCUBE&rdquo;, &ldquo;we&rdquo;, &ldquo;us&rdquo;, &ldquo;our&rdquo;) is an online platform where
             Indian artists build portfolios, showcase and sell original art and prints, and where
             buyers discover and purchase art. KalaCUBE is a product operated by{' '}
-            <strong>NETAVON</strong> [NETAVON — REGISTERED LEGAL NAME]. This Privacy Policy explains
+            <strong>Netavon Pvt Ltd</strong>. This Privacy Policy explains
             what personal data we collect, how we use it, who we share it with, and the choices and
             rights you have. By using KalaCUBE you agree to the practices described here.
           </p>

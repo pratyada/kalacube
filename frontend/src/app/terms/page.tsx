@@ -41,7 +41,7 @@ export default function TermsPage() {
             These Terms &amp; Conditions (&ldquo;Terms&rdquo;) govern your access to and use of KalaCUBE,
             an online platform where Indian artists build portfolios, showcase and sell original art and
             prints, and where buyers discover and purchase art. KalaCUBE is a product operated by{' '}
-            <strong>NETAVON</strong> [NETAVON — REGISTERED LEGAL NAME] (&ldquo;KalaCUBE&rdquo;,
+            <strong>Netavon Pvt Ltd</strong> (&ldquo;KalaCUBE&rdquo;,
             &ldquo;we&rdquo;, &ldquo;us&rdquo;, &ldquo;our&rdquo;). Please read them carefully.
           </p>
         </section>

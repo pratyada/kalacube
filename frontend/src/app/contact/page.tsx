@@ -70,15 +70,11 @@ export default function ContactPage() {
           <dl className="mt-3 space-y-3 text-sm leading-relaxed text-neutral-600">
             <div>
               <dt className="font-semibold text-neutral-800">Location</dt>
-              <dd>Dehradun, India</dd>
+              <dd>Dehradun, Uttarakhand, India</dd>
             </div>
             <div>
               <dt className="font-semibold text-neutral-800">Registered address</dt>
-              <dd>[REGISTERED ADDRESS]</dd>
-            </div>
-            <div>
-              <dt className="font-semibold text-neutral-800">Phone</dt>
-              <dd>[SUPPORT PHONE]</dd>
+              <dd>Netavon Pvt Ltd, Dehradun, Uttarakhand, India</dd>
             </div>
             <div>
               <dt className="font-semibold text-neutral-800">Response time</dt>
@@ -88,7 +84,7 @@ export default function ContactPage() {
         </div>
 
         <p className="mt-6 text-center text-sm text-neutral-500">
-          KalaCUBE is a product operated by NETAVON [NETAVON — REGISTERED LEGAL NAME]. Payments are
+          KalaCUBE is a product operated by Netavon Pvt Ltd. Payments are
           processed by Razorpay and settle to NETAVON.
         </p>
       </section>

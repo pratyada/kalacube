@@ -39,7 +39,7 @@ export default function RefundPolicyPage() {
         <section className="space-y-3">
           <p>
             This policy explains cancellations and refunds for KalaCUBE, operated by{' '}
-            <strong>NETAVON</strong> [NETAVON — REGISTERED LEGAL NAME]. It covers two things: paid{' '}
+            <strong>Netavon Pvt Ltd</strong>. It covers two things: paid{' '}
             <strong>subscriptions</strong>, and purchases of <strong>artwork and prints</strong> made
             through the platform. Payments and refunds are processed through Razorpay.
           </p>

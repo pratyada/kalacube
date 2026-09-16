@@ -39,7 +39,7 @@ export default function ShippingPolicyPage() {
         <section className="space-y-3">
           <p>
             This Shipping Policy explains how artwork and prints purchased on KalaCUBE (operated by{' '}
-            <strong>NETAVON</strong> [NETAVON — REGISTERED LEGAL NAME]) are delivered. Timelines below are
+            <strong>Netavon Pvt Ltd</strong>) are delivered. Timelines below are
             estimates and may vary with the artist&rsquo;s location, the item, and courier conditions.
           </p>
         </section>
