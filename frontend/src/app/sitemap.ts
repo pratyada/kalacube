@@ -13,6 +13,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     { url: `${SITE}/explore`, lastModified: now, changeFrequency: 'daily', priority: 0.9 },
     { url: `${SITE}/all-artist`, lastModified: now, changeFrequency: 'daily', priority: 0.9 },
     { url: `${SITE}/all-categories`, lastModified: now, changeFrequency: 'weekly', priority: 0.7 },
+    { url: `${SITE}/roadmap`, lastModified: now, changeFrequency: 'monthly', priority: 0.6 },
     { url: `${SITE}/blog`, lastModified: now, changeFrequency: 'weekly', priority: 0.7 },
     { url: `${SITE}/blog/ai-and-the-future-of-human-art`, lastModified: now, changeFrequency: 'monthly', priority: 0.7 },
     { url: `${SITE}/events`, lastModified: now, changeFrequency: 'monthly', priority: 0.4 },
