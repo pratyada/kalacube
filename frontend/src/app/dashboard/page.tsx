@@ -89,6 +89,18 @@ export default function DashboardPage() {
             </Link>
 
             <Link
+              href="/dashboard/enquiries"
+              className="bg-white border border-gray-200 rounded-xl p-5 hover:shadow-sm transition"
+            >
+              <h3 className="font-semibold text-navy mb-1">
+                Enquiries
+              </h3>
+              <p className="text-sm text-gray-500">
+                See who wants to buy or connect
+              </p>
+            </Link>
+
+            <Link
               href="/explore"
               className="bg-white border border-gray-200 rounded-xl p-5 hover:shadow-sm transition"
             >

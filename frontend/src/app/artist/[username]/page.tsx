@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { useParams } from 'next/navigation';
 import api from '@/lib/api';
+import EnquiryModal from '@/components/EnquiryModal';
 
 const DIMENSION_LABEL: Record<string, string> = {
   handicraft: 'Handicraft',
@@ -24,6 +25,7 @@ export default function ArtistPage() {
   const { username } = useParams<{ username: string }>();
   const [data, setData] = useState<any>(null);
   const [status, setStatus] = useState<'loading' | 'ok' | 'notfound'>('loading');
+  const [contactOpen, setContactOpen] = useState(false);
 
   useEffect(() => {
     if (!username) return;
@@ -75,6 +77,13 @@ export default function ArtistPage() {
                 </p>
               )}
             </div>
+            <button
+              type="button"
+              onClick={() => setContactOpen(true)}
+              className="ml-auto rounded-lg bg-[#0b1f52] px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-[#071738]"
+            >
+              Contact artist
+            </button>
           </div>
 
           {profile?.headline && (
@@ -130,6 +139,14 @@ export default function ArtistPage() {
           </div>
         )}
       </section>
+
+      <EnquiryModal
+        open={contactOpen}
+        onClose={() => setContactOpen(false)}
+        artistUsername={user.username}
+        artistName={name}
+        intent="enquiry"
+      />
     </main>
   );
 }
