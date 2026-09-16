@@ -31,6 +31,30 @@ export default function AllCategoriesPage() {
 
   const domains = Array.from(new Set(categories.map((c) => c.domain)));
 
+  // Lookup: specialist name (lowercased) → its domain/category/name, so the
+  // editorial "traditional styles" cards can deep-link into a pre-filtered
+  // gallery only when that style actually has inventory.
+  const specialistIndex = new Map<
+    string,
+    { domain: string; category: string; name: string }
+  >();
+  for (const c of categories) {
+    for (const s of c.specialists) {
+      const key = s.name.trim().toLowerCase();
+      if (!specialistIndex.has(key))
+        specialistIndex.set(key, { domain: c.domain, category: c.category, name: s.name });
+    }
+  }
+  const styleFilterHref = (styleName: string) => {
+    // "Madhubani (Mithila)" → "madhubani"
+    const base = styleName.replace(/\s*\(.*\)\s*/g, '').trim().toLowerCase();
+    const match = specialistIndex.get(base);
+    if (!match) return null;
+    return `/explore?domain=${encodeURIComponent(match.domain)}&category=${encodeURIComponent(
+      match.category,
+    )}&specialist=${encodeURIComponent(match.name)}`;
+  };
+
   return (
     <main className="min-h-screen bg-[#faf7f2] text-neutral-900">
       <header className="border-b border-neutral-200 px-6 py-10 text-center sm:py-14">
@@ -57,12 +81,33 @@ export default function AllCategoriesPage() {
             { name: 'Gond', desc: 'Vivid dot-and-line storytelling art of the Gond community of central India.' },
             { name: 'Pattachitra', desc: 'Intricate scroll painting from Odisha and Bengal, drawn with natural pigments.' },
             { name: 'Kalamkari', desc: 'Hand-painted and block-printed narrative textile art from Andhra Pradesh.' },
-          ].map((s) => (
-            <div key={s.name} className="rounded-2xl border border-neutral-200 bg-white p-5">
-              <h3 className="font-serif text-lg text-[#0b1f52]">{s.name}</h3>
-              <p className="mt-2 text-sm leading-relaxed text-neutral-600">{s.desc}</p>
-            </div>
-          ))}
+          ].map((s) => {
+            const href = styleFilterHref(s.name);
+            const cardClass =
+              'rounded-2xl border border-neutral-200 bg-white p-5';
+            const body = (
+              <>
+                <h3 className="font-serif text-lg text-[#0b1f52]">{s.name}</h3>
+                <p className="mt-2 text-sm leading-relaxed text-neutral-600">{s.desc}</p>
+              </>
+            );
+            return href ? (
+              <Link
+                key={s.name}
+                href={href}
+                className={`${cardClass} block transition hover:-translate-y-0.5 hover:border-[#202f9a]/40 hover:shadow-sm`}
+              >
+                {body}
+                <span className="mt-3 inline-block text-xs font-medium text-[#202f9a]">
+                  View {s.name.replace(/\s*\(.*\)\s*/g, '').trim()} artworks →
+                </span>
+              </Link>
+            ) : (
+              <div key={s.name} className={cardClass}>
+                {body}
+              </div>
+            );
+          })}
         </div>
         <p className="mt-6 text-sm text-neutral-600">
           Looking for a particular tradition?{' '}
@@ -97,7 +142,9 @@ export default function AllCategoriesPage() {
                     .map((c) => (
                       <Link
                         key={c.category}
-                        href="/explore"
+                        href={`/explore?domain=${encodeURIComponent(
+                          c.domain,
+                        )}&category=${encodeURIComponent(c.category)}`}
                         className="group rounded-2xl border border-neutral-200 bg-white p-5 transition hover:-translate-y-0.5 hover:border-[#202f9a]/40 hover:shadow-sm"
                       >
                         <h3 className="font-serif text-lg leading-tight">{c.category}</h3>

@@ -105,21 +105,29 @@ export default function LoginPage() {
                 onChange={(e) => setEmail(e.target.value)}
                 required
                 autoComplete="username"
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-rose-500 focus:border-transparent outline-none"
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#202f9a] focus:border-transparent outline-none"
                 placeholder="you@example.com or username"
               />
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Password
-              </label>
+              <div className="mb-1 flex items-center justify-between">
+                <label className="block text-sm font-medium text-gray-700">
+                  Password
+                </label>
+                <Link
+                  href="/auth/forgot-password"
+                  className="text-sm font-medium text-[#202f9a] hover:underline"
+                >
+                  Forgot password?
+                </Link>
+              </div>
               <input
                 type="password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 required
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-rose-500 focus:border-transparent outline-none"
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#202f9a] focus:border-transparent outline-none"
                 placeholder="Enter your password"
               />
             </div>
@@ -127,7 +135,7 @@ export default function LoginPage() {
             <button
               type="submit"
               disabled={loading}
-              className="w-full bg-rose-500 text-white py-2.5 rounded-lg font-semibold hover:bg-rose-600 transition disabled:opacity-50"
+              className="w-full bg-[#0b1f52] text-white py-2.5 rounded-lg font-semibold hover:bg-[#202f9a] transition disabled:opacity-50"
             >
               {loading ? 'Signing in...' : 'Sign In'}
             </button>
@@ -135,10 +143,10 @@ export default function LoginPage() {
         </div>
 
         <p className="text-center mt-6 text-sm text-gray-500">
-          New to kalaCUBE?{' '}
+          New to KalaCUBE?{' '}
           <Link
             href="/auth/register"
-            className="text-rose-500 font-medium hover:text-rose-600"
+            className="text-[#202f9a] font-medium hover:underline"
           >
             Create an account
           </Link>

@@ -168,12 +168,20 @@ export default function Header() {
               )}
             </div>
           ) : (
-            <Link
-              href="/auth/login"
-              className="rounded-full border border-navy/25 px-3 py-1.5 text-sm font-semibold text-navy transition hover:bg-navy hover:text-white sm:px-4"
-            >
-              Sign in
-            </Link>
+            <div className="flex items-center gap-2 sm:gap-3">
+              <Link
+                href="/auth/login"
+                className="rounded-full border border-navy/25 px-3 py-1.5 text-sm font-semibold text-navy transition hover:bg-navy hover:text-white sm:px-4"
+              >
+                Sign in
+              </Link>
+              <Link
+                href="/auth/register"
+                className="hidden rounded-full bg-indigo px-4 py-1.5 text-sm font-semibold text-white transition hover:bg-navy sm:inline-flex"
+              >
+                Join as an artist
+              </Link>
+            </div>
           )}
 
           {/* Hamburger — mobile only */}
@@ -221,6 +229,15 @@ export default function Header() {
                 </Link>
               );
             })}
+            {!isAuthenticated && (
+              <Link
+                href="/auth/register"
+                onClick={() => setNavOpen(false)}
+                className="mt-2 rounded-full bg-indigo px-3 py-3 text-center text-base font-semibold text-white transition hover:bg-navy"
+              >
+                Join as an artist
+              </Link>
+            )}
           </div>
         </nav>
       )}

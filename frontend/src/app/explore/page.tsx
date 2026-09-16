@@ -1,7 +1,8 @@
 'use client';
 
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { Suspense, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import Link from 'next/link';
+import { useSearchParams } from 'next/navigation';
 import api from '@/lib/api';
 
 interface Artwork {
@@ -25,16 +26,50 @@ interface Category {
 
 const PAGE_SIZE = 48;
 
-export default function ExplorePage() {
+/**
+ * De-duplicate a page of artworks and spread works so the same artist doesn't
+ * appear in consecutive tiles — used only on the default (unfiltered) feed,
+ * which otherwise front-loads one artist's near-identical uploads.
+ */
+function diversify(list: Artwork[]): Artwork[] {
+  const seen = new Set<string>();
+  const unique: Artwork[] = [];
+  for (const w of list) {
+    // De-dup by id, and by an artist+title signature to catch re-uploads.
+    const sig = `${w.artist?.username || ''}::${(w.title || '').trim().toLowerCase()}`;
+    if (seen.has(w._id) || (w.title && seen.has(sig))) continue;
+    seen.add(w._id);
+    if (w.title) seen.add(sig);
+    unique.push(w);
+  }
+  // Greedy interleave: keep relative order but avoid back-to-back same artist.
+  const result: Artwork[] = [];
+  const pool = [...unique];
+  let last: string | undefined;
+  while (pool.length) {
+    let idx = pool.findIndex((w) => (w.artist?.username || w._id) !== last);
+    if (idx === -1) idx = 0;
+    const [picked] = pool.splice(idx, 1);
+    result.push(picked);
+    last = picked.artist?.username || picked._id;
+  }
+  return result;
+}
+
+function ExploreContent() {
+  const searchParams = useSearchParams();
   const [items, setItems] = useState<Artwork[]>([]);
   const [total, setTotal] = useState(0);
   const [page, setPage] = useState(1);
   const [categories, setCategories] = useState<Category[]>([]);
 
-  // The three ladder levels.
-  const [domain, setDomain] = useState('');
-  const [category, setCategory] = useState('');
-  const [specialist, setSpecialist] = useState('');
+  // The three ladder levels — seeded from the URL query so category cards can
+  // deep-link into a pre-filtered gallery (?domain=&category=&specialist=).
+  const [domain, setDomain] = useState(() => searchParams.get('domain') || '');
+  const [category, setCategory] = useState(() => searchParams.get('category') || '');
+  const [specialist, setSpecialist] = useState(
+    () => searchParams.get('specialist') || searchParams.get('style') || '',
+  );
 
   const [search, setSearch] = useState('');
   const [debounced, setDebounced] = useState('');
@@ -71,9 +106,18 @@ export default function ExplorePage() {
         });
         if (id !== reqId.current) return;
         const p = data.data || {};
-        const incoming: Artwork[] = p.items || [];
+        let incoming: Artwork[] = p.items || [];
+        // On the default, unfiltered feed, de-dup and spread artists so the
+        // first screen isn't one artist's repeated works. Filtered/search
+        // results keep the server's relevance ordering untouched.
+        const isDefault = !domain && !category && !specialist && !debounced;
+        if (isDefault) incoming = diversify(incoming);
         setTotal(p.total || 0);
-        setItems((prev) => (replace ? incoming : [...prev, ...incoming]));
+        setItems((prev) => {
+          if (replace) return incoming;
+          const seen = new Set(prev.map((w) => w._id));
+          return [...prev, ...incoming.filter((w) => !seen.has(w._id))];
+        });
         setPage(nextPage);
       } catch {
         if (id === reqId.current && replace) setItems([]);
@@ -311,5 +355,14 @@ export default function ExplorePage() {
         )}
       </section>
     </main>
+  );
+}
+
+export default function ExplorePage() {
+  // useSearchParams() requires a Suspense boundary in Next.js 16.
+  return (
+    <Suspense fallback={<div className="min-h-screen bg-[#faf7f2]" />}>
+      <ExploreContent />
+    </Suspense>
   );
 }
