@@ -40,6 +40,13 @@ provider:
           Resource:
             - arn:aws:s3:::05-202011-kalacube-artist
             - arn:aws:s3:::05-202011-kalacube-artist/*
+        # SES: allow the function to send transactional + newsletter email
+        # (from connect@kalacube.com on the verified kalacube.com identity).
+        - Effect: Allow
+          Action:
+            - ses:SendEmail
+            - ses:SendRawEmail
+          Resource: '*'
   environment:
     NODE_ENV: production
     # AWS_REGION is a RESERVED Lambda env var — the runtime injects it automatically
@@ -63,9 +70,13 @@ provider:
     REDIS_PORT: ${ssm:/kalacube/prod/REDIS_PORT}
     REDIS_PASSWORD: ${ssm:/kalacube/prod/REDIS_PASSWORD, ''}
     REDIS_TLS: ${ssm:/kalacube/prod/REDIS_TLS, 'true'}
-    # Email (Gmail SMTP today; consider SES for prod deliverability)
-    EMAIL_USERNAME: ${ssm:/kalacube/prod/EMAIL_USERNAME}
-    EMAIL_PASSWORD: ${ssm:/kalacube/prod/EMAIL_PASSWORD}
+    # Email — AWS SES via the SESv2 SDK using the execution role (SES IAM
+    # granted above). From address is the verified kalacube.com identity.
+    EMAIL_FROM: ${ssm:/kalacube/prod/EMAIL_FROM, 'KalaCUBE <connect@kalacube.com>'}
+    # Legacy Gmail SMTP vars — no longer used by the mailer, kept optional so
+    # any stale SSM values don't break deploys. Safe to remove later.
+    EMAIL_USERNAME: ${ssm:/kalacube/prod/EMAIL_USERNAME, ''}
+    EMAIL_PASSWORD: ${ssm:/kalacube/prod/EMAIL_PASSWORD, ''}
     # OAuth (optional — app tolerates empty)
     GOOGLE_CLIENT_ID: ${ssm:/kalacube/prod/GOOGLE_CLIENT_ID, ''}
     GOOGLE_CLIENT_SECRET: ${ssm:/kalacube/prod/GOOGLE_CLIENT_SECRET, ''}
@@ -73,6 +84,25 @@ provider:
     FACEBOOK_APP_ID: ${ssm:/kalacube/prod/FACEBOOK_APP_ID, ''}
     FACEBOOK_APP_SECRET: ${ssm:/kalacube/prod/FACEBOOK_APP_SECRET, ''}
     FACEBOOK_CALLBACK_URL: ${ssm:/kalacube/prod/FACEBOOK_CALLBACK_URL, ''}
+    # ---- Commerce / fulfilment (orders module) ------------------------------
+    # ALL empty by default → every external adapter runs in STUB mode (no real
+    # calls). To GO LIVE, create the SSM params below and redeploy — no rebuild.
+    # Pricing knobs (optional; the app has code defaults if these are blank).
+    COMMERCE_SHIPPING_FLAT: ${ssm:/kalacube/prod/COMMERCE_SHIPPING_FLAT, ''}
+    COMMERCE_GST_RATE: ${ssm:/kalacube/prod/COMMERCE_GST_RATE, ''}
+    COMMERCE_COMMISSION_RATE: ${ssm:/kalacube/prod/COMMERCE_COMMISSION_RATE, ''}
+    # Payments/payouts (Razorpay) — routed via the Netavon shared backend so the
+    # Razorpay SECRET is NEVER stored here. Set these endpoints to go live.
+    NETAVON_ORDERS_URL: ${ssm:/kalacube/prod/NETAVON_ORDERS_URL, ''}
+    NETAVON_PAYOUT_URL: ${ssm:/kalacube/prod/NETAVON_PAYOUT_URL, ''}
+    # POD (Qikink).
+    QIKINK_CLIENT_ID: ${ssm:/kalacube/prod/QIKINK_CLIENT_ID, ''}
+    QIKINK_CLIENT_SECRET: ${ssm:/kalacube/prod/QIKINK_CLIENT_SECRET, ''}
+    QIKINK_BASE_URL: ${ssm:/kalacube/prod/QIKINK_BASE_URL, ''}
+    # Logistics (Shiprocket).
+    SHIPROCKET_EMAIL: ${ssm:/kalacube/prod/SHIPROCKET_EMAIL, ''}
+    SHIPROCKET_PASSWORD: ${ssm:/kalacube/prod/SHIPROCKET_PASSWORD, ''}
+    SHIPROCKET_BASE_URL: ${ssm:/kalacube/prod/SHIPROCKET_BASE_URL, ''}
 
 functions:
   api:

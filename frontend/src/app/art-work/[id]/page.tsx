@@ -7,6 +7,7 @@ import { motion } from 'framer-motion';
 import api from '@/lib/api';
 import EnquiryModal, { type EnquiryIntent } from '@/components/EnquiryModal';
 import ArtworkGallery from '@/components/ArtworkGallery';
+import { COMMERCE_ENABLED } from '@/lib/commerce';
 
 const DIMENSION_LABEL: Record<string, string> = {
   handicraft: 'Handicraft',
@@ -184,7 +185,9 @@ export default function ArtworkPage() {
               </div>
             )}
 
-            {/* Buy / Enquire — buyer → artist connection (preserved feature) */}
+            {/* Buy / Enquire — buyer → artist connection (preserved feature).
+                This stays the LIVE buyer path. The checkout entry below is only
+                surfaced when NEXT_PUBLIC_COMMERCE_ENABLED is on (test). */}
             {artist?.username && (
               <div className="mt-7 flex flex-wrap gap-3">
                 <button
@@ -214,6 +217,22 @@ export default function ArtworkPage() {
                     Chat on WhatsApp
                   </a>
                 )}
+              </div>
+            )}
+
+            {/* Test-only online checkout entry (flag-gated). Real buyers never
+                see this in prod; they use Buy / Enquire above. */}
+            {COMMERCE_ENABLED && artist?.username && (
+              <div className="mt-3">
+                <Link
+                  href={`/checkout?artwork=${art._id || id}&kind=original`}
+                  className="inline-flex items-center gap-2 rounded-lg border border-dashed border-indigo/50 bg-indigo/5 px-5 py-2.5 text-sm font-semibold text-indigo transition hover:bg-indigo/10"
+                >
+                  Buy now online
+                  <span className="rounded-full bg-yellow/30 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-navy">
+                    Test · coming soon
+                  </span>
+                </Link>
               </div>
             )}
 

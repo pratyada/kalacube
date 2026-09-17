@@ -249,6 +249,13 @@ export default function DashboardPage() {
             title="Enquiries"
             desc="See who wants to buy or connect"
           />
+          {isArtist && (
+            <QuickAction
+              href="/dashboard/orders"
+              title="Sales & orders"
+              desc="Track orders, shipping and payouts"
+            />
+          )}
           <QuickAction
             href={`/artist/${user.username}`}
             title="View public page"

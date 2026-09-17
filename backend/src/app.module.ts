@@ -18,6 +18,7 @@ import { S3Module } from './s3/s3.module';
 import { EmailModule } from './email/email.module';
 import { EmailTrackingModule } from './email-tracking/email-tracking.module';
 import { EnquiryModule } from './enquiry/enquiry.module';
+import { OrdersModule } from './orders/orders.module';
 
 @Module({
   imports: [
@@ -69,6 +70,7 @@ import { EnquiryModule } from './enquiry/enquiry.module';
     EmailModule,
     EmailTrackingModule,
     EnquiryModule,
+    OrdersModule,
   ],
   providers: [
     { provide: APP_GUARD, useClass: JwtAuthGuard },
