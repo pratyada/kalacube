@@ -95,10 +95,14 @@ provider:
     # Razorpay SECRET is NEVER stored here. Set these endpoints to go live.
     NETAVON_ORDERS_URL: ${ssm:/kalacube/prod/NETAVON_ORDERS_URL, ''}
     NETAVON_PAYOUT_URL: ${ssm:/kalacube/prod/NETAVON_PAYOUT_URL, ''}
-    # POD (Qikink).
+    # POD (Qikink). BASE_URL = sandbox.qikink.com (testing) / api.qikink.com
+    # (prod). DEFAULT_SKU = base catalog SKU the artwork prints onto; both SKU
+    # and PRINT_TYPE_ID are optional (adapter falls back to a sandbox SKU + 1).
     QIKINK_CLIENT_ID: ${ssm:/kalacube/prod/QIKINK_CLIENT_ID, ''}
     QIKINK_CLIENT_SECRET: ${ssm:/kalacube/prod/QIKINK_CLIENT_SECRET, ''}
     QIKINK_BASE_URL: ${ssm:/kalacube/prod/QIKINK_BASE_URL, ''}
+    QIKINK_DEFAULT_SKU: ${ssm:/kalacube/prod/QIKINK_DEFAULT_SKU, ''}
+    QIKINK_DEFAULT_PRINT_TYPE_ID: ${ssm:/kalacube/prod/QIKINK_DEFAULT_PRINT_TYPE_ID, ''}
     # Logistics (Shiprocket).
     SHIPROCKET_EMAIL: ${ssm:/kalacube/prod/SHIPROCKET_EMAIL, ''}
     SHIPROCKET_PASSWORD: ${ssm:/kalacube/prod/SHIPROCKET_PASSWORD, ''}

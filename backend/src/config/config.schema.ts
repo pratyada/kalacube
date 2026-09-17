@@ -72,10 +72,14 @@ export const configValidationSchema = Joi.object({
   NETAVON_ORDERS_URL: Joi.string().allow('').default(''),
   NETAVON_PAYOUT_URL: Joi.string().allow('').default(''),
 
-  // POD (Qikink).
+  // POD (Qikink). DEFAULT_SKU = base catalog SKU the artwork is printed onto;
+  // DEFAULT_PRINT_TYPE_ID = the print method for that SKU. Both optional — the
+  // adapter falls back to a verified sandbox SKU + print_type_id 1.
   QIKINK_CLIENT_ID: Joi.string().allow('').default(''),
   QIKINK_CLIENT_SECRET: Joi.string().allow('').default(''),
   QIKINK_BASE_URL: Joi.string().allow('').default(''),
+  QIKINK_DEFAULT_SKU: Joi.string().allow('').default(''),
+  QIKINK_DEFAULT_PRINT_TYPE_ID: Joi.number().empty('').default(1),
 
   // Logistics (Shiprocket).
   SHIPROCKET_EMAIL: Joi.string().allow('').default(''),
