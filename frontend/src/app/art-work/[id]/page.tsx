@@ -300,6 +300,27 @@ export default function ArtworkPage() {
           </motion.div>
         </div>
 
+        {/* The Story — an evocative note about the work, when present */}
+        {art.story?.trim() && (
+          <motion.section
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true, amount: 0.3 }}
+            transition={{ duration: 0.6, ease: 'easeOut' }}
+            className="mt-20 border-t border-line pt-12"
+          >
+            <div className="mx-auto max-w-3xl text-center">
+              <span className="text-xs font-semibold uppercase tracking-[0.28em] text-indigo/80">
+                The Story
+              </span>
+              <div className="mx-auto mt-4 h-px w-12 bg-indigo/30" />
+              <p className="mt-8 whitespace-pre-line font-serif text-xl italic leading-relaxed text-navy-deep sm:text-2xl sm:leading-relaxed">
+                {art.story}
+              </p>
+            </div>
+          </motion.section>
+        )}
+
         {/* More from this artist */}
         {more.length > 0 && (
           <section className="mt-20 border-t border-line pt-12">

@@ -24,6 +24,10 @@ export class Artwork extends Document {
   @Prop() available: boolean;
   @Prop() legacyArtStyleId: [Types.ObjectId];
 
+  // Short evocative story shown on the artwork detail page to help it sell.
+  // Populated out-of-band by the coordinator; optional.
+  @Prop() story?: string;
+
   // S3 key prefix; concrete image URLs get wired after the S3 sync step.
   @Prop() imagePrefix: string;
 
