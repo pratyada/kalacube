@@ -39,12 +39,15 @@ export class ArtworkController {
   }
 
   @Patch(':id')
+  @UseInterceptors(FilesInterceptor('images', 8))
   update(
     @Param('id') id: string,
-    @CurrentUser('_id') userId: string,
+    @CurrentUser() user: any,
     @Body() dto: Partial<CreateArtworkDto>,
+    @UploadedFiles()
+    files: { buffer: Buffer; originalname: string; mimetype: string }[],
   ) {
-    return this.artwork.update(id, userId, dto);
+    return this.artwork.update(id, user, dto, files, dto.keepImages);
   }
 
   @Delete(':id')

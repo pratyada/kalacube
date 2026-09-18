@@ -66,4 +66,10 @@ export class CreateArtworkDto {
   @IsOptional()
   @IsString()
   status?: string;
+
+  // Edit-only: JSON array (or comma-separated list) of existing image URLs to
+  // KEEP. Lets an artist remove some images on PATCH. Ignored on create.
+  @IsOptional()
+  @IsString()
+  keepImages?: string;
 }

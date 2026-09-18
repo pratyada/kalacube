@@ -93,8 +93,14 @@ export class ArtworkService {
     return art;
   }
 
-  async update(id: string, userId: string, dto: Partial<CreateArtworkDto>) {
-    const art = await this.ownedOrThrow(id, userId);
+  async update(
+    id: string,
+    user: { _id: Types.ObjectId | string; legacyIdentityId?: string },
+    dto: Partial<CreateArtworkDto>,
+    files: UploadedImage[] = [],
+    keepImages?: string | string[],
+  ) {
+    const art = await this.ownedOrThrow(id, String(user._id));
     const set: Record<string, unknown> = {};
     for (const f of [
       'title',
@@ -112,9 +118,63 @@ export class ArtworkService {
     if (dto.heightCm !== undefined || dto.widthCm !== undefined) {
       set.dimensions = { height: dto.heightCm ?? 0, width: dto.widthCm ?? 0 };
     }
+
+    // Image editing: only touch images when the client sends `keepImages`
+    // (the URLs to retain — lets an artist remove some) and/or new `files`.
+    // Text-only edits leave `art.images` untouched.
+    const hasFiles = Array.isArray(files) && files.length > 0;
+    if (keepImages !== undefined || hasFiles) {
+      const kept = this.parseKeepImages(keepImages, art.images);
+      const urls = [...kept];
+
+      // Reuse the artwork's existing prefix; otherwise build the same
+      // `protected/{owner}/artist_work/{id}` layout as create().
+      const ownerKey = user.legacyIdentityId || String(user._id);
+      const prefix = art.imagePrefix
+        ? art.imagePrefix.replace(/\/$/, '')
+        : `protected/${ownerKey}/artist_work/${art._id.toString()}`;
+
+      for (const file of files) {
+        if (!file?.mimetype?.startsWith('image/')) continue;
+        const { key } = await this.s3.uploadFile({ file, location: prefix });
+        urls.push(this.s3.getPublicUrl(key));
+      }
+
+      set.images = urls;
+      if (!art.imagePrefix && urls.length) set.imagePrefix = `${prefix}/`;
+    }
+
     Object.assign(art, set);
     await art.save();
     return { data: art, message: 'Artwork updated' };
+  }
+
+  /**
+   * Resolve which existing image URLs to keep. Accepts a JSON array string, a
+   * comma-separated list, or an already-parsed array. When `keepImages` is
+   * undefined the caller isn't editing the keep-list, so keep everything.
+   */
+  private parseKeepImages(
+    keepImages: string | string[] | undefined,
+    existing: string[],
+  ): string[] {
+    if (keepImages === undefined) return existing ?? [];
+    if (Array.isArray(keepImages)) return keepImages.filter(Boolean);
+    const raw = keepImages.trim();
+    if (!raw) return [];
+    if (raw.startsWith('[')) {
+      try {
+        const arr = JSON.parse(raw);
+        if (Array.isArray(arr))
+          return arr.filter((u): u is string => typeof u === 'string' && !!u);
+      } catch {
+        /* fall through to CSV parsing */
+      }
+    }
+    return raw
+      .split(',')
+      .map((s) => s.trim())
+      .filter(Boolean);
   }
 
   async remove(id: string, userId: string) {

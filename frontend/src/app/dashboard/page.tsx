@@ -239,6 +239,13 @@ export default function DashboardPage() {
               desc="Add a new piece to your portfolio"
             />
           )}
+          {isArtist && (
+            <QuickAction
+              href="/dashboard/artworks"
+              title="Manage artworks"
+              desc="Edit details, images or remove your pieces"
+            />
+          )}
           <QuickAction
             href="/profile/edit"
             title="Edit profile"
