@@ -55,7 +55,7 @@ const TIERS: Tier[] = [
     tagline: 'Turn your page into a storefront.',
     plan: 'rising',
     price: 199,
-    wasPrice: 285,
+    wasPrice: 299,
     highlight: true,
     features: [
       'Unlimited artworks',
@@ -73,7 +73,7 @@ const TIERS: Tier[] = [
     tagline: 'Serious selling, told beautifully.',
     plan: 'studio',
     price: 599,
-    wasPrice: 855,
+    wasPrice: 899,
     features: [
       'Everything in Rising, plus:',
       '0% commission on prints · 8% on originals',
@@ -89,7 +89,7 @@ const TIERS: Tier[] = [
     tagline: 'We actively sell you.',
     plan: 'pro',
     price: 999,
-    wasPrice: 1428,
+    wasPrice: 1499,
     features: [
       'Everything in Studio, plus:',
       'Guaranteed monthly spotlight (homepage + buyer newsletter)',
