@@ -93,6 +93,8 @@ export interface OrderItem {
 
 export interface Order {
   _id: string;
+  /** Capability token for the public tracking URL (PII-safe; not the _id). */
+  publicToken?: string;
   buyer: { name: string; email: string; phone?: string };
   items: OrderItem[];
   amount: { art: number; shipping: number; gst: number; total: number };

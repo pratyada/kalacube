@@ -9,6 +9,7 @@ import {
 import { InjectModel } from '@nestjs/mongoose';
 import { ConfigService } from '@nestjs/config';
 import { Model, Types } from 'mongoose';
+import { randomBytes, timingSafeEqual } from 'crypto';
 import {
   FulfilmentStatus,
   Order,
@@ -37,6 +38,21 @@ function esc(s?: string): string {
     .replace(/</g, '&lt;')
     .replace(/>/g, '&gt;')
     .replace(/"/g, '&quot;');
+}
+
+/** Map a Shiprocket status string → our fulfilment state (null = ignore). */
+function mapShiprocketStatus(s: string): FulfilmentStatus | null {
+  const t = (s || '').toUpperCase();
+  if (t.includes('DELIVERED')) return 'DELIVERED';
+  if (t.includes('RTO')) return 'RTO';
+  if (t.includes('UNDELIVERED') || t.includes('NDR')) return 'NDR';
+  if (t.includes('OUT FOR DELIVERY') || t.includes('IN TRANSIT') || t.includes('IN-TRANSIT') || t.includes('SHIPPED'))
+    return 'IN_TRANSIT';
+  if (t.includes('PICKED UP') || t.includes('OUT FOR PICKUP') || t.includes('PICKUP DONE'))
+    return 'PICKED_UP';
+  if (t.includes('PICKUP SCHEDULED') || t.includes('PICKUP GENERATED'))
+    return 'PICKUP_SCHEDULED';
+  return null;
 }
 
 function inr(n: number): string {
@@ -130,6 +146,21 @@ export class OrdersService {
       ? 'pod'
       : 'original';
 
+    // Originals ship via courier → a full deliverable address is mandatory.
+    if (track === 'original') {
+      const missing: string[] = [];
+      if (!dto.buyerPhone?.trim()) missing.push('phone');
+      if (!dto.shippingAddress?.trim()) missing.push('address');
+      if (!dto.shippingCity?.trim()) missing.push('city');
+      if (!dto.shippingState?.trim()) missing.push('state');
+      if (!/^\d{6}$/.test((dto.shippingPincode || '').trim())) missing.push('pincode');
+      if (missing.length) {
+        throw new BadRequestException(
+          `Shipping details required for original artwork: ${missing.join(', ')}`,
+        );
+      }
+    }
+
     // All-in pricing (server-authoritative).
     const art = resolved.reduce((s, r) => s + r.unitPrice * r.qty, 0);
     const shipping = this.shippingFlat();
@@ -148,6 +179,14 @@ export class OrdersService {
         email: dto.buyerEmail.trim().toLowerCase(),
         phone: dto.buyerPhone?.trim(),
       },
+      shipTo: {
+        address: dto.shippingAddress?.trim(),
+        city: dto.shippingCity?.trim(),
+        state: dto.shippingState?.trim(),
+        pincode: dto.shippingPincode?.trim(),
+        country: 'India',
+      },
+      publicToken: randomBytes(16).toString('hex'),
       artistId,
       items: resolved.map((r) => ({
         artworkId: r.artworkId,
@@ -230,14 +269,48 @@ export class OrdersService {
         order.fulfilmentStatus = 'SHIPMENT_CREATED';
         this.pushEvent(order, 'SHIPMENT_CREATED', 'POD order placed with Qikink');
       } else {
+        // Resolve the artist's registered pickup address (falls back to their
+        // profile location for city/state when the pickup sub-doc is sparse).
+        const artist = await this.userRepo.findUserById(order.artistId.toString());
+        const pk = (artist as any)?.pickup || {};
         const shipment = await this.logistics.createShipment({
           orderId: order._id.toString(),
-          pickup: { name: 'Artist' },
-          drop: { name: order.buyer.name, phone: order.buyer.phone },
+          items: order.items.map((i) => ({
+            name: i.title || 'Original artwork',
+            sku: `KC-${order._id.toString().slice(-8)}`,
+            units: i.qty || 1,
+            sellingPrice: i.unitPrice || order.amount.art,
+          })),
+          pickup: {
+            name: artist?.firstName || artist?.username || 'Artist',
+            phone: pk.phone || artist?.phone,
+            address: pk.address,
+            city: pk.city || artist?.location?.city,
+            state: pk.state || artist?.location?.state,
+            pincode: pk.pincode,
+            shiprocketLocation: pk.shiprocketLocation,
+          },
+          drop: {
+            name: order.buyer.name,
+            phone: order.buyer.phone,
+            email: order.buyer.email,
+            address: order.shipTo?.address,
+            city: order.shipTo?.city,
+            state: order.shipTo?.state,
+            pincode: order.shipTo?.pincode,
+          },
+          parcel: {
+            weightKg: 1,
+            declaredValue: order.amount.art,
+            lengthCm: 30,
+            breadthCm: 30,
+            heightCm: 5,
+          },
         });
         order.shipment = {
           ...(order.shipment || {}),
           provider: shipment.provider,
+          shipmentId: shipment.shipmentId,
           awb: shipment.awb,
           courier: shipment.courier,
           labelUrl: shipment.labelUrl,
@@ -247,7 +320,9 @@ export class OrdersService {
         order.fulfilmentStatus = 'SHIPMENT_CREATED';
         this.pushEvent(order, 'SHIPMENT_CREATED', 'Shipment created with Shiprocket');
 
-        const pickup = await this.logistics.schedulePickup(shipment.awb);
+        const pickup = await this.logistics.schedulePickup(
+          shipment.shipmentId || shipment.awb,
+        );
         order.shipment.pickupDate = pickup.pickupDate;
         order.fulfilmentStatus = 'PICKUP_SCHEDULED';
         this.pushEvent(
@@ -293,10 +368,71 @@ export class OrdersService {
     return { items, counts };
   }
 
-  /** Order + current tracking. Public so the buyer's tracking view can read it. */
-  async getOne(id: string) {
-    const order = await this.getOrderOr404(id);
-    return this.publicOrder(order);
+  /**
+   * PUBLIC order tracking by capability token (`publicToken`) — returns a
+   * PII-stripped view (no buyer email/phone, no shipTo, no prepaid label).
+   */
+  async getPublicTracking(token: string) {
+    if (!token || token.length < 8) throw new NotFoundException('Order not found');
+    const order = await this.orderModel.findOne({ publicToken: token }).lean();
+    if (!order) throw new NotFoundException('Order not found');
+    return this.trackingView(order);
+  }
+
+  private trackingView(o: any) {
+    return {
+      _id: o._id,
+      publicToken: o.publicToken,
+      items: o.items,
+      amount: o.amount,
+      currency: o.currency,
+      track: o.track,
+      paymentStatus: o.paymentStatus,
+      fulfilmentStatus: o.fulfilmentStatus,
+      buyer: { name: o.buyer?.name }, // name only — no email/phone
+      shipment: o.shipment
+        ? {
+            provider: o.shipment.provider,
+            courier: o.shipment.courier,
+            awb: o.shipment.awb,
+            pickupDate: o.shipment.pickupDate,
+            trackingUrl: o.shipment.trackingUrl,
+            events: o.shipment.events,
+          }
+        : undefined,
+      createdAt: o.createdAt,
+    };
+  }
+
+  /**
+   * Shiprocket tracking webhook → advance the fulfilment state machine. Verified
+   * by a shared secret (x-api-key). Idempotent: only writes on a real change.
+   */
+  async handleShiprocketWebhook(body: any, token: string) {
+    const expected = (this.config.get<string>('SHIPROCKET_WEBHOOK_TOKEN') || '').trim();
+    if (!expected) {
+      this.logger.warn('Shiprocket webhook hit but SHIPROCKET_WEBHOOK_TOKEN is unset');
+      throw new ForbiddenException('webhook not configured');
+    }
+    const a = Buffer.from(expected);
+    const b = Buffer.from((token || '').trim());
+    if (a.length !== b.length || !timingSafeEqual(a, b)) {
+      throw new ForbiddenException('bad webhook token');
+    }
+    const awb = String(body?.awb ?? body?.data?.awb ?? '').trim();
+    const srStatus = String(
+      body?.current_status ?? body?.shipment_status ?? body?.status ?? '',
+    ).trim();
+    if (!awb) return { ok: true, ignored: 'no awb' };
+    const order = await this.orderModel.findOne({ 'shipment.awb': awb });
+    if (!order) return { ok: true, ignored: 'unknown awb' };
+    const mapped = mapShiprocketStatus(srStatus);
+    if (mapped && order.fulfilmentStatus !== mapped) {
+      order.fulfilmentStatus = mapped;
+      this.pushEvent(order, mapped, `Shiprocket: ${srStatus}`);
+      await order.save();
+    }
+    return { ok: true, status: order.fulfilmentStatus };
   }
 
   /** Artist/admin-scoped fulfilment transition. */
@@ -402,7 +538,7 @@ export class OrdersService {
             <p><strong>Total:</strong> ${inr(order.amount.total)}</p>
             <p style="color:#6b7280">Order reference: ${order._id.toString()}</p>
           </div>
-          <p style="color:#6b7280;font-size:13px">You can track your order here: <a href="${this.clientUrl()}/orders/${order._id.toString()}">${this.clientUrl()}/orders/${order._id.toString()}</a></p>
+          <p style="color:#6b7280;font-size:13px">You can track your order here: <a href="${this.clientUrl()}/orders/${order.publicToken}">${this.clientUrl()}/orders/${order.publicToken}</a></p>
           <p style="color:#6b7280;font-size:13px">— The KalaCUBE team</p>
         </div>`,
     });

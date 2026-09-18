@@ -13,6 +13,22 @@ import {
   type FulfilmentStatus,
 } from '@/lib/commerce';
 
+// Forward-transition options for the manual (pilot) status control. Covers the
+// happy path plus the exception branches; the backend enforces owner/admin.
+const MANUAL_STATUSES: FulfilmentStatus[] = [
+  'PAID',
+  'SHIPMENT_CREATED',
+  'PICKUP_SCHEDULED',
+  'PICKED_UP',
+  'IN_TRANSIT',
+  'DELIVERED',
+  'RETURN_WINDOW',
+  'PAID_OUT',
+  'NDR',
+  'RTO',
+  'REFUNDED',
+];
+
 function fmtDate(iso: string) {
   try {
     return new Date(iso).toLocaleDateString('en-IN', {
@@ -30,6 +46,7 @@ export default function OrdersDashboardPage() {
   const { user, isLoading, isAuthenticated, fetchUser } = useAuthStore();
   const [items, setItems] = useState<Order[]>([]);
   const [loading, setLoading] = useState(true);
+  const [savingId, setSavingId] = useState('');
   const [error, setError] = useState('');
 
   useEffect(() => {
@@ -58,6 +75,22 @@ export default function OrdersDashboardPage() {
   useEffect(() => {
     if (isAuthenticated) load();
   }, [isAuthenticated, load]);
+
+  const changeStatus = useCallback(
+    async (id: string, status: string) => {
+      setSavingId(id);
+      setError('');
+      try {
+        await api.patch(`/api/orders/${id}/status`, { status });
+        await load();
+      } catch {
+        setError('Could not update the order status.');
+      } finally {
+        setSavingId('');
+      }
+    },
+    [load],
+  );
 
   if (isLoading || !user) {
     return (
@@ -130,9 +163,9 @@ export default function OrdersDashboardPage() {
                     <Cell label="Payment" value={o.paymentStatus} />
                   </dl>
 
-                  <div className="mt-4 flex flex-wrap gap-2">
+                  <div className="mt-4 flex flex-wrap items-center gap-2">
                     <Link
-                      href={`/orders/${o._id}`}
+                      href={`/orders/${o.publicToken || o._id}`}
                       className="rounded-lg border border-navy/20 bg-white px-4 py-2 text-sm font-medium text-navy transition hover:border-indigo hover:text-indigo"
                     >
                       View &amp; track
@@ -157,6 +190,28 @@ export default function OrdersDashboardPage() {
                         Courier tracking
                       </a>
                     )}
+                    {/* Manual status control (pilot fallback for the webhook). */}
+                    <span className="ml-auto flex items-center gap-1.5">
+                      <label htmlFor={`st-${o._id}`} className="text-xs text-muted">
+                        Set status
+                      </label>
+                      <select
+                        id={`st-${o._id}`}
+                        value={st}
+                        disabled={savingId === o._id}
+                        onChange={(e) => changeStatus(o._id, e.target.value)}
+                        className="rounded-lg border border-navy/20 bg-white px-2 py-1.5 text-xs text-navy outline-none focus:border-indigo disabled:opacity-50"
+                      >
+                        {MANUAL_STATUSES.map((s) => (
+                          <option key={s} value={s}>
+                            {STATUS_LABEL[s]}
+                          </option>
+                        ))}
+                      </select>
+                      {savingId === o._id && (
+                        <span className="text-xs text-muted">saving…</span>
+                      )}
+                    </span>
                   </div>
                 </li>
               );

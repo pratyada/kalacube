@@ -91,8 +91,12 @@ provider:
     COMMERCE_SHIPPING_FLAT: ${ssm:/kalacube/prod/COMMERCE_SHIPPING_FLAT, ''}
     COMMERCE_GST_RATE: ${ssm:/kalacube/prod/COMMERCE_GST_RATE, ''}
     COMMERCE_COMMISSION_RATE: ${ssm:/kalacube/prod/COMMERCE_COMMISSION_RATE, ''}
-    # Payments/payouts (Razorpay) — routed via the Netavon shared backend so the
-    # Razorpay SECRET is NEVER stored here. Set these endpoints to go live.
+    # Payments (Razorpay) — Option A: KalaCUBE's own live keys (SecureString).
+    # Payment adapter goes live when BOTH KEY_ID and KEY_SECRET are set.
+    RAZORPAY_KEY_ID: ${ssm:/kalacube/prod/RAZORPAY_KEY_ID, ''}
+    RAZORPAY_KEY_SECRET: ${ssm:/kalacube/prod/RAZORPAY_KEY_SECRET, ''}
+    RAZORPAY_WEBHOOK_SECRET: ${ssm:/kalacube/prod/RAZORPAY_WEBHOOK_SECRET, ''}
+    # Payout still via Netavon Route (legacy path; stub for pilot).
     NETAVON_ORDERS_URL: ${ssm:/kalacube/prod/NETAVON_ORDERS_URL, ''}
     NETAVON_PAYOUT_URL: ${ssm:/kalacube/prod/NETAVON_PAYOUT_URL, ''}
     # POD (Qikink). BASE_URL = sandbox.qikink.com (testing) / api.qikink.com
@@ -103,10 +107,11 @@ provider:
     QIKINK_BASE_URL: ${ssm:/kalacube/prod/QIKINK_BASE_URL, ''}
     QIKINK_DEFAULT_SKU: ${ssm:/kalacube/prod/QIKINK_DEFAULT_SKU, ''}
     QIKINK_DEFAULT_PRINT_TYPE_ID: ${ssm:/kalacube/prod/QIKINK_DEFAULT_PRINT_TYPE_ID, ''}
-    # Logistics (Shiprocket).
+    # Logistics (Shiprocket). WEBHOOK_TOKEN = shared secret for tracking webhooks.
     SHIPROCKET_EMAIL: ${ssm:/kalacube/prod/SHIPROCKET_EMAIL, ''}
     SHIPROCKET_PASSWORD: ${ssm:/kalacube/prod/SHIPROCKET_PASSWORD, ''}
     SHIPROCKET_BASE_URL: ${ssm:/kalacube/prod/SHIPROCKET_BASE_URL, ''}
+    SHIPROCKET_WEBHOOK_TOKEN: ${ssm:/kalacube/prod/SHIPROCKET_WEBHOOK_TOKEN, ''}
 
 functions:
   api:

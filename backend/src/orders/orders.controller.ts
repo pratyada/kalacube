@@ -1,4 +1,12 @@
-import { Body, Controller, Get, Param, Patch, Post } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Get,
+  Headers,
+  Param,
+  Patch,
+  Post,
+} from '@nestjs/common';
 import { OrdersService } from './orders.service';
 import { CreateOrderDto } from './dto/create-order.dto';
 import { ConfirmOrderDto } from './dto/confirm-order.dto';
@@ -27,17 +35,34 @@ export class OrdersController {
     return this.orders.confirm(id, dto);
   }
 
+  /**
+   * Shiprocket tracking webhook. Public, but authenticated by a shared secret
+   * sent in the `x-api-key` header (configured in the Shiprocket dashboard).
+   */
+  @Public()
+  @Post('webhook/shiprocket')
+  shiprocketWebhook(
+    @Body() body: any,
+    @Headers('x-api-key') token: string,
+  ) {
+    return this.orders.handleShiprocketWebhook(body, token);
+  }
+
   /** The signed-in artist's own sales. */
   @Get('mine')
   mine(@CurrentUser('_id') userId: string) {
     return this.orders.listMine(userId?.toString());
   }
 
-  /** Public order + tracking (buyer tracking view; id is the capability). */
+  /**
+   * Public order tracking. `ref` is the order's random `publicToken` (a
+   * capability), NOT the Mongo _id — so buyer PII can't be reached by guessing
+   * ids. The response is a PII-stripped tracking view.
+   */
   @Public()
-  @Get(':id')
-  getOne(@Param('id') id: string) {
-    return this.orders.getOne(id);
+  @Get(':ref')
+  getOne(@Param('ref') ref: string) {
+    return this.orders.getPublicTracking(ref);
   }
 
   /** Artist/admin-scoped fulfilment status transition. */

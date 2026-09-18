@@ -67,8 +67,12 @@ export const configValidationSchema = Joi.object({
   COMMERCE_GST_RATE: Joi.number().empty('').default(0.12),
   COMMERCE_COMMISSION_RATE: Joi.number().empty('').default(0.15),
 
-  // Payments (Razorpay) — routed through the Netavon shared backend so the
-  // Razorpay SECRET is NEVER held here. Set the orders endpoint to go live.
+  // Payments (Razorpay) — Option A: KalaCUBE holds its own live keys in SSM and
+  // calls Razorpay directly. Payment adapter goes live when BOTH key vars are
+  // set. (NETAVON_* kept for the legacy payout path only.)
+  RAZORPAY_KEY_ID: Joi.string().allow('').default(''),
+  RAZORPAY_KEY_SECRET: Joi.string().allow('').default(''),
+  RAZORPAY_WEBHOOK_SECRET: Joi.string().allow('').default(''),
   NETAVON_ORDERS_URL: Joi.string().allow('').default(''),
   NETAVON_PAYOUT_URL: Joi.string().allow('').default(''),
 
@@ -81,8 +85,10 @@ export const configValidationSchema = Joi.object({
   QIKINK_DEFAULT_SKU: Joi.string().allow('').default(''),
   QIKINK_DEFAULT_PRINT_TYPE_ID: Joi.number().empty('').default(1),
 
-  // Logistics (Shiprocket).
+  // Logistics (Shiprocket). WEBHOOK_TOKEN = shared secret Shiprocket sends in
+  // the x-api-key header on tracking webhooks (must match the dashboard config).
   SHIPROCKET_EMAIL: Joi.string().allow('').default(''),
   SHIPROCKET_PASSWORD: Joi.string().allow('').default(''),
   SHIPROCKET_BASE_URL: Joi.string().allow('').default(''),
+  SHIPROCKET_WEBHOOK_TOKEN: Joi.string().allow('').default(''),
 });

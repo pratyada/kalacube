@@ -52,6 +52,29 @@ export class User extends Document {
   })
   location: { city: string; state: string; country: string };
 
+  // Shipping pickup address for the fulfilment pilot (originals). `shiprocketLocation`
+  // is the exact pickup-location nickname pre-registered in the Shiprocket
+  // dashboard — the courier picks the sold artwork up from here.
+  @Prop({
+    type: {
+      address: String,
+      city: String,
+      state: String,
+      pincode: String,
+      phone: String,
+      shiprocketLocation: String,
+    },
+    default: {},
+  })
+  pickup: {
+    address?: string;
+    city?: string;
+    state?: string;
+    pincode?: string;
+    phone?: string;
+    shiprocketLocation?: string;
+  };
+
   @Prop()
   website: string;
 

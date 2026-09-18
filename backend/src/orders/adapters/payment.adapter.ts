@@ -1,14 +1,19 @@
-import { Logger, NotImplementedException } from '@nestjs/common';
+import { Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
+import { createHmac, timingSafeEqual } from 'crypto';
 
 /**
- * Payments abstraction (Razorpay). KalaCUBE NEVER holds the Razorpay secret —
- * live orders are created through the NETAVON shared payments backend (same
- * Razorpay account, product #2). See KALACUBE_PAYMENTS.md.
+ * Payments abstraction (Razorpay).
+ *
+ * Option A (approved for the shipping pilot): KalaCUBE holds its OWN live
+ * Razorpay keys in SSM (`/kalacube/prod/RAZORPAY_KEY_ID` + `_SECRET`, same
+ * NETAVON Razorpay account) and talks to the Razorpay REST API directly — no
+ * Netavon proxy. Implemented with native `fetch` + `crypto` (no `razorpay`
+ * npm dep → no arm64 native-binary deploy risk).
  *
  * Two impls behind this interface:
  *  - StubPaymentAdapter  → default; realistic mock, no network calls.
- *  - LivePaymentAdapter  → used only when NETAVON_ORDERS_URL is configured.
+ *  - LivePaymentAdapter  → used only when RAZORPAY_KEY_ID + _SECRET are set.
  */
 export interface CreatedPayment {
   /** Gateway order id (Razorpay `order_...`) or a stub ref. */
@@ -57,48 +62,95 @@ export class StubPaymentAdapter implements PaymentAdapter {
 }
 
 /**
- * Live impl — routes order creation through the Netavon shared backend so the
- * Razorpay secret stays out of KalaCUBE. NOT YET WIRED: the subscriptions
- * endpoint exists, but the one-off *orders* endpoint is still TBD (see
- * KALACUBE_PAYMENTS.md). Finish the two calls below to go live.
+ * Live impl — talks to the Razorpay REST API directly with the KalaCUBE keys.
+ * `createOrder` opens a Razorpay order (the browser Checkout then collects the
+ * payment against it); `verifyPayment` checks the HMAC signature Razorpay
+ * returns to the client so a forged confirm can't mark an order paid.
  */
 export class LivePaymentAdapter implements PaymentAdapter {
   private readonly logger = new Logger(LivePaymentAdapter.name);
-  constructor(private readonly ordersUrl: string) {}
+  private readonly base = 'https://api.razorpay.com/v1';
 
-  async createOrder(amountInr: number, meta?: Record<string, any>): Promise<CreatedPayment> {
-    // TODO(go-live): POST { product:'kalacube', amount: amountInr*100, currency:'INR', meta }
-    //   to `${this.ordersUrl}` (the Netavon create-order endpoint) and map the
-    //   { order_id, key_id } response to CreatedPayment. Never send/hold a secret.
-    this.logger.warn(
-      `LIVE payment createOrder called (${amountInr}) but the Netavon orders endpoint is not yet wired`,
-    );
-    void meta;
-    throw new NotImplementedException(
-      'LivePaymentAdapter.createOrder: wire the Netavon orders endpoint (see KALACUBE_PAYMENTS.md)',
+  constructor(
+    private readonly keyId: string,
+    private readonly keySecret: string,
+  ) {}
+
+  private authHeader(): string {
+    return (
+      'Basic ' +
+      Buffer.from(`${this.keyId}:${this.keySecret}`).toString('base64')
     );
   }
 
-  async verifyPayment(): Promise<boolean> {
-    // TODO(go-live): verify razorpay_signature via the Netavon backend (HMAC
-    // with the secret that lives ONLY on the Netavon side).
-    throw new NotImplementedException(
-      'LivePaymentAdapter.verifyPayment: wire signature verification via Netavon',
-    );
+  async createOrder(amountInr: number, meta?: Record<string, any>): Promise<CreatedPayment> {
+    const amount = Math.round(amountInr * 100); // paise
+    // Razorpay `receipt` is capped at 40 chars; keep it short + unique.
+    const receipt = `kc_${Date.now().toString(36)}`.slice(0, 40);
+    const res = await fetch(`${this.base}/orders`, {
+      method: 'POST',
+      headers: {
+        Authorization: this.authHeader(),
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        amount,
+        currency: 'INR',
+        receipt,
+        payment_capture: 1,
+        notes: meta || {},
+      }),
+    });
+    const body = (await res.json()) as { id?: string; error?: { description?: string } };
+    if (!res.ok || !body?.id) {
+      const msg = body?.error?.description || `HTTP ${res.status}`;
+      this.logger.error(`Razorpay createOrder failed: ${msg}`);
+      throw new Error(`Razorpay order creation failed: ${msg}`);
+    }
+    this.logger.log(`LIVE createOrder ₹${amountInr} → ${body.id}`);
+    return {
+      orderId: body.id,
+      keyId: this.keyId, // public key id — safe to send to the browser
+      amount,
+      currency: 'INR',
+      stub: false,
+    };
+  }
+
+  async verifyPayment(sig: {
+    orderId?: string;
+    paymentId?: string;
+    signature?: string;
+  }): Promise<boolean> {
+    const { orderId, paymentId, signature } = sig;
+    if (!orderId || !paymentId || !signature) {
+      this.logger.warn('verifyPayment missing orderId/paymentId/signature → false');
+      return false;
+    }
+    // Razorpay client signature = HMAC_SHA256(order_id + "|" + payment_id, secret)
+    const expected = createHmac('sha256', this.keySecret)
+      .update(`${orderId}|${paymentId}`)
+      .digest('hex');
+    const a = Buffer.from(expected);
+    const b = Buffer.from(signature);
+    const ok = a.length === b.length && timingSafeEqual(a, b);
+    if (!ok) this.logger.warn(`verifyPayment signature mismatch for order ${orderId}`);
+    return ok;
   }
 }
 
 /**
- * Factory: pick the live adapter only when the Netavon orders endpoint is
- * configured; otherwise fall back to the safe stub. This is the single switch
- * point — no other code knows whether payments are live.
+ * Factory: pick the live adapter only when BOTH Razorpay keys are configured;
+ * otherwise fall back to the safe stub. This is the single switch point — no
+ * other code knows whether payments are live.
  */
 export function createPaymentAdapter(config: ConfigService): PaymentAdapter {
-  const ordersUrl = (config.get<string>('NETAVON_ORDERS_URL') || '').trim();
-  if (ordersUrl) {
-    new Logger('PaymentAdapter').log('LIVE payment mode (Netavon orders endpoint set)');
-    return new LivePaymentAdapter(ordersUrl);
+  const keyId = (config.get<string>('RAZORPAY_KEY_ID') || '').trim();
+  const keySecret = (config.get<string>('RAZORPAY_KEY_SECRET') || '').trim();
+  if (keyId && keySecret) {
+    new Logger('PaymentAdapter').log(`LIVE payment mode (Razorpay ${keyId.slice(0, 12)}…)`);
+    return new LivePaymentAdapter(keyId, keySecret);
   }
-  new Logger('PaymentAdapter').log('STUB payment mode (no NETAVON_ORDERS_URL)');
+  new Logger('PaymentAdapter').log('STUB payment mode (no RAZORPAY_KEY_ID/SECRET)');
   return new StubPaymentAdapter();
 }

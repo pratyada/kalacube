@@ -61,6 +61,16 @@ export class CreateOrderDto {
 
   @IsOptional()
   @IsString()
+  @MaxLength(80)
+  shippingCity?: string;
+
+  @IsOptional()
+  @IsString()
+  @MaxLength(80)
+  shippingState?: string;
+
+  @IsOptional()
+  @IsString()
   @MaxLength(12)
   shippingPincode?: string;
 

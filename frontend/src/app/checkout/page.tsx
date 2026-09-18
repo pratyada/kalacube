@@ -15,6 +15,64 @@ import {
 const SHIPPING_FLAT = 150;
 const GST_RATE = 0.12;
 
+// Payment shape returned by POST /api/orders (mirrors backend CreatedPayment).
+type CreatedPayment = {
+  orderId: string;
+  keyId?: string;
+  amount: number; // paise
+  currency: string;
+  stub: boolean;
+};
+
+type RazorpayOptions = {
+  key: string;
+  order_id: string;
+  amount: number;
+  currency: string;
+  name: string;
+  description: string;
+  image: string;
+  theme: { color: string };
+  handler: (response: {
+    razorpay_order_id: string;
+    razorpay_payment_id: string;
+    razorpay_signature: string;
+  }) => void;
+  modal?: { ondismiss?: () => void };
+  prefill?: { name?: string; email?: string; contact?: string };
+};
+type RazorpayInstance = { open: () => void };
+type RazorpayCtor = new (options: RazorpayOptions) => RazorpayInstance;
+
+// Read the global injected by Checkout.js without a `declare global` (another
+// page already declares Window.Razorpay with a different options shape).
+function getRazorpay(): RazorpayCtor | undefined {
+  return (globalThis as { Razorpay?: RazorpayCtor }).Razorpay;
+}
+
+// Inject Razorpay Checkout.js once, lazily (only when the buyer pays).
+function loadCheckoutScript(): Promise<void> {
+  return new Promise((resolve, reject) => {
+    if (typeof window === 'undefined') return reject(new Error('no window'));
+    if (getRazorpay()) return resolve();
+    const existing = document.getElementById(
+      'razorpay-checkout-js',
+    ) as HTMLScriptElement | null;
+    if (existing) {
+      existing.addEventListener('load', () => resolve());
+      existing.addEventListener('error', () => reject(new Error('load failed')));
+      return;
+    }
+    const s = document.createElement('script');
+    s.id = 'razorpay-checkout-js';
+    s.src = 'https://checkout.razorpay.com/v1/checkout.js';
+    s.async = true;
+    s.onload = () => resolve();
+    s.onerror = () => reject(new Error('load failed'));
+    document.body.appendChild(s);
+  });
+}
+
 function CheckoutInner() {
   const params = useSearchParams();
   const artworkId = params.get('artwork') || '';
@@ -29,6 +87,8 @@ function CheckoutInner() {
     buyerEmail: '',
     buyerPhone: '',
     shippingAddress: '',
+    shippingCity: '',
+    shippingState: '',
     shippingPincode: '',
     company: '', // honeypot
   });
@@ -36,6 +96,7 @@ function CheckoutInner() {
     'form',
   );
   const [order, setOrder] = useState<Order | null>(null);
+  const [payment, setPayment] = useState<CreatedPayment | null>(null);
   const [confirming, setConfirming] = useState(false);
   const [confirmed, setConfirmed] = useState(false);
   const [error, setError] = useState('');
@@ -91,6 +152,15 @@ function CheckoutInner() {
     if (!form.buyerName.trim()) return setError('Please enter your name.');
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.buyerEmail.trim()))
       return setError('Please enter a valid email address.');
+    // Originals ship via courier → a full deliverable address is required.
+    if (kind === 'original') {
+      if (!form.buyerPhone.trim()) return setError('Please enter a phone number for delivery.');
+      if (!form.shippingAddress.trim()) return setError('Please enter your shipping address.');
+      if (!form.shippingCity.trim()) return setError('Please enter your city.');
+      if (!form.shippingState.trim()) return setError('Please enter your state.');
+      if (!/^\d{6}$/.test(form.shippingPincode.trim()))
+        return setError('Please enter a valid 6-digit pincode.');
+    }
 
     setPhase('placing');
     try {
@@ -100,10 +170,13 @@ function CheckoutInner() {
         buyerEmail: form.buyerEmail.trim(),
         buyerPhone: form.buyerPhone.trim() || undefined,
         shippingAddress: form.shippingAddress.trim() || undefined,
+        shippingCity: form.shippingCity.trim() || undefined,
+        shippingState: form.shippingState.trim() || undefined,
         shippingPincode: form.shippingPincode.trim() || undefined,
         company: form.company,
       });
       setOrder(data?.data?.order || null);
+      setPayment(data?.data?.payment || null);
       setPhase('placed');
     } catch (err: unknown) {
       const msg =
@@ -114,18 +187,63 @@ function CheckoutInner() {
     }
   };
 
-  // Test-mode "confirm": exercises the fulfilment state machine WITHOUT a real
-  // charge. Only meaningful while payments are stubbed.
-  const confirmTest = async () => {
+  // Confirm the order. In LIVE mode this opens Razorpay Checkout and confirms
+  // with the real payment signature; in STUB mode it just exercises the
+  // fulfilment state machine (no charge).
+  const trackHref = `/orders/${order?.publicToken || order?._id || ''}`;
+  const isLive = !!(payment && !payment.stub && payment.keyId);
+  const payNow = async () => {
     if (!order?._id) return;
     setConfirming(true);
+    setError('');
     try {
-      await api.post(`/api/orders/${order._id}/confirm`, {});
-      setConfirmed(true);
+      // STUB mode (no live keys) → confirm directly, no gateway.
+      if (!payment || payment.stub || !payment.keyId) {
+        await api.post(`/api/orders/${order._id}/confirm`, {});
+        setConfirmed(true);
+        return;
+      }
+      // LIVE mode → Razorpay Checkout against the created order.
+      await loadCheckoutScript();
+      const Razorpay = getRazorpay();
+      if (!Razorpay) throw new Error('checkout unavailable');
+      const rzp = new Razorpay({
+        key: payment.keyId,
+        order_id: payment.orderId,
+        amount: payment.amount,
+        currency: payment.currency,
+        name: 'KalaCUBE',
+        description: `${art?.title || 'Artwork'} (${kind})`,
+        image: 'https://kalacube.com/brand/logo-primary.png',
+        theme: { color: '#0B1F52' },
+        prefill: {
+          name: form.buyerName.trim() || undefined,
+          email: form.buyerEmail.trim() || undefined,
+          contact: form.buyerPhone.trim() || undefined,
+        },
+        handler: async (resp) => {
+          try {
+            await api.post(`/api/orders/${order._id}/confirm`, {
+              razorpayOrderId: resp.razorpay_order_id,
+              razorpayPaymentId: resp.razorpay_payment_id,
+              razorpaySignature: resp.razorpay_signature,
+            });
+            setConfirmed(true);
+          } catch {
+            setError('Payment succeeded but confirmation failed — we’ll sort it out; please keep your payment id.');
+          } finally {
+            setConfirming(false);
+          }
+        },
+        modal: { ondismiss: () => setConfirming(false) },
+      });
+      rzp.open();
+      return; // confirming stays true until handler/ondismiss fires
     } catch {
-      setError('Test confirmation failed.');
+      setError('Could not start payment. Please try again in a moment.');
     } finally {
-      setConfirming(false);
+      // For the stub path we've finished; live path returns early above.
+      if (!payment || payment.stub || !payment.keyId) setConfirming(false);
     }
   };
 
@@ -175,11 +293,21 @@ function CheckoutInner() {
         <div>
           {phase === 'placed' ? (
             <div className="rounded-2xl border border-teal/40 bg-white p-8">
-              <h1 className="font-serif text-2xl text-navy">Test order placed</h1>
+              <h1 className="font-serif text-2xl text-navy">
+                {confirmed
+                  ? 'Order confirmed'
+                  : isLive
+                    ? 'Almost there — complete payment'
+                    : 'Test order placed'}
+              </h1>
               <p className="mt-2 text-muted">
-                This is a <strong>test-mode</strong> order — no real payment was
-                taken. Live payments are coming soon. We&apos;ve recorded the
-                order and emailed a confirmation.
+                {confirmed ? (
+                  <>Thank you — your order is confirmed and we&apos;ve emailed the details. We&apos;ll arrange pickup and delivery from here.</>
+                ) : isLive ? (
+                  <>Your order is reserved. Pay securely below to confirm it — we&apos;ll then arrange pickup from the artist and delivery to you.</>
+                ) : (
+                  <>This is a <strong>test-mode</strong> order — no real payment is taken (payment keys not set).</>
+                )}
               </p>
               <dl className="mt-5 rounded-xl bg-cream p-4 text-sm">
                 <div className="flex justify-between py-1">
@@ -187,7 +315,9 @@ function CheckoutInner() {
                   <dd className="font-mono text-navy">{order?._id}</dd>
                 </div>
                 <div className="flex justify-between py-1">
-                  <dt className="text-muted">Total (held, not charged)</dt>
+                  <dt className="text-muted">
+                    {confirmed ? 'Total paid' : 'Total'}
+                  </dt>
                   <dd className="font-semibold text-navy">
                     {formatINR(amount.total)}
                   </dd>
@@ -198,25 +328,30 @@ function CheckoutInner() {
                 {!confirmed ? (
                   <button
                     type="button"
-                    onClick={confirmTest}
+                    onClick={payNow}
                     disabled={confirming}
-                    className="rounded-lg border border-navy/25 bg-white px-5 py-2.5 text-sm font-semibold text-navy transition hover:border-indigo hover:text-indigo disabled:opacity-60"
+                    className="rounded-lg bg-yellow px-5 py-2.5 text-sm font-semibold text-navy shadow transition hover:bg-yellow-deep disabled:opacity-60"
                   >
                     {confirming
-                      ? 'Simulating…'
-                      : 'Simulate payment (test) → create shipment'}
+                      ? 'Processing…'
+                      : isLive
+                        ? `Pay ${formatINR(amount.total)} securely`
+                        : 'Simulate payment (test) → create shipment'}
                   </button>
                 ) : (
-                  <span className="rounded-lg border border-teal/40 bg-teal/10 px-4 py-2.5 text-sm font-medium text-teal-deep">
-                    Shipment created (stub)
-                  </span>
-                )}
-                {order?._id && (
                   <Link
-                    href={`/orders/${order._id}`}
+                    href={trackHref}
                     className="rounded-lg bg-navy px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-navy-deep"
                   >
                     Track this order
+                  </Link>
+                )}
+                {!confirmed && order?._id && (
+                  <Link
+                    href={trackHref}
+                    className="rounded-lg border border-navy/25 bg-white px-5 py-2.5 text-sm font-semibold text-navy transition hover:border-indigo hover:text-indigo"
+                  >
+                    View order
                   </Link>
                 )}
               </div>
@@ -237,21 +372,25 @@ function CheckoutInner() {
               <div className="mt-6 space-y-4">
                 <Field label="Your name" required id="co-name" value={form.buyerName} onChange={set('buyerName')} placeholder="Jane Doe" />
                 <Field label="Email" required id="co-email" type="email" value={form.buyerEmail} onChange={set('buyerEmail')} placeholder="you@example.com" />
-                <Field label="Phone" id="co-phone" type="tel" value={form.buyerPhone} onChange={set('buyerPhone')} placeholder="+91 98765 43210" />
+                <Field label="Phone" required={kind === 'original'} id="co-phone" type="tel" value={form.buyerPhone} onChange={set('buyerPhone')} placeholder="+91 98765 43210" />
                 <div>
                   <label htmlFor="co-address" className="mb-1 block text-sm font-medium text-navy">
-                    Shipping address <span className="text-muted">(optional for test)</span>
+                    Shipping address {kind === 'original' && <span className="text-magenta">*</span>}
                   </label>
                   <textarea
                     id="co-address"
-                    rows={3}
+                    rows={2}
                     value={form.shippingAddress}
                     onChange={set('shippingAddress')}
                     className="w-full resize-none rounded-lg border border-navy/15 bg-white px-3 py-2.5 text-sm text-navy outline-none focus:border-indigo focus:ring-2 focus:ring-indigo/20"
-                    placeholder="Flat, street, city, state"
+                    placeholder="Flat / house no, street, area"
                   />
                 </div>
-                <Field label="Pincode" id="co-pin" value={form.shippingPincode} onChange={set('shippingPincode')} placeholder="248001" />
+                <div className="grid grid-cols-2 gap-4">
+                  <Field label="City" required={kind === 'original'} id="co-city" value={form.shippingCity} onChange={set('shippingCity')} placeholder="Dehradun" />
+                  <Field label="State" required={kind === 'original'} id="co-state" value={form.shippingState} onChange={set('shippingState')} placeholder="Uttarakhand" />
+                </div>
+                <Field label="Pincode" required={kind === 'original'} id="co-pin" value={form.shippingPincode} onChange={set('shippingPincode')} placeholder="248001" />
               </div>
 
               {error && (
@@ -265,10 +404,10 @@ function CheckoutInner() {
                 disabled={phase === 'placing'}
                 className="mt-6 w-full rounded-lg bg-navy px-5 py-3 text-sm font-semibold text-white transition hover:bg-navy-deep disabled:cursor-not-allowed disabled:opacity-60"
               >
-                {phase === 'placing' ? 'Placing order…' : `Place test order · ${formatINR(amount.total)}`}
+                {phase === 'placing' ? 'Reserving…' : `Continue to payment · ${formatINR(amount.total)}`}
               </button>
               <p className="mt-3 text-center text-xs text-muted">
-                Test mode — no real payment is taken.
+                Secure payment on the next step. Cancel anytime before paying.
               </p>
             </form>
           )}
@@ -335,8 +474,8 @@ function Shell({ children }: { children: React.ReactNode }) {
 function TestBanner() {
   return (
     <div className="mb-6 rounded-xl border border-yellow/50 bg-yellow/15 px-4 py-3 text-sm text-navy">
-      <strong>Test mode.</strong> Online checkout is being tested — live payments
-      are coming soon. No real charge is made.
+      <strong>Pilot.</strong> Buying an original — we arrange pickup from the
+      artist and delivery to your door. Secure payment via Razorpay.
     </div>
   );
 }

@@ -83,6 +83,29 @@ export class Order extends Document {
   })
   buyer: { name: string; email: string; phone?: string };
 
+  // Buyer's delivery address (required for originals; Shiprocket needs it all).
+  @Prop({
+    type: {
+      address: String,
+      city: String,
+      state: String,
+      pincode: String,
+      country: { type: String, default: 'India' },
+    },
+    default: {},
+  })
+  shipTo: {
+    address?: string;
+    city?: string;
+    state?: string;
+    pincode?: string;
+    country?: string;
+  };
+
+  // Random capability token for the PUBLIC tracking URL — so buyer PII isn't
+  // reachable by guessing the Mongo _id. Indexed for O(1) public lookups.
+  @Prop({ index: true }) publicToken: string;
+
   @Prop({ type: Types.ObjectId, ref: 'User', required: true, index: true })
   artistId: Types.ObjectId;
 
@@ -132,6 +155,7 @@ export class Order extends Document {
   @Prop({
     type: {
       provider: String, // 'shiprocket' | 'qikink'
+      shipmentId: String, // Shiprocket shipment_id (pickup/label/tracking key)
       awb: String,
       courier: String,
       labelUrl: String,
@@ -143,6 +167,7 @@ export class Order extends Document {
   })
   shipment: {
     provider?: string;
+    shipmentId?: string;
     awb?: string;
     courier?: string;
     labelUrl?: string;
@@ -177,3 +202,7 @@ export const OrderSchema = SchemaFactory.createForClass(Order);
 OrderSchema.index({ artistId: 1, createdAt: -1 });
 // Reconcile payment webhooks by their gateway reference.
 OrderSchema.index({ paymentRef: 1 });
+// Public tracking lookups by capability token (not the _id).
+OrderSchema.index({ publicToken: 1 });
+// Reconcile Shiprocket tracking webhooks by AWB.
+OrderSchema.index({ 'shipment.awb': 1 });
