@@ -29,6 +29,7 @@ export default function EditProfilePage() {
     instagram: '',
     twitter: '',
     linkedin: '',
+    facebook: '',
     youtube: '',
   });
 
@@ -62,6 +63,7 @@ export default function EditProfilePage() {
         instagram: user.socialLinks?.instagram || '',
         twitter: user.socialLinks?.twitter || '',
         linkedin: user.socialLinks?.linkedin || '',
+        facebook: user.socialLinks?.facebook || '',
         youtube: user.socialLinks?.youtube || '',
       });
 
@@ -106,6 +108,7 @@ export default function EditProfilePage() {
           instagram: basicForm.instagram,
           twitter: basicForm.twitter,
           linkedin: basicForm.linkedin,
+          facebook: basicForm.facebook,
           youtube: basicForm.youtube,
         },
       });
@@ -372,6 +375,18 @@ export default function EditProfilePage() {
                   className={inputClass}
                   placeholder="Tell us about yourself..."
                 />
+                {user.role === 'artist' ? (
+                  <p className="mt-1 text-xs text-gray-400">
+                    Your public &ldquo;About&rdquo; comes from your{' '}
+                    <span className="font-medium">Artist Statement</span> (Artist
+                    Profile tab). This bio is shown as a fallback if you
+                    haven&rsquo;t written a statement.
+                  </p>
+                ) : (
+                  <p className="mt-1 text-xs text-gray-400">
+                    Shown publicly on your profile.
+                  </p>
+                )}
               </div>
 
               <div>
@@ -463,6 +478,15 @@ export default function EditProfilePage() {
                   }
                   className={inputClass}
                   placeholder="LinkedIn URL"
+                />
+                <input
+                  type="text"
+                  value={basicForm.facebook}
+                  onChange={(e) =>
+                    setBasicForm({ ...basicForm, facebook: e.target.value })
+                  }
+                  className={inputClass}
+                  placeholder="Facebook URL"
                 />
                 <input
                   type="text"
@@ -590,6 +614,9 @@ export default function EditProfilePage() {
                   className={inputClass}
                   placeholder="Describe your art practice..."
                 />
+                <p className="mt-1 text-xs text-gray-400">
+                  This is your public &ldquo;About&rdquo; on your artist page.
+                </p>
               </div>
 
               <label className="flex items-center gap-2">

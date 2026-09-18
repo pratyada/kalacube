@@ -144,7 +144,7 @@ export class UserService {
     if (!user) throw new NotFoundException('User not found');
 
     if (user._id.toString() !== currentUserId.toString()) {
-      throw new ConflictException('You can only update your own profile');
+      throw new ForbiddenException('You can only update your own profile');
     }
 
     if (dto.email && dto.email !== user.email) {
@@ -152,7 +152,28 @@ export class UserService {
       if (exists) throw new ConflictException('Email already in use');
     }
 
-    await this.userRepo.updateUser({ _id: user._id }, { $set: dto as any });
+    // MERGE nested objects (socialLinks/location) instead of replacing them.
+    // The edit form only sends a subset of sub-keys, so a plain `$set` of the
+    // whole object would wipe unspecified keys (e.g. a migrated artist's
+    // facebook link, which the public page renders). Dot-path each provided
+    // sub-key so the rest are preserved.
+    const { socialLinks, location, ...rest } = dto as UpdateUserDto & {
+      socialLinks?: Record<string, unknown>;
+      location?: Record<string, unknown>;
+    };
+    const $set: Record<string, unknown> = { ...rest };
+    if (socialLinks && typeof socialLinks === 'object') {
+      for (const [k, v] of Object.entries(socialLinks)) {
+        if (v !== undefined) $set[`socialLinks.${k}`] = v;
+      }
+    }
+    if (location && typeof location === 'object') {
+      for (const [k, v] of Object.entries(location)) {
+        if (v !== undefined) $set[`location.${k}`] = v;
+      }
+    }
+
+    await this.userRepo.updateUser({ _id: user._id }, { $set });
     await this.updateProfileCompleteness(user._id.toString());
 
     return { message: 'Profile updated' };
@@ -176,7 +197,7 @@ export class UserService {
     const user = await this.userRepo.findUserByUsername(username);
     if (!user) throw new NotFoundException('User not found');
     if (user._id.toString() !== currentUserId.toString()) {
-      throw new ConflictException('You can only update your own profile');
+      throw new ForbiddenException('You can only update your own profile');
     }
 
     const profile = await this.userRepo.upsertArtistProfile(

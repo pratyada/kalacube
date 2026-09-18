@@ -139,6 +139,13 @@ export default function Header() {
                     >
                       My profile
                     </Link>
+                    <Link
+                      href="/profile/edit"
+                      role="menuitem"
+                      className="block px-4 py-2 text-sm text-neutral-700 transition hover:bg-neutral-50"
+                    >
+                      Edit profile
+                    </Link>
                     {isAdmin && (
                       <Link
                         href="/admin"

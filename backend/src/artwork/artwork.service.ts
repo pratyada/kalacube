@@ -119,6 +119,8 @@ export class ArtworkService {
       set.dimensions = { height: dto.heightCm ?? 0, width: dto.widthCm ?? 0 };
     }
 
+    let removedImages: string[] = [];
+
     // Image editing: only touch images when the client sends `keepImages`
     // (the URLs to retain — lets an artist remove some) and/or new `files`.
     // Text-only edits leave `art.images` untouched.
@@ -142,11 +144,49 @@ export class ArtworkService {
 
       set.images = urls;
       if (!art.imagePrefix && urls.length) set.imagePrefix = `${prefix}/`;
+
+      // Any previously-stored image dropped from the keep-list is now orphaned
+      // in S3 — remove those objects (best-effort) once the doc is saved below.
+      removedImages = (art.images || []).filter((u) => !kept.includes(u));
     }
 
     Object.assign(art, set);
     await art.save();
+
+    // Delete orphaned S3 objects AFTER the Mongo write succeeds, so a failed
+    // save never strands the DB pointing at deleted files.
+    if (removedImages.length) await this.deleteImageObjects(removedImages, art);
+
     return { data: art, message: 'Artwork updated' };
+  }
+
+  /**
+   * Best-effort delete of artwork image objects from S3. Guards on the
+   * artwork's OWN prefix so we can never touch shared/other assets, and never
+   * fails the request if an individual delete errors (just logs).
+   */
+  private async deleteImageObjects(
+    urls: string[],
+    art: { _id: Types.ObjectId | string; imagePrefix?: string },
+  ) {
+    const idStr = String(art._id);
+    const ownPrefix = art.imagePrefix
+      ? art.imagePrefix.replace(/\/$/, '') + '/'
+      : `/artist_work/${idStr}/`;
+    for (const url of urls) {
+      const key = this.s3.keyFromPublicUrl(url);
+      if (!key) continue;
+      // Only delete objects that belong to THIS artwork's prefix.
+      const belongs = art.imagePrefix
+        ? key.startsWith(ownPrefix)
+        : key.includes(ownPrefix);
+      if (!belongs) continue;
+      try {
+        await this.s3.deleteFile(key);
+      } catch (err) {
+        console.error(`[artwork] failed to delete S3 object ${key}:`, err);
+      }
+    }
   }
 
   /**
@@ -178,7 +218,10 @@ export class ArtworkService {
   }
 
   async remove(id: string, userId: string) {
-    await this.ownedOrThrow(id, userId);
+    const art = await this.ownedOrThrow(id, userId);
+    // Remove the artwork's image objects from S3 so deleted artwork images
+    // aren't left publicly reachable as orphans (best-effort).
+    await this.deleteImageObjects(art.images || [], art);
     await this.artworkModel.findByIdAndDelete(id);
     return { data: { deleted: true } };
   }

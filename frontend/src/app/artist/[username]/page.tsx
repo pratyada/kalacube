@@ -151,7 +151,16 @@ export default function ArtistPage() {
     .filter(Boolean)
     .join(', ');
   const dims: string[] = profile?.artDimensions || [];
-  const hasAbout = Boolean(profile?.statement || location || socials.length);
+  const skills: string[] = profile?.skills || [];
+  const mediums: string[] = profile?.mediums || [];
+  const availableForCommission = Boolean(profile?.availableForCommission);
+  // Canonical public "About": the artist statement is the intended field, but
+  // fall back to the Basic-tab bio so whichever the artist actually filled in
+  // still renders (the two overlap — see profile/edit helper notes).
+  const about: string = profile?.statement || user.bio || '';
+  const hasAbout = Boolean(
+    about || location || socials.length || skills.length || mediums.length,
+  );
 
   const TABS: Array<{ key: Tab; label: string }> = [
     { key: 'works', label: `Works (${artworks.length})` },
@@ -233,7 +242,28 @@ export default function ArtistPage() {
                     {location}
                   </span>
                 )}
+                {availableForCommission && (
+                  <span className="inline-flex items-center gap-1 rounded-full border border-teal/40 bg-teal/10 px-3 py-1 text-xs font-semibold text-teal-deep">
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                      <path d="M5 12l4 4L19 6" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" />
+                    </svg>
+                    Available for commissions
+                  </span>
+                )}
               </div>
+
+              {(skills.length > 0 || mediums.length > 0) && (
+                <div className="mt-3 flex flex-wrap items-center gap-2">
+                  {[...skills, ...mediums].map((tag, i) => (
+                    <span
+                      key={`${tag}-${i}`}
+                      className="rounded-full border border-line bg-white/70 px-3 py-1 text-xs font-medium text-navy"
+                    >
+                      {tag}
+                    </span>
+                  ))}
+                </div>
+              )}
             </div>
 
             <button
@@ -245,14 +275,14 @@ export default function ArtistPage() {
             </button>
           </motion.div>
 
-          {profile?.statement && (
+          {about && (
             <motion.p
               initial={{ opacity: 0, y: 16 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.5, delay: 0.1, ease: 'easeOut' }}
               className="mt-8 max-w-3xl leading-relaxed text-neutral-700"
             >
-              {profile.statement}
+              {about}
             </motion.p>
           )}
         </div>
@@ -351,14 +381,53 @@ export default function ArtistPage() {
               transition={{ duration: 0.28, ease: 'easeOut' }}
               className="max-w-3xl"
             >
-              {profile?.statement && (
+              {about && (
                 <div>
                   <h2 className="text-xs font-semibold uppercase tracking-[0.2em] text-muted">
                     Artist statement
                   </h2>
                   <p className="mt-3 whitespace-pre-line leading-relaxed text-neutral-700">
-                    {profile.statement}
+                    {about}
                   </p>
+                </div>
+              )}
+
+              {(skills.length > 0 || mediums.length > 0) && (
+                <div className="mt-8 grid gap-8 sm:grid-cols-2">
+                  {skills.length > 0 && (
+                    <div>
+                      <h2 className="text-xs font-semibold uppercase tracking-[0.2em] text-muted">
+                        Skills
+                      </h2>
+                      <div className="mt-3 flex flex-wrap gap-2">
+                        {skills.map((s, i) => (
+                          <span
+                            key={`${s}-${i}`}
+                            className="rounded-full border border-line bg-white px-3 py-1 text-sm text-navy"
+                          >
+                            {s}
+                          </span>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                  {mediums.length > 0 && (
+                    <div>
+                      <h2 className="text-xs font-semibold uppercase tracking-[0.2em] text-muted">
+                        Mediums
+                      </h2>
+                      <div className="mt-3 flex flex-wrap gap-2">
+                        {mediums.map((m, i) => (
+                          <span
+                            key={`${m}-${i}`}
+                            className="rounded-full border border-line bg-white px-3 py-1 text-sm text-navy"
+                          >
+                            {m}
+                          </span>
+                        ))}
+                      </div>
+                    </div>
+                  )}
                 </div>
               )}
 

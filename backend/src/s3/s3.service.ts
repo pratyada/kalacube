@@ -67,6 +67,32 @@ export class S3Service {
     );
   }
 
+  /**
+   * Reverse `getPublicUrl()` — derive the S3 object key from a public URL we
+   * generated for this bucket. Returns null if the URL isn't for our bucket
+   * (so callers never delete a foreign/shared asset). Each path segment was
+   * `encodeURIComponent`-encoded (identityIds contain ':'), so decode per-segment.
+   */
+  keyFromPublicUrl(url: string): string | null {
+    if (!url) return null;
+    const prefix = `https://${this.bucket}.s3.${this.region}.amazonaws.com/`;
+    if (!url.startsWith(prefix)) return null;
+    const encoded = url.slice(prefix.length);
+    if (!encoded) return null;
+    try {
+      return encoded.split('/').map(decodeURIComponent).join('/');
+    } catch {
+      return null;
+    }
+  }
+
+  /** Best-effort delete of an object given its public URL (no-op for foreign URLs). */
+  async deleteByUrl(url: string) {
+    const key = this.keyFromPublicUrl(url);
+    if (!key) return;
+    await this.deleteFile(key);
+  }
+
   async getPresignedUrl(key: string, expiresIn = 7 * 24 * 60 * 60) {
     return getSignedUrl(
       this.s3,
