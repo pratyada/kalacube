@@ -1,5 +1,5 @@
 import Link from 'next/link';
-import HeroCanvas from '@/components/home/HeroCanvas';
+import HeroArtworks from '@/components/home/HeroArtworks';
 import HomeSections from '@/components/home/HomeSections';
 
 /**
@@ -23,10 +23,8 @@ export default function Home() {
               'radial-gradient(115% 85% at 18% 12%, #e7ecff 0%, #eef1ff 38%, #faf7f2 72%, #f3efe9 100%)',
           }}
         />
-        {/* Animated WebGL flow field (client island; fades in over the base). */}
-        <div className="pointer-events-none absolute inset-0">
-          <HeroCanvas />
-        </div>
+        {/* The living gallery — real artworks floating behind the headline. */}
+        <HeroArtworks />
         {/* Faint blueprint grid — a static nod to the brand's cube geometry. */}
         <div
           aria-hidden
