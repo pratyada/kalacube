@@ -68,6 +68,7 @@ export default function Footer() {
           <ul className="mt-4 space-y-2.5 text-sm">
             <li><Link href="/auth/register" className="transition hover:text-yellow">Join KalaCUBE</Link></li>
             <li><Link href="/auth/login" className="transition hover:text-yellow">Sign in</Link></li>
+            <li><Link href="/pricing" className="transition hover:text-yellow">Pricing</Link></li>
             <li><Link href="/roadmap" className="transition hover:text-yellow">Roadmap</Link></li>
             <li><Link href="/faqs" className="transition hover:text-yellow">FAQs</Link></li>
           </ul>
