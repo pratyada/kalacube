@@ -23,6 +23,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     { url: `${SITE}/terms`, lastModified: now, changeFrequency: 'yearly', priority: 0.3 },
     { url: `${SITE}/refund-policy`, lastModified: now, changeFrequency: 'yearly', priority: 0.3 },
     { url: `${SITE}/shipping-policy`, lastModified: now, changeFrequency: 'yearly', priority: 0.3 },
+    { url: `${SITE}/pricing-policy`, lastModified: now, changeFrequency: 'yearly', priority: 0.3 },
   ];
 
   const [artists, artworks] = await Promise.all([

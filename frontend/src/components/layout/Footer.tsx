@@ -16,6 +16,7 @@ const LEGAL = [
   { href: '/terms', label: 'Terms & Conditions' },
   { href: '/refund-policy', label: 'Refund & Cancellation' },
   { href: '/shipping-policy', label: 'Shipping Policy' },
+  { href: '/pricing-policy', label: 'Pricing Policy' },
 ];
 
 export default function Footer() {
