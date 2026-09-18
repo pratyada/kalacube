@@ -32,12 +32,12 @@ import { EmailProcessor } from './email.processor';
         defaults: {
           from:
             config.get<string>('EMAIL_FROM') ||
-            'KalaCUBE <connect@kalacube.com>',
-          // From (connect@) is send-only (no Zoho mailbox). Route every human
-          // reply to a real inbox. Per-message replyTo (e.g. enquiry → buyer)
-          // overrides this default.
+            'KalaCUBE <contact@kalacube.com>',
+          // From (contact@) is a real Zoho inbox. Route every human reply to a
+          // real inbox. Per-message replyTo (e.g. enquiry → buyer) overrides
+          // this default.
           replyTo:
-            config.get<string>('EMAIL_REPLY_TO') || 'kalacube4u@gmail.com',
+            config.get<string>('EMAIL_REPLY_TO') || 'contact@kalacube.com',
         },
         template: {
           dir: join(__dirname, 'templates'),
