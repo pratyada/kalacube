@@ -2,15 +2,86 @@ import {
   Injectable,
   NotFoundException,
   ConflictException,
+  ForbiddenException,
+  BadRequestException,
 } from '@nestjs/common';
 import { UserRepository } from './user.repository';
+import { S3Service } from '../s3/s3.service';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { UpdateArtistProfileDto } from './dto/update-artist-profile.dto';
 import { PRIVATE_USER_FIELDS, UserRole } from './types/user.types';
 
+type UploadedImage = {
+  buffer: Buffer;
+  originalname: string;
+  mimetype: string;
+};
+
 @Injectable()
 export class UserService {
-  constructor(private readonly userRepo: UserRepository) {}
+  constructor(
+    private readonly userRepo: UserRepository,
+    private readonly s3: S3Service,
+  ) {}
+
+  /**
+   * Owner-scoped avatar / cover upload. The authed user must own `:username`
+   * (else 403). Images land under the same public-read `protected/*` prefix as
+   * migrated profile images, then `user.avatar` / `user.coverImage` are set to
+   * the public URLs so the artist page renders them immediately.
+   */
+  async uploadProfileImages(
+    username: string,
+    currentUserId: string,
+    files: { avatar?: UploadedImage[]; cover?: UploadedImage[] },
+  ) {
+    const user = await this.userRepo.findUserByUsername(username);
+    if (!user) throw new NotFoundException('User not found');
+    if (user._id.toString() !== currentUserId.toString()) {
+      throw new ForbiddenException('You can only update your own profile');
+    }
+
+    const avatarFile = files?.avatar?.[0];
+    const coverFile = files?.cover?.[0];
+    if (!avatarFile && !coverFile) {
+      throw new BadRequestException('No image provided');
+    }
+    for (const f of [avatarFile, coverFile]) {
+      if (f && !f.mimetype?.startsWith('image/')) {
+        throw new BadRequestException('Only image files are allowed');
+      }
+    }
+
+    const ownerKey = user.legacyIdentityId || user._id.toString();
+    const prefix = `protected/${ownerKey}/profile`;
+
+    const update: Record<string, { key: string; url: string }> = {};
+    if (avatarFile) {
+      const { key } = await this.s3.uploadFile({
+        file: avatarFile,
+        location: prefix,
+      });
+      update.avatar = { key, url: this.s3.getPublicUrl(key) };
+    }
+    if (coverFile) {
+      const { key } = await this.s3.uploadFile({
+        file: coverFile,
+        location: prefix,
+      });
+      update.coverImage = { key, url: this.s3.getPublicUrl(key) };
+    }
+
+    await this.userRepo.updateUser({ _id: user._id }, { $set: update });
+    await this.updateProfileCompleteness(user._id.toString());
+
+    return {
+      data: {
+        avatar: update.avatar ?? user.avatar,
+        coverImage: update.coverImage ?? user.coverImage,
+      },
+      message: 'Profile images updated',
+    };
+  }
 
   async getUserByUsername(username: string) {
     const projection = PRIVATE_USER_FIELDS.reduce(

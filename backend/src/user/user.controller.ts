@@ -3,11 +3,15 @@ import {
   Get,
   Patch,
   Put,
+  Post,
   Delete,
   Param,
   Body,
   Query,
+  UploadedFiles,
+  UseInterceptors,
 } from '@nestjs/common';
+import { FileFieldsInterceptor } from '@nestjs/platform-express';
 import { UserService } from './user.service';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { UpdateArtistProfileDto } from './dto/update-artist-profile.dto';
@@ -60,6 +64,34 @@ export class UserController {
     @Body() dto: UpdateUserDto,
   ) {
     return this.userService.updateUser(username, currentUserId, dto);
+  }
+
+  // Owner-scoped avatar / cover upload. Authed users only; the service checks
+  // that the authed user owns `:username` (403 otherwise).
+  @Post(':username/images')
+  @UseInterceptors(
+    FileFieldsInterceptor(
+      [
+        { name: 'avatar', maxCount: 1 },
+        { name: 'cover', maxCount: 1 },
+      ],
+      { limits: { fileSize: 5 * 1024 * 1024 } },
+    ),
+  )
+  async uploadProfileImages(
+    @Param('username') username: string,
+    @CurrentUser('_id') currentUserId: string,
+    @UploadedFiles()
+    files: {
+      avatar?: { buffer: Buffer; originalname: string; mimetype: string }[];
+      cover?: { buffer: Buffer; originalname: string; mimetype: string }[];
+    },
+  ) {
+    return this.userService.uploadProfileImages(
+      username,
+      currentUserId,
+      files,
+    );
   }
 
   @Delete(':username')

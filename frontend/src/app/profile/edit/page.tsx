@@ -12,6 +12,12 @@ export default function EditProfilePage() {
   const [message, setMessage] = useState('');
   const [tab, setTab] = useState<'basic' | 'role'>('basic');
 
+  // Profile images (avatar + cover). Previews hold either the persisted URL or
+  // a local object-URL while a freshly-picked file is uploading.
+  const [avatarPreview, setAvatarPreview] = useState<string | null>(null);
+  const [coverPreview, setCoverPreview] = useState<string | null>(null);
+  const [uploading, setUploading] = useState<'avatar' | 'cover' | null>(null);
+
   const [basicForm, setBasicForm] = useState({
     firstName: '',
     lastName: '',
@@ -43,6 +49,8 @@ export default function EditProfilePage() {
 
   useEffect(() => {
     if (user) {
+      setAvatarPreview(user.avatar?.url || null);
+      setCoverPreview(user.coverImage?.url || null);
       setBasicForm({
         firstName: user.firstName || '',
         lastName: user.lastName || '',
@@ -138,7 +146,61 @@ export default function EditProfilePage() {
     }
   };
 
+  const uploadImage = async (kind: 'avatar' | 'cover', file: File) => {
+    if (!user) return;
+    if (!file.type.startsWith('image/')) {
+      setMessage('Please choose an image file.');
+      return;
+    }
+    if (file.size > 5 * 1024 * 1024) {
+      setMessage('Image must be under 5MB.');
+      return;
+    }
+
+    // Optimistic local preview while the upload is in flight.
+    const localUrl = URL.createObjectURL(file);
+    if (kind === 'avatar') setAvatarPreview(localUrl);
+    else setCoverPreview(localUrl);
+
+    setUploading(kind);
+    setMessage('');
+    try {
+      const fd = new FormData();
+      fd.append(kind, file);
+      const { data } = await api.post(
+        `/api/users/${user.username}/images`,
+        fd,
+        { headers: { 'Content-Type': 'multipart/form-data' } },
+      );
+      // Swap the optimistic preview for the persisted S3 URL.
+      const saved = data?.data;
+      if (kind === 'avatar' && saved?.avatar?.url)
+        setAvatarPreview(saved.avatar.url);
+      if (kind === 'cover' && saved?.coverImage?.url)
+        setCoverPreview(saved.coverImage.url);
+      await fetchUser();
+      setMessage(
+        kind === 'avatar' ? 'Profile picture updated!' : 'Cover image updated!',
+      );
+    } catch (err: any) {
+      // Revert to whatever the store still holds.
+      if (kind === 'avatar') setAvatarPreview(user.avatar?.url || null);
+      else setCoverPreview(user.coverImage?.url || null);
+      setMessage(err.response?.data?.message || 'Failed to upload image');
+    } finally {
+      URL.revokeObjectURL(localUrl);
+      setUploading(null);
+    }
+  };
+
   if (isLoading || !user) return null;
+
+  const initials = `${user.firstName || ''} ${user.lastName || ''}`
+    .trim()
+    .split(/\s+/)
+    .slice(0, 2)
+    .map((s) => s[0]?.toUpperCase())
+    .join('') || (user.username?.[0]?.toUpperCase() ?? '?');
 
   const inputClass =
     'w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-rose-500 focus:border-transparent outline-none text-sm';
@@ -190,6 +252,79 @@ export default function EditProfilePage() {
           )}
 
           {tab === 'basic' && (
+            <div className="space-y-6">
+              {/* Profile images: cover banner + avatar */}
+              <div className="bg-white rounded-xl border overflow-hidden">
+                {/* Cover banner */}
+                <div className="relative h-40 w-full bg-[#FAF7F2] sm:h-48">
+                  {coverPreview ? (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img
+                      src={coverPreview}
+                      alt="Cover"
+                      className="h-full w-full object-cover"
+                    />
+                  ) : (
+                    <div className="flex h-full w-full items-center justify-center bg-gradient-to-br from-[#202F9A]/15 to-[#0B1F52]/10 text-sm text-[#0B1F52]/50">
+                      No cover image yet
+                    </div>
+                  )}
+                  <label className="absolute right-3 top-3 cursor-pointer rounded-full bg-[#0B1F52]/85 px-4 py-2 text-xs font-semibold text-white backdrop-blur transition hover:bg-[#202F9A]">
+                    {uploading === 'cover' ? 'Uploading…' : 'Change cover'}
+                    <input
+                      type="file"
+                      accept="image/*"
+                      className="sr-only"
+                      disabled={uploading !== null}
+                      onChange={(e) => {
+                        const f = e.target.files?.[0];
+                        if (f) uploadImage('cover', f);
+                        e.target.value = '';
+                      }}
+                    />
+                  </label>
+                </div>
+
+                {/* Avatar overlapping the cover */}
+                <div className="flex items-end gap-4 px-6 pb-6">
+                  <div className="-mt-12 flex-shrink-0">
+                    <div className="relative h-24 w-24">
+                      {avatarPreview ? (
+                        // eslint-disable-next-line @next/next/no-img-element
+                        <img
+                          src={avatarPreview}
+                          alt="Avatar"
+                          className="h-24 w-24 rounded-full border-4 border-white object-cover shadow-md"
+                        />
+                      ) : (
+                        <div className="flex h-24 w-24 items-center justify-center rounded-full border-4 border-white bg-gradient-to-br from-[#202F9A]/30 to-[#202F9A]/5 text-2xl font-semibold text-[#202F9A] shadow-md">
+                          {initials}
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                  <div className="pb-1">
+                    <label className="inline-flex cursor-pointer items-center gap-2 rounded-full bg-[#FFD200] px-4 py-2 text-xs font-semibold text-[#0B1F52] transition hover:brightness-95">
+                      {uploading === 'avatar' ? 'Uploading…' : 'Change photo'}
+                      <input
+                        type="file"
+                        accept="image/*"
+                        className="sr-only"
+                        disabled={uploading !== null}
+                        onChange={(e) => {
+                          const f = e.target.files?.[0];
+                          if (f) uploadImage('avatar', f);
+                          e.target.value = '';
+                        }}
+                      />
+                    </label>
+                    <p className="mt-1 text-xs text-gray-400">
+                      JPG or PNG, up to 5MB.
+                    </p>
+                  </div>
+                </div>
+              </div>
+
             <form
               onSubmit={saveBasic}
               className="bg-white rounded-xl border p-6 space-y-4"
@@ -348,6 +483,7 @@ export default function EditProfilePage() {
                 {saving ? 'Saving...' : 'Save Profile'}
               </button>
             </form>
+            </div>
           )}
 
           {tab === 'role' && user.role === 'artist' && (

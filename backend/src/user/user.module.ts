@@ -16,6 +16,7 @@ import {
   ArtSpaceProfile,
   ArtSpaceProfileSchema,
 } from './schemas/art-space-profile.schema';
+import { S3Module } from '../s3/s3.module';
 
 @Module({
   imports: [
@@ -25,6 +26,7 @@ import {
       { name: CuratorProfile.name, schema: CuratorProfileSchema },
       { name: ArtSpaceProfile.name, schema: ArtSpaceProfileSchema },
     ]),
+    S3Module,
   ],
   controllers: [UserController],
   providers: [UserService, UserRepository],
