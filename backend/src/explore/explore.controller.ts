@@ -74,6 +74,19 @@ export class ExploreController {
     return this.explore.listJournal(Number(limit));
   }
 
+  /** Topical blog posts (art-style & category guides). */
+  @Public()
+  @Get('posts')
+  posts() {
+    return this.explore.listPosts();
+  }
+
+  @Public()
+  @Get('post/:slug')
+  post(@Param('slug') slug: string) {
+    return this.explore.getPost(slug);
+  }
+
   @Public()
   @Get('artists/:username')
   async artist(@Param('username') username: string) {

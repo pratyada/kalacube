@@ -1,7 +1,7 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
-import { fetchArtist, museeArtistUrl, MUSEE, SITE } from '@/lib/blog';
+import { fetchArtist, fetchPost, museeArtistUrl, MUSEE, SITE } from '@/lib/blog';
 
 export const dynamic = 'force-dynamic';
 
@@ -17,6 +17,21 @@ export async function generateMetadata({
   params: Promise<{ slug: string }>;
 }): Promise<Metadata> {
   const { slug } = await params;
+  const post = await fetchPost(slug);
+  if (post) {
+    return {
+      title: { absolute: `${post.title} — KalaCUBE Journal` },
+      description: post.excerpt || post.title,
+      alternates: { canonical: `${SITE}/blog/${post.slug}` },
+      openGraph: {
+        title: post.title,
+        description: post.excerpt || post.title,
+        url: `${SITE}/blog/${post.slug}`,
+        type: 'article',
+        images: post.coverImage ? [{ url: post.coverImage }] : [],
+      },
+    };
+  }
   const data = await fetchArtist(slug);
   if (!data) return { title: { absolute: 'Artist not found — KalaCUBE Journal' } };
   const { user, profile, artworks } = data;
@@ -47,6 +62,43 @@ export default async function ArtistBlog({
   params: Promise<{ slug: string }>;
 }) {
   const { slug } = await params;
+
+  // Topical post (art-style / category guide)?
+  const post = await fetchPost(slug);
+  if (post) {
+    const articleLd = {
+      '@context': 'https://schema.org',
+      '@type': 'Article',
+      headline: post.title,
+      description: post.excerpt,
+      url: `${SITE}/blog/${post.slug}`,
+      ...(post.coverImage ? { image: post.coverImage } : {}),
+      publisher: { '@type': 'Organization', name: 'KalaCUBE', url: SITE },
+    };
+    return (
+      <main className="min-h-screen bg-[#faf7f2] text-neutral-900">
+        <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(articleLd) }} />
+        <article className="mx-auto max-w-3xl px-6 py-14">
+          <nav className="text-sm text-neutral-500">
+            <Link href="/blog" className="hover:text-[#202f9a]">Journal</Link> / {post.title}
+          </nav>
+          {post.kicker && (
+            <p className="mt-6 text-xs uppercase tracking-[0.2em] text-[#202f9a]">{post.kicker}</p>
+          )}
+          <h1 className="mt-2 font-serif text-4xl leading-tight md:text-5xl">{post.title}</h1>
+          {post.coverImage && (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img src={post.coverImage} alt={post.title} className="mt-8 aspect-[16/9] w-full rounded-2xl object-cover" />
+          )}
+          <div
+            className="prose prose-neutral mt-8 max-w-none text-[17px] leading-relaxed [&_a]:text-[#202f9a] [&_a]:underline [&_h2]:mt-8 [&_h2]:font-serif [&_h2]:text-2xl [&_p]:mt-4"
+            dangerouslySetInnerHTML={{ __html: post.html }}
+          />
+        </article>
+      </main>
+    );
+  }
+
   const data = await fetchArtist(slug);
   if (!data) notFound();
 

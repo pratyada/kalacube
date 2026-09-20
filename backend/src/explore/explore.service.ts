@@ -240,6 +240,25 @@ export class ExploreService {
   }
 
   /**
+   * Topical blog posts (art-style & category guides) from the `blogposts`
+   * collection — list view (no HTML body), newest first.
+   */
+  async listPosts() {
+    const items = await this.conn
+      .collection('blogposts')
+      .find({ published: { $ne: false } })
+      .project({ html: 0 })
+      .sort({ publishedAt: -1 })
+      .toArray();
+    return { items };
+  }
+
+  /** A single topical blog post by slug (full HTML). */
+  async getPost(slug: string) {
+    return this.conn.collection('blogposts').findOne({ slug });
+  }
+
+  /**
    * The Journal (blog) feed — ONLY artists who have a written editorial
    * `feature` story, shaped as blog posts (cover/avatar, headline, excerpt).
    * Distinct from /all-artist (the full artist directory).

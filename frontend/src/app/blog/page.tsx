@@ -1,6 +1,6 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
-import { API_BASE } from '@/lib/blog';
+import { API_BASE, fetchPosts } from '@/lib/blog';
 
 export const metadata: Metadata = {
   title: 'KalaCUBE Journal — Stories of India’s Artists & Handmade Art',
@@ -55,6 +55,13 @@ function coverOf(p: JournalPost): string | undefined {
 
 export default async function BlogIndex() {
   const posts = await fetchJournal();
+  const guides = (await fetchPosts()) as {
+    slug: string;
+    title: string;
+    kicker?: string;
+    excerpt?: string;
+    coverImage?: string;
+  }[];
 
   return (
     <main className="min-h-screen bg-[#faf7f2] text-neutral-900">
@@ -93,6 +100,44 @@ export default async function BlogIndex() {
             <div className="hidden bg-gradient-to-br from-[#202f9a]/10 to-[#eef1ff] md:block" />
           </div>
         </Link>
+
+        {/* Art-style & category guides */}
+        {guides.length > 0 && (
+          <div className="mb-14">
+            <h2 className="mb-2 font-serif text-3xl">Art Styles &amp; Guides</h2>
+            <p className="mb-8 text-neutral-500">
+              {guides.length} guides to India’s art forms
+            </p>
+            <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+              {guides.map((g) => (
+                <Link
+                  key={g.slug}
+                  href={`/blog/${g.slug}`}
+                  className="group flex flex-col overflow-hidden rounded-2xl border border-neutral-200 bg-white transition hover:border-[#202f9a]/40 hover:shadow-lg"
+                >
+                  <div className="aspect-[16/10] overflow-hidden bg-neutral-100">
+                    {g.coverImage ? (
+                      // eslint-disable-next-line @next/next/no-img-element
+                      <img src={g.coverImage} alt={g.title} className="h-full w-full object-cover transition duration-500 group-hover:scale-105" />
+                    ) : (
+                      <div className="flex h-full items-center justify-center bg-gradient-to-br from-[#202f9a]/10 to-[#eef1ff] font-serif text-2xl text-[#202f9a]/40">
+                        {g.title}
+                      </div>
+                    )}
+                  </div>
+                  <div className="flex flex-1 flex-col p-5">
+                    {g.kicker && (
+                      <span className="text-[11px] uppercase tracking-[0.15em] text-[#202f9a]">{g.kicker}</span>
+                    )}
+                    <h3 className="mt-1 font-serif text-xl leading-snug group-hover:text-[#202f9a]">{g.title}</h3>
+                    <p className="mt-3 line-clamp-3 text-sm leading-relaxed text-neutral-600">{g.excerpt}</p>
+                    <span className="mt-4 inline-block text-sm font-medium text-[#202f9a]">Read the guide →</span>
+                  </div>
+                </Link>
+              ))}
+            </div>
+          </div>
+        )}
 
         <h2 className="mb-2 font-serif text-3xl">Artist Features</h2>
         <p className="mb-8 text-neutral-500">

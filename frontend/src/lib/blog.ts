@@ -32,6 +32,31 @@ export async function fetchArtists(limit = 60) {
   }
 }
 
+/** A topical blog post (art-style / category guide) by slug, or null. */
+export async function fetchPost(slug: string) {
+  try {
+    const res = await fetch(`${API_BASE}/api/explore/post/${encodeURIComponent(slug)}`, {
+      cache: 'no-store',
+    });
+    if (!res.ok) return null;
+    const json = await res.json();
+    return json.data || null;
+  } catch {
+    return null;
+  }
+}
+
+/** All topical blog posts (list view, no HTML body). */
+export async function fetchPosts() {
+  try {
+    const res = await fetch(`${API_BASE}/api/explore/posts`, { cache: 'no-store' });
+    const json = await res.json();
+    return json.data?.items || [];
+  } catch {
+    return [];
+  }
+}
+
 export async function fetchArtist(username: string) {
   try {
     const res = await fetch(`${API_BASE}/api/explore/artists/${encodeURIComponent(username)}`, {
