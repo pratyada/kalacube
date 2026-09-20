@@ -36,11 +36,13 @@ export class OrdersController {
   }
 
   /**
-   * Shiprocket tracking webhook. Public, but authenticated by a shared secret
-   * sent in the `x-api-key` header (configured in the Shiprocket dashboard).
+   * Courier tracking webhook (Shiprocket). Public, but authenticated by a shared
+   * secret in the `x-api-key` header. NOTE: the path deliberately avoids the
+   * words "shiprocket"/"sr"/"kr" — Shiprocket rejects webhook URLs containing
+   * its own name ("Address is not allowed").
    */
   @Public()
-  @Post('webhook/shiprocket')
+  @Post('webhook/courier')
   shiprocketWebhook(
     @Body() body: any,
     @Headers('x-api-key') token: string,
