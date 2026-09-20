@@ -3,7 +3,7 @@
 import { create } from 'zustand';
 import { signIn, signInWithRedirect, signOut } from 'aws-amplify/auth';
 import api from '@/lib/api';
-import { getIdToken } from '@/lib/amplify';
+import { getIdToken, configureAmplify } from '@/lib/amplify';
 import type { User } from '@/types/auth';
 
 interface AuthState {
@@ -47,7 +47,17 @@ export const useAuthStore = create<AuthState>((set) => ({
   // One-tap style redirect to Cognito Hosted UI → Google. Works for signup OR
   // login: the account-linking Lambda connects it to the existing profile.
   loginWithGoogle: async () => {
-    await signInWithRedirect({ provider: 'Google' });
+    // Ensure Amplify's OAuth config is applied on this client before redirect
+    // (guards against a first-click race where the module-load config hasn't
+    // taken effect). Log the real error so failures are diagnosable.
+    try {
+      configureAmplify();
+      await signInWithRedirect({ provider: 'Google' });
+    } catch (e) {
+      // eslint-disable-next-line no-console
+      console.error('[google-signin] signInWithRedirect failed:', e);
+      throw e;
+    }
   },
 
   logout: async () => {
