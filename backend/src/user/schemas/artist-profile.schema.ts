@@ -63,6 +63,13 @@ export class ArtistProfile extends Document {
   })
   awards: { title: string; year: number; issuer: string }[];
 
+  // Editorial "Journal" feature (HTML) shown on /blog/{username}. Grounded in
+  // the artist's real Musée Living feature and/or their own statement + works —
+  // never fabricated. `featureSource` records provenance ('musee' | 'statement').
+  @Prop() feature: string;
+
+  @Prop() featureSource: string;
+
   @Prop({ default: false })
   availableForCommission: boolean;
 

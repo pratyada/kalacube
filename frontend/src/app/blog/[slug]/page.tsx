@@ -117,6 +117,14 @@ export default async function ArtistBlog({
           , Dehradun — where KalaCUBE began.
         </div>
 
+        {/* Editorial feature (grounded in the artist's real story + works) */}
+        {profile?.feature && (
+          <div
+            className="prose prose-neutral mt-10 max-w-none text-[17px] leading-relaxed text-neutral-800 [&_a]:text-[#202f9a] [&_a]:underline [&_h2]:mt-8 [&_h2]:font-serif [&_h2]:text-2xl [&_p]:mt-4"
+            dangerouslySetInnerHTML={{ __html: profile.feature }}
+          />
+        )}
+
         {/* Portfolio */}
         <h2 className="mt-14 font-serif text-3xl">Selected Works ({artworks.length})</h2>
         <div className="mt-6 grid grid-cols-2 gap-4 sm:grid-cols-3">
