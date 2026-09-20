@@ -239,6 +239,71 @@ export class ExploreService {
     return { items: data, total, page, limit };
   }
 
+  /**
+   * The Journal (blog) feed — ONLY artists who have a written editorial
+   * `feature` story, shaped as blog posts (cover/avatar, headline, excerpt).
+   * Distinct from /all-artist (the full artist directory).
+   */
+  async listJournal(limit = 80) {
+    const pipeline = [
+      { $match: { role: 'artist', isActive: true } },
+      {
+        $lookup: {
+          from: 'artistprofiles',
+          localField: '_id',
+          foreignField: 'user',
+          as: 'profile',
+        },
+      },
+      { $addFields: { p: { $arrayElemAt: ['$profile', 0] } } },
+      { $match: { 'p.feature': { $type: 'string', $ne: '' } } },
+      {
+        $lookup: {
+          from: 'artworks',
+          let: { uid: '$_id' },
+          pipeline: [
+            { $match: { $expr: { $eq: ['$artist', '$$uid'] }, status: 'submitted' } },
+            { $limit: 1 },
+            { $project: { images: 1 } },
+          ],
+          as: 'aw',
+        },
+      },
+      {
+        $project: {
+          username: 1,
+          firstName: 1,
+          lastName: 1,
+          avatar: 1,
+          coverImage: 1,
+          location: 1,
+          headline: '$p.headline',
+          artDimensions: '$p.artDimensions',
+          feature: '$p.feature',
+          featureSource: '$p.featureSource',
+          updatedAt: '$p.updatedAt',
+          coverArt: { $arrayElemAt: ['$aw.images', 0] },
+        },
+      },
+      { $sort: { updatedAt: -1, _id: 1 } },
+      { $limit: limit },
+    ];
+    const rows = await this.userRepo.userModel.aggregate(pipeline as any);
+    // Build a plain-text excerpt from the HTML feature; drop the full HTML.
+    const items = rows.map((r: any) => {
+      const excerpt = String(r.feature || '')
+        .replace(/<[^>]+>/g, ' ')
+        .replace(/&[a-z]+;/gi, ' ')
+        .replace(/\s+/g, ' ')
+        .trim()
+        .slice(0, 210);
+      const { feature, ...rest } = r;
+      void feature;
+      return { ...rest, excerpt };
+    });
+    return { items, total: items.length };
+  }
+
   async getArtist(username: string) {
     const user = await this.userRepo.findUserByUsername(username.toLowerCase(), {
       password: 0,

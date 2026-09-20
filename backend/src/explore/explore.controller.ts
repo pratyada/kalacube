@@ -67,6 +67,13 @@ export class ExploreController {
     );
   }
 
+  /** The Journal (blog) feed — only artists with a written feature story. */
+  @Public()
+  @Get('journal')
+  journal(@Query('limit') limit = '80') {
+    return this.explore.listJournal(Number(limit));
+  }
+
   @Public()
   @Get('artists/:username')
   async artist(@Param('username') username: string) {
