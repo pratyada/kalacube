@@ -45,7 +45,7 @@ const TIERS: Tier[] = [
       'Up to 10 artworks',
       'Appear in Explore',
       'Receive buyer enquiries',
-      'Sell at 20% commission',
+      '30% commission — you keep 70%',
       '“Made on KalaCUBE” badge shown',
     ],
   },
@@ -60,7 +60,7 @@ const TIERS: Tier[] = [
     features: [
       'Unlimited artworks',
       'Sell your storefront (prints + Buy Now)',
-      'Commission 20% → 12%',
+      '20% commission — you keep 80%',
       'Verified badge',
       'Full analytics',
       'WhatsApp share kit',
@@ -76,7 +76,7 @@ const TIERS: Tier[] = [
     wasPrice: 899,
     features: [
       'Everything in Rising, plus:',
-      '0% commission on prints · 8% on originals',
+      '15% commission — you keep 85%',
       'AI “Story” on every artwork',
       'Priority discovery + rotational featured placement',
       'Custom domain',
@@ -95,7 +95,7 @@ const TIERS: Tier[] = [
       'Guaranteed monthly spotlight (homepage + buyer newsletter)',
       'We actively promote & pitch you',
       'Buyer CRM + priority leads',
-      '0% commission on originals too',
+      'Lowest commission — just 8%, you keep 92%',
       'Priority support',
       'Early global-selling access',
     ],
@@ -274,7 +274,7 @@ export default function PricingPage() {
               {
                 c: 'text-orange',
                 t: 'Lower commission',
-                d: 'Keep up to 100% of print sales and more of every original.',
+                d: 'Keep up to 92% of every sale. Galleries take 40–50%.',
               },
               {
                 c: 'text-teal',
