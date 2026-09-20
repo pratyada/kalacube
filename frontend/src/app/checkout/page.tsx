@@ -5,10 +5,10 @@ import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
 import api from '@/lib/api';
 import {
-  COMMERCE_ENABLED,
   formatINR,
   type Order,
 } from '@/lib/commerce';
+import { useCartStore } from '@/stores/cartStore';
 
 // Display-only pricing knobs — the SERVER computes the authoritative price.
 // Kept in sync with the backend defaults (COMMERCE_SHIPPING_FLAT / GST_RATE).
@@ -77,10 +77,13 @@ function CheckoutInner() {
   const params = useSearchParams();
   const artworkId = params.get('artwork') || '';
   const kind = params.get('kind') === 'print' ? 'print' : 'original';
+  const isCart = params.get('cart') === '1';
+  const cartItems = useCartStore((s) => s.items);
+  const clearCart = useCartStore((s) => s.clear);
 
   const [art, setArt] = useState<any>(null);
   const [status, setStatus] = useState<'loading' | 'ok' | 'notfound' | 'noid'>(
-    artworkId ? 'loading' : 'noid',
+    isCart ? 'ok' : artworkId ? 'loading' : 'noid',
   );
   const [form, setForm] = useState({
     buyerName: '',
@@ -113,22 +116,32 @@ function CheckoutInner() {
       .catch(() => setStatus('notfound'));
   }, [artworkId]);
 
+  // Empty the cart once a cart-mode order is confirmed.
+  useEffect(() => {
+    if (confirmed && isCart) clearCart();
+  }, [confirmed, isCart, clearCart]);
+
   const breakdown = useMemo(() => {
-    const artPrice = Number(art?.cost || 0);
+    const artPrice = isCart
+      ? cartItems.reduce((s, i) => s + (i.price || 0), 0)
+      : Number(art?.cost || 0);
     const shipping = SHIPPING_FLAT;
     const gst = Math.round(artPrice * GST_RATE);
     return { art: artPrice, shipping, gst, total: artPrice + shipping + gst };
-  }, [art]);
+  }, [art, isCart, cartItems]);
 
-  if (!COMMERCE_ENABLED) {
+  // Per-artist gate: online checkout is only open for pilot-seller artists.
+  // (Cart items already come only from pilot-seller pages, so skip in cart mode;
+  // the backend enforces it regardless.)
+  if (!isCart && status === 'ok' && !art?.artist?.pilotSeller) {
     return (
       <Shell>
         <div className="rounded-2xl border border-line bg-white p-8 text-center">
-          <h1 className="font-serif text-2xl text-navy">Checkout is coming soon</h1>
+          <h1 className="font-serif text-2xl text-navy">Not available for online checkout</h1>
           <p className="mx-auto mt-3 max-w-md text-muted">
-            Online checkout isn&apos;t live yet. To buy or make an offer on a
-            piece, use the <strong>Buy / Enquire</strong> button on the artwork —
-            you&apos;ll connect directly with the artist.
+            This piece isn&apos;t set up for online purchase yet. Use the{' '}
+            <strong>Buy / Enquire</strong> button on the artwork to connect
+            directly with the artist.
           </p>
           <Link
             href="/explore"
@@ -152,8 +165,9 @@ function CheckoutInner() {
     if (!form.buyerName.trim()) return setError('Please enter your name.');
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.buyerEmail.trim()))
       return setError('Please enter a valid email address.');
+    if (isCart && cartItems.length === 0) return setError('Your cart is empty.');
     // Originals ship via courier → a full deliverable address is required.
-    if (kind === 'original') {
+    if (isCart || kind === 'original') {
       if (!form.buyerPhone.trim()) return setError('Please enter a phone number for delivery.');
       if (!form.shippingAddress.trim()) return setError('Please enter your shipping address.');
       if (!form.shippingCity.trim()) return setError('Please enter your city.');
@@ -165,7 +179,9 @@ function CheckoutInner() {
     setPhase('placing');
     try {
       const { data } = await api.post('/api/orders', {
-        items: [{ artworkId, kind, qty: 1 }],
+        items: isCart
+          ? cartItems.map((i) => ({ artworkId: i.artworkId, kind: i.kind, qty: 1 }))
+          : [{ artworkId, kind, qty: 1 }],
         buyerName: form.buyerName.trim(),
         buyerEmail: form.buyerEmail.trim(),
         buyerPhone: form.buyerPhone.trim() || undefined,
@@ -419,18 +435,37 @@ function CheckoutInner() {
             <h2 className="text-xs font-semibold uppercase tracking-[0.2em] text-muted">
               Order summary
             </h2>
-            <div className="mt-4 flex gap-3">
-              <div className="h-16 w-16 flex-shrink-0 overflow-hidden rounded-lg bg-cream-2">
-                {art?.images?.[0] ? (
-                  // eslint-disable-next-line @next/next/no-img-element
-                  <img src={art.images[0]} alt={art?.title || 'Artwork'} className="h-full w-full object-cover" />
-                ) : null}
+            {isCart ? (
+              <div className="mt-4 space-y-3">
+                {cartItems.map((i) => (
+                  <div key={i.artworkId} className="flex items-center gap-3">
+                    <div className="h-12 w-12 flex-shrink-0 overflow-hidden rounded-lg bg-cream-2">
+                      {i.image ? (
+                        // eslint-disable-next-line @next/next/no-img-element
+                        <img src={i.image} alt={i.title} className="h-full w-full object-cover" />
+                      ) : null}
+                    </div>
+                    <div className="min-w-0 flex-1">
+                      <p className="truncate text-sm font-medium text-navy">{i.title}</p>
+                      <p className="text-xs text-muted">{formatINR(i.price)}</p>
+                    </div>
+                  </div>
+                ))}
               </div>
-              <div className="min-w-0">
-                <p className="truncate font-medium text-navy">{art?.title || 'Untitled'}</p>
-                <p className="text-xs capitalize text-muted">{kind}</p>
+            ) : (
+              <div className="mt-4 flex gap-3">
+                <div className="h-16 w-16 flex-shrink-0 overflow-hidden rounded-lg bg-cream-2">
+                  {art?.images?.[0] ? (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img src={art.images[0]} alt={art?.title || 'Artwork'} className="h-full w-full object-cover" />
+                  ) : null}
+                </div>
+                <div className="min-w-0">
+                  <p className="truncate font-medium text-navy">{art?.title || 'Untitled'}</p>
+                  <p className="text-xs capitalize text-muted">{kind}</p>
+                </div>
               </div>
-            </div>
+            )}
 
             <dl className="mt-5 space-y-2 border-t border-line pt-4 text-sm">
               <Row label="Artwork" value={formatINR(amount.art)} />

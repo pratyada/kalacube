@@ -6,6 +6,7 @@ import {
 import { InjectModel, InjectConnection } from '@nestjs/mongoose';
 import { Connection, Model, Types } from 'mongoose';
 import { Artwork } from '../explore/schemas/artwork.schema';
+import { Order } from '../orders/schemas/order.schema';
 import { UserRepository } from '../user/user.repository';
 import { EmailService } from '../email/email.service';
 
@@ -18,6 +19,7 @@ type Segment = 'all' | 'active' | 'has-artwork' | `dimension:${string}`;
 export class AdminService {
   constructor(
     @InjectModel(Artwork.name) private artworkModel: Model<Artwork>,
+    @InjectModel(Order.name) private orderModel: Model<Order>,
     @InjectConnection() private conn: Connection,
     private userRepo: UserRepository,
     private email: EmailService,
@@ -108,12 +110,18 @@ export class AdminService {
 
   async updateUser(
     id: string,
-    dto: { role?: string; isActive?: boolean; isFeatured?: boolean },
+    dto: {
+      role?: string;
+      isActive?: boolean;
+      isFeatured?: boolean;
+      pilotSeller?: boolean;
+    },
   ) {
     const set: any = {};
     if (dto.role !== undefined) set.role = dto.role;
     if (dto.isActive !== undefined) set.isActive = dto.isActive;
     if (dto.isFeatured !== undefined) set.isFeatured = dto.isFeatured;
+    if (dto.pilotSeller !== undefined) set.pilotSeller = dto.pilotSeller;
     const u = await this.userRepo.userModel.findByIdAndUpdate(
       id,
       { $set: set },
@@ -171,6 +179,67 @@ export class AdminService {
 
   listEvents() {
     return this.conn.collection('events').find({}).sort({ start: -1 }).limit(100).toArray();
+  }
+
+  /**
+   * All orders for ops tracking — who's selling what, to whom, when, and the
+   * payment + fulfilment state. Paged, newest first, with the artist populated.
+   * Filters: paymentStatus, fulfilmentStatus, track, and a free-text search
+   * across buyer name/email + item titles.
+   */
+  async listOrders(
+    page = 1,
+    limit = 25,
+    filters: {
+      paymentStatus?: string;
+      fulfilmentStatus?: string;
+      track?: string;
+      search?: string;
+    } = {},
+  ) {
+    const filter: any = {};
+    if (filters.paymentStatus) filter.paymentStatus = filters.paymentStatus;
+    if (filters.fulfilmentStatus) filter.fulfilmentStatus = filters.fulfilmentStatus;
+    if (filters.track) filter.track = filters.track;
+    if (filters.search) {
+      const rx = { $regex: filters.search, $options: 'i' };
+      filter.$or = [
+        { 'buyer.name': rx },
+        { 'buyer.email': rx },
+        { 'items.title': rx },
+      ];
+    }
+    const skip = (page - 1) * limit;
+    const [items, total, paidAgg, statusAgg] = await Promise.all([
+      this.orderModel
+        .find(filter)
+        .populate('artistId', 'username firstName lastName')
+        .sort({ createdAt: -1 })
+        .skip(skip)
+        .limit(limit)
+        .lean(),
+      this.orderModel.countDocuments(filter),
+      this.orderModel.aggregate([
+        { $match: { paymentStatus: 'paid' } },
+        { $group: { _id: null, gross: { $sum: '$amount.total' }, n: { $sum: 1 } } },
+      ]),
+      this.orderModel.aggregate([
+        { $group: { _id: '$fulfilmentStatus', n: { $sum: 1 } } },
+      ]),
+    ]);
+    const counts: Record<string, number> = {};
+    for (const g of statusAgg) counts[g._id] = g.n;
+    return {
+      items,
+      total,
+      page,
+      limit,
+      summary: {
+        paidOrders: paidAgg[0]?.n || 0,
+        grossPaid: paidAgg[0]?.gross || 0,
+        byStatus: counts,
+      },
+    };
   }
 
   // ---------------------------------------------------------------------------

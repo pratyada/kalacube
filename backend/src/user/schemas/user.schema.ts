@@ -109,6 +109,12 @@ export class User extends Document {
   @Prop({ default: false, index: true })
   isFeatured: boolean;
 
+  // Shipping-pilot seller — when true, this artist's artworks show the online
+  // "Buy now" button and accept real orders/checkout. Off for everyone else
+  // (they keep the Enquire flow). This is the per-artist commerce gate.
+  @Prop({ default: false, index: true })
+  pilotSeller: boolean;
+
   @Prop({ default: 0 })
   profileCompleteness: number;
 

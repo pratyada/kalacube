@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { useAuthStore } from '@/stores/authStore';
 import DashboardSection from '@/components/admin/DashboardSection';
+import OrdersSection from '@/components/admin/OrdersSection';
 import ArtistsSection from '@/components/admin/ArtistsSection';
 import ArtworksSection from '@/components/admin/ArtworksSection';
 import FeaturedSection from '@/components/admin/FeaturedSection';
@@ -15,6 +16,7 @@ import { StatusDot, ui, cx } from '@/components/admin/console';
 
 const NAV: { key: AdminSection; label: string; code: string }[] = [
   { key: 'dashboard', label: 'Dashboard', code: 'SYS' },
+  { key: 'orders', label: 'Orders', code: 'ORD' },
   { key: 'artists', label: 'Artists', code: 'USR' },
   { key: 'artworks', label: 'Artworks', code: 'ART' },
   { key: 'featured', label: 'Featured', code: 'FTR' },
@@ -206,6 +208,7 @@ export default function AdminPage() {
 
           <div className="mx-auto max-w-6xl px-4 py-6">
             {section === 'dashboard' && <DashboardSection />}
+            {section === 'orders' && <OrdersSection />}
             {section === 'artists' && <ArtistsSection />}
             {section === 'artworks' && <ArtworksSection />}
             {section === 'featured' && <FeaturedSection />}

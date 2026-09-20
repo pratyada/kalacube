@@ -7,11 +7,55 @@ export interface AdminUser {
   role: string;
   isActive: boolean;
   isFeatured?: boolean;
+  pilotSeller?: boolean;
   avatar?: { url?: string };
   location?: { city?: string; state?: string; country?: string };
   bio?: string;
   createdAt?: string;
 }
+
+export interface AdminOrder {
+  _id: string;
+  buyer?: { name?: string; email?: string; phone?: string };
+  shipTo?: { city?: string; state?: string; pincode?: string };
+  artistId?: {
+    username?: string;
+    firstName?: string;
+    lastName?: string;
+  } | null;
+  items?: { title?: string; kind?: string; qty?: number; unitPrice?: number }[];
+  amount?: { art?: number; shipping?: number; gst?: number; total?: number };
+  currency?: string;
+  track?: 'original' | 'pod';
+  paymentStatus?: 'pending' | 'paid' | 'refunded';
+  fulfilmentStatus?: string;
+  shipment?: { awb?: string; courier?: string; trackingUrl?: string };
+  payout?: { net?: number; status?: string };
+  createdAt?: string;
+}
+
+export interface OrdersSummary {
+  paidOrders: number;
+  grossPaid: number;
+  byStatus: Record<string, number>;
+}
+
+export const FULFILMENT_STATUSES = [
+  'PENDING',
+  'PAID',
+  'SHIPMENT_CREATED',
+  'PICKUP_SCHEDULED',
+  'PICKED_UP',
+  'IN_TRANSIT',
+  'DELIVERED',
+  'RETURN_WINDOW',
+  'PAID_OUT',
+  'NDR',
+  'RTO',
+  'RETURN_REQUESTED',
+  'REVERSE_PICKUP',
+  'REFUNDED',
+];
 
 export interface AdminArtwork {
   _id: string;
@@ -69,6 +113,7 @@ export interface RecipientPreview {
 
 export type AdminSection =
   | 'dashboard'
+  | 'orders'
   | 'artists'
   | 'artworks'
   | 'featured'

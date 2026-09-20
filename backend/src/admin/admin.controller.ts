@@ -36,9 +36,32 @@ export class AdminController {
   @Patch('users/:id')
   updateUser(
     @Param('id') id: string,
-    @Body() dto: { role?: string; isActive?: boolean; isFeatured?: boolean },
+    @Body()
+    dto: {
+      role?: string;
+      isActive?: boolean;
+      isFeatured?: boolean;
+      pilotSeller?: boolean;
+    },
   ) {
     return this.admin.updateUser(id, dto);
+  }
+
+  @Get('orders')
+  orders(
+    @Query('page') page = '1',
+    @Query('limit') limit = '25',
+    @Query('paymentStatus') paymentStatus?: string,
+    @Query('fulfilmentStatus') fulfilmentStatus?: string,
+    @Query('track') track?: string,
+    @Query('search') search?: string,
+  ) {
+    return this.admin.listOrders(Number(page), Number(limit), {
+      paymentStatus,
+      fulfilmentStatus,
+      track,
+      search,
+    });
   }
 
   @Get('featured')

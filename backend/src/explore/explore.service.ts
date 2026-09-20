@@ -261,7 +261,7 @@ export class ExploreService {
     if (!/^[0-9a-fA-F]{24}$/.test(id)) return null;
     return this.artworkModel
       .findById(id)
-      .populate('artist', 'username firstName lastName')
+      .populate('artist', 'username firstName lastName pilotSeller')
       .lean();
   }
 }

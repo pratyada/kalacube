@@ -95,6 +95,7 @@ export default function ArtistsSection() {
                 <th className={ui.th}>Role</th>
                 <th className={ui.th}>Active</th>
                 <th className={ui.th}>Featured</th>
+                <th className={ui.th}>Seller</th>
               </tr>
             </thead>
             <tbody className={ui.rTbody}>
@@ -152,12 +153,26 @@ export default function ArtistsSection() {
                       {u.isFeatured ? '★ Featured' : 'Feature'}
                     </button>
                   </td>
+                  <td data-label="Seller" className={ui.rTd}>
+                    <button
+                      onClick={() => patch(u._id, { pilotSeller: !u.pilotSeller })}
+                      title="Pilot seller: shows the online Buy button + accepts orders"
+                      className={cx(
+                        'rounded border px-2.5 py-1 text-[10px] uppercase tracking-widest transition',
+                        u.pilotSeller
+                          ? 'border-[#3ef2a1]/50 bg-[#3ef2a1]/10 text-[#3ef2a1]'
+                          : 'border-[#1b2c3d] text-[#8fa4b6] hover:border-[#3ef2a1] hover:text-[#3ef2a1]',
+                      )}
+                    >
+                      {u.pilotSeller ? '🛒 Selling' : 'Enable'}
+                    </button>
+                  </td>
                 </tr>
               ))}
               {!loading && users.length === 0 && (
                 <tr>
                   <td
-                    colSpan={5}
+                    colSpan={6}
                     className={cx(ui.rTdEmpty, ui.mut)}
                   >
                     No users found.

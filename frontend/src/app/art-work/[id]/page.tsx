@@ -7,7 +7,7 @@ import { motion } from 'framer-motion';
 import api from '@/lib/api';
 import EnquiryModal, { type EnquiryIntent } from '@/components/EnquiryModal';
 import ArtworkGallery from '@/components/ArtworkGallery';
-import { COMMERCE_ENABLED } from '@/lib/commerce';
+import { useCartStore } from '@/stores/cartStore';
 
 const DIMENSION_LABEL: Record<string, string> = {
   handicraft: 'Handicraft',
@@ -55,6 +55,8 @@ export default function ArtworkPage() {
     open: false,
     intent: 'enquiry',
   });
+  const cartAdd = useCartStore((s) => s.add);
+  const cartItems = useCartStore((s) => s.items);
 
   useEffect(() => {
     if (!id) return;
@@ -220,19 +222,45 @@ export default function ArtworkPage() {
               </div>
             )}
 
-            {/* Test-only online checkout entry (flag-gated). Real buyers never
-                see this in prod; they use Buy / Enquire above. */}
-            {COMMERCE_ENABLED && artist?.username && (
-              <div className="mt-3">
+            {/* Online purchase — shown ONLY for pilot-seller artists (per-artist
+                commerce gate). Everyone else keeps Buy/Enquire above. */}
+            {artist?.pilotSeller && artist?.username && (
+              <div className="mt-3 flex flex-wrap items-center gap-3">
                 <Link
                   href={`/checkout?artwork=${art._id || id}&kind=original`}
-                  className="inline-flex items-center gap-2 rounded-lg border border-dashed border-indigo/50 bg-indigo/5 px-5 py-2.5 text-sm font-semibold text-indigo transition hover:bg-indigo/10"
+                  className="inline-flex items-center gap-2 rounded-lg bg-yellow px-6 py-3 text-sm font-semibold text-navy shadow transition hover:bg-yellow-deep"
                 >
-                  Buy now online
-                  <span className="rounded-full bg-yellow/30 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-navy">
-                    Test · coming soon
-                  </span>
+                  Buy now
                 </Link>
+                {cartItems.some((i) => i.artworkId === (art._id || id)) ? (
+                  <Link
+                    href="/cart"
+                    className="inline-flex items-center gap-2 rounded-lg border border-teal/50 bg-teal/10 px-5 py-3 text-sm font-semibold text-teal-deep transition hover:bg-teal/20"
+                  >
+                    ✓ In cart — view
+                  </Link>
+                ) : (
+                  <button
+                    type="button"
+                    onClick={() =>
+                      cartAdd({
+                        artworkId: art._id || id,
+                        title: art.title || 'Untitled',
+                        image: art.images?.[0],
+                        price: Number(art.cost || 0),
+                        kind: 'original',
+                        artistId: artist._id || artist.id || '',
+                        artistUsername: artist.username,
+                      })
+                    }
+                    className="inline-flex items-center gap-2 rounded-lg border border-navy/25 bg-white px-5 py-3 text-sm font-semibold text-navy transition hover:border-indigo hover:text-indigo"
+                  >
+                    Add to cart
+                  </button>
+                )}
+                <p className="w-full text-xs text-muted">
+                  Secure checkout · doorstep pickup from the artist · delivered to you
+                </p>
               </div>
             )}
 

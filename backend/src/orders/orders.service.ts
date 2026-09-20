@@ -170,6 +170,11 @@ export class OrdersService {
     const artist = await this.userRepo.findUserById(artistId.toString());
     if (!artist) throw new NotFoundException('Artist not found');
 
+    // Per-artist commerce gate: only pilot sellers accept online orders.
+    if (!(artist as any).pilotSeller) {
+      throw new ForbiddenException('This artist is not open for online checkout yet');
+    }
+
     // Create a HELD payment (stub by default — no real charge).
     const payment = await this.payment.createOrder(total, { track });
 
