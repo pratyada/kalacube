@@ -1,5 +1,6 @@
 import type { MetadataRoute } from 'next';
 import { SITE, fetchArtistsList, fetchArtworksList } from '@/lib/seo';
+import { fetchPosts } from '@/lib/blog';
 
 // Regenerate the sitemap at most hourly so new artists/artworks surface without
 // rebuilding, while still being cached between requests.
@@ -27,14 +28,25 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     { url: `${SITE}/pricing-policy`, lastModified: now, changeFrequency: 'yearly', priority: 0.3 },
   ];
 
-  const [artists, artworks] = await Promise.all([
+  const [artists, artworks, posts] = await Promise.all([
     fetchArtistsList(500),
     fetchArtworksList(1000),
+    fetchPosts(),
   ]);
 
   // Percent-encode dynamic path segments so special characters (e.g. a username
   // like "ruffle&clay") produce valid URLs and don't break the sitemap XML.
   const enc = (s: string) => encodeURIComponent(String(s));
+
+  // Topical art-style / category guides (/blog/{slug}).
+  const guideRoutes: MetadataRoute.Sitemap = (posts as { slug: string; publishedAt?: string }[])
+    .filter((p) => p?.slug)
+    .map((p) => ({
+      url: `${SITE}/blog/${enc(p.slug)}`,
+      lastModified: p.publishedAt ? new Date(p.publishedAt) : now,
+      changeFrequency: 'monthly' as const,
+      priority: 0.7,
+    }));
 
   const artistRoutes: MetadataRoute.Sitemap = artists
     .filter((a: any) => a?.username)
@@ -64,5 +76,5 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       ...(w.images?.[0] ? { images: [w.images[0] as string] } : {}),
     }));
 
-  return [...staticRoutes, ...artistRoutes, ...artworkRoutes];
+  return [...staticRoutes, ...guideRoutes, ...artistRoutes, ...artworkRoutes];
 }
