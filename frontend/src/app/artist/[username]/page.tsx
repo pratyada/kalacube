@@ -252,6 +252,16 @@ export default function ArtistPage() {
                 )}
               </div>
 
+              {/* Featured story (Journal) — only when the artist has one. */}
+              {profile?.feature && (
+                <Link
+                  href={`/blog/${user.username}`}
+                  className="mt-4 inline-flex items-center gap-2 rounded-lg border border-indigo/30 bg-indigo/5 px-4 py-2 text-sm font-semibold text-indigo transition hover:bg-indigo/10"
+                >
+                  📖 Read {name.split(' ')[0]}’s story on the Journal →
+                </Link>
+              )}
+
               {(skills.length > 0 || mediums.length > 0) && (
                 <div className="mt-3 flex flex-wrap items-center gap-2">
                   {[...skills, ...mediums].map((tag, i) => (
