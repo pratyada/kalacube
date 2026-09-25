@@ -36,8 +36,13 @@ import { OrdersModule } from './orders/orders.module';
         // opening a new connection per request. Nest caches this connection as
         // a singleton, which the module-level app cache in lambda.ts reuses.
         bufferCommands: true,
-        maxPoolSize: 10,
+        // M0 free tier caps at 500 connections. Each warm/concurrent Lambda
+        // container holds its own pool, so keep the pool tiny (a Lambda handles
+        // one request at a time) and reap idle sockets quickly to avoid
+        // exhausting the cluster limit.
+        maxPoolSize: 3,
         minPoolSize: 0,
+        maxIdleTimeMS: 60000,
         serverSelectionTimeoutMS: 5000,
       }),
     }),
