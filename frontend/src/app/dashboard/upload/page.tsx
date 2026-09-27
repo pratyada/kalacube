@@ -6,6 +6,38 @@ import Link from 'next/link';
 import { useAuthStore } from '@/stores/authStore';
 import api from '@/lib/api';
 
+/**
+ * Downscale + JPEG-compress an image in the browser before upload. Phone photos
+ * are often 5–12MB each; API Gateway caps the request at ~10MB (Lambda ~6MB
+ * after base64), so full-res uploads fail. We cap the longest edge at 1600px
+ * and re-encode to JPEG — plenty for web display, and reliably small.
+ */
+async function compressImage(file: File, maxEdge = 1600, quality = 0.82): Promise<File> {
+  if (!file.type.startsWith('image/')) return file;
+  try {
+    const bitmap = await createImageBitmap(file);
+    const scale = Math.min(1, maxEdge / Math.max(bitmap.width, bitmap.height));
+    // Small images that are already light: leave as-is.
+    if (scale === 1 && file.size < 1_500_000) return file;
+    const w = Math.round(bitmap.width * scale);
+    const h = Math.round(bitmap.height * scale);
+    const canvas = document.createElement('canvas');
+    canvas.width = w;
+    canvas.height = h;
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return file;
+    ctx.drawImage(bitmap, 0, 0, w, h);
+    const blob: Blob | null = await new Promise((res) =>
+      canvas.toBlob((b) => res(b), 'image/jpeg', quality),
+    );
+    if (!blob || blob.size >= file.size) return file; // no gain → keep original
+    const name = file.name.replace(/\.(png|webp|heic|heif|tiff?|bmp)$/i, '.jpg');
+    return new File([blob], name, { type: 'image/jpeg' });
+  } catch {
+    return file; // any failure → fall back to the original file
+  }
+}
+
 export default function UploadArtworkPage() {
   const router = useRouter();
   const { user, isLoading, isAuthenticated, fetchUser } = useAuthStore();
@@ -65,7 +97,10 @@ export default function UploadArtworkPage() {
       fd.append('currency', form.currency);
       if (form.heightCm) fd.append('heightCm', form.heightCm);
       if (form.widthCm) fd.append('widthCm', form.widthCm);
-      files.forEach((f) => fd.append('images', f));
+      // Compress each image before sending so large phone photos don't exceed
+      // the request-size limit and fail the upload.
+      const compressed = await Promise.all(files.map((f) => compressImage(f)));
+      compressed.forEach((f) => fd.append('images', f));
 
       const { data } = await api.post('/api/artworks', fd, {
         headers: { 'Content-Type': 'multipart/form-data' },
@@ -73,9 +108,11 @@ export default function UploadArtworkPage() {
       const id = data?.data?._id;
       router.push(id ? `/art-work/${id}` : '/dashboard');
     } catch (err: unknown) {
-      const msg =
+      const status = (err as { response?: { status?: number } })?.response?.status;
+      let msg =
         (err as { response?: { data?: { message?: string | string[] } } })
           ?.response?.data?.message || 'Upload failed. Please try again.';
+      if (status === 413) msg = 'Those images are too large. Please try fewer or smaller photos.';
       setError(Array.isArray(msg) ? msg.join(', ') : msg);
     } finally {
       setSaving(false);
