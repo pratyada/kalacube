@@ -26,30 +26,32 @@ const fraunces = Fraunces({
 export const metadata: Metadata = {
   metadataBase: new URL("https://kalacube.com"),
   title: {
-    default: "KalaCUBE — A Home for India's Artists | Art Lives Here",
+    default: "KalaCUBE — A World of Art. In One Cube. | Art Lives Here",
     template: "%s — KalaCUBE",
   },
   description:
-    "Discover India's artists across Handicraft, Visual Art and Performing Arts. Explore original work by art style and connect with the makers behind it. Art Lives Here.",
+    "Discover artists from around the world across Handicraft, Visual Art and Performing Arts. Explore original, human-made work by art style and connect with the makers behind it. Art Lives Here.",
   keywords: [
     "KalaCUBE",
-    "Indian artists",
-    "Indian artisans",
+    "global artists",
+    "independent artists",
+    "artisans",
     "art creators",
     "handicraft",
     "visual art",
     "performing arts",
-    "original art India",
-    "buy original Indian art online",
+    "original art",
+    "buy original art online",
     "art gallery online",
     "discover artists",
     "showcase art online",
-    "sell art online India",
-    "artist portfolio India",
+    "sell art online",
+    "artist portfolio",
     "handmade art",
     "human-made art",
     "artists in the AI age",
-    "Indian art styles",
+    "art styles",
+    "folk art",
     "Madhubani",
     "Pichwai",
     "Warli",
@@ -66,17 +68,17 @@ export const metadata: Metadata = {
   openGraph: {
     type: "website",
     siteName: "KalaCUBE",
-    locale: "en_IN",
+    locale: "en_US",
     url: "https://kalacube.com",
-    title: "KalaCUBE — A Home for India's Artists",
+    title: "KalaCUBE — A World of Art. In One Cube.",
     description:
-      "Discover India's artists across Handicraft, Visual Art and Performing Arts. Explore original work and connect with the makers. Art Lives Here.",
+      "Discover artists from around the world across Handicraft, Visual Art and Performing Arts. Explore original work and connect with the makers. Art Lives Here.",
   },
   twitter: {
     card: "summary_large_image",
-    title: "KalaCUBE — A Home for India's Artists",
+    title: "KalaCUBE — A World of Art. In One Cube.",
     description:
-      "Discover India's artists across Handicraft, Visual Art and Performing Arts. Art Lives Here.",
+      "Discover artists from around the world across Handicraft, Visual Art and Performing Arts. Art Lives Here.",
   },
   robots: {
     index: true,
@@ -95,7 +97,7 @@ const orgJsonLd = {
   url: "https://kalacube.com",
   logo: "https://kalacube.com/brand/logo-primary.png",
   description:
-    "A home for India's artists across Handicraft, Visual Art and Performing Arts — showcase, discover, and connect.",
+    "A home for artists around the world across Handicraft, Visual Art and Performing Arts — showcase, discover, and connect.",
   slogan: "Art Lives Here",
   foundingDate: "2020",
   sameAs: ["https://www.museeliving.com"],
@@ -113,7 +115,7 @@ const websiteJsonLd = {
   alternateName: "KalaCUBE — Art Lives Here",
   url: "https://kalacube.com",
   description:
-    "A home for India's artists across Handicraft, Visual Art and Performing Arts.",
+    "A home for artists around the world across Handicraft, Visual Art and Performing Arts.",
   publisher: { "@type": "Organization", name: "KalaCUBE" },
   potentialAction: {
     "@type": "SearchAction",

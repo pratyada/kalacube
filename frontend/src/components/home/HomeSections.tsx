@@ -139,12 +139,12 @@ export default function HomeSections() {
           <motion.div variants={fadeUp} initial="hidden" whileInView="show" viewport={{ once: true, amount: 0.3 }}>
             <p className="text-xs uppercase tracking-[0.4em] text-[#202f9a]">Why KalaCUBE</p>
             <h2 className="mt-4 font-serif text-3xl leading-tight md:text-4xl">
-              A home for India&apos;s artists in the age of AI
+              A home for the world&apos;s artists in the age of AI
             </h2>
             <p className="mt-5 max-w-3xl text-lg leading-relaxed text-neutral-700">
               As screens fill with AI-generated images, original, human-made art
-              matters more than ever. KalaCUBE gives Indian artists, creators and
-              artisans a place to build a portfolio, showcase and sell their work,
+              matters more than ever. KalaCUBE gives artists, creators and
+              artisans everywhere a place to build a portfolio, showcase and sell their work,
               and be discovered by people who specifically want art made by human
               hands — across Handicraft, Visual Art and Performing Arts.
             </p>
@@ -165,8 +165,8 @@ export default function HomeSections() {
                 href: '/faqs',
               },
               {
-                h: 'Where can I buy original Indian art?',
-                b: 'Explore the gallery to discover original work — from Madhubani, Pichwai, Warli and Gond to photography and sculpture — and connect directly with the artist who made it.',
+                h: 'Where can I buy original, handmade art?',
+                b: 'Explore the gallery to discover original work from artists around the world — from folk and heritage styles to painting, photography and sculpture — and connect directly with the artist who made it.',
                 cta: 'Explore the gallery',
                 href: '/explore',
               },

@@ -47,7 +47,7 @@ export default function Home() {
             Kala · Art in three dimensions
           </p>
           <h1 className="hero-rise hero-rise-2 mt-6 font-serif text-4xl leading-[1.08] sm:text-5xl md:text-7xl">
-            Where India&apos;s artists <span className="italic text-[#202f9a]">come alive</span>
+            Where the world&apos;s artists <span className="italic text-[#202f9a]">come alive</span>
           </h1>
           <p className="hero-rise hero-rise-3 mx-auto mt-6 max-w-xl text-lg text-neutral-700">
             A living gallery of handicraft, visual art, and performing arts —
