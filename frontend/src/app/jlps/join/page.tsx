@@ -7,7 +7,7 @@ import { Fredoka } from "next/font/google";
 import { signUp, confirmSignUp, resendSignUpCode } from "aws-amplify/auth";
 import { useAuthStore } from "@/stores/authStore";
 import api from "@/lib/api";
-import { rememberCommunity } from "@/lib/community";
+import { JLPS_SIGNUP_OPEN, rememberCommunity } from "@/lib/community";
 import "../jlps.css";
 
 const fredoka = Fredoka({
@@ -185,6 +185,36 @@ export default function JlpsJoinPage() {
 
   const field =
     "w-full rounded-2xl border-[3px] border-[var(--ink)] bg-white px-4 py-3 text-lg outline-none focus:ring-4 focus:ring-[var(--sun)]";
+
+  // Sign-up needs the new backend; until it's live, collect interest by email.
+  if (!JLPS_SIGNUP_OPEN) {
+    return (
+      <main
+        data-jlps
+        className={`jlps ${fredoka.variable} flex min-h-screen items-center justify-center px-4`}
+      >
+        <div className="jlps-card max-w-md p-8 text-center">
+          <p className="text-5xl">❄️</p>
+          <h1 className="mt-3 text-3xl font-bold">Parent sign-up opens soon!</h1>
+          <p className="mt-2 text-lg text-[#3b4a6b]">
+            We&apos;re putting the finishing touches on the JLPS Winter Craft Market. Tell us your
+            child wants to sell and we&apos;ll email you the moment sign-up opens.
+          </p>
+          <a
+            href="mailto:contact@kalacube.com?subject=JLPS%20Winter%20Craft%20Market%3A%20my%20child%20wants%20to%20sell"
+            className="jlps-btn jlps-btn-sun mt-6"
+          >
+            🖍️ Count us in!
+          </a>
+          <p className="mt-4">
+            <Link href="/jlps" className="font-semibold underline">
+              ← Back to the market
+            </Link>
+          </p>
+        </div>
+      </main>
+    );
+  }
 
   return (
     <main data-jlps className={`jlps ${fredoka.variable} min-h-screen`}>

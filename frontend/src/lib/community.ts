@@ -43,3 +43,11 @@ export function rememberCommunity(c: Community) {
 export function newUserPath(): string {
   return detectCommunity() === "jlps" ? "/jlps/join" : "/onboarding";
 }
+
+/**
+ * JLPS parent sign-up switch. Needs the new backend (community onboarding +
+ * CORS for jlps.kalacube.com). While false, the JLPS page collects interest by
+ * email and /jlps/join shows "opening soon". Turn on by setting the Amplify env
+ * NEXT_PUBLIC_JLPS_SIGNUP_OPEN=true (and rebuilding) once the backend is live.
+ */
+export const JLPS_SIGNUP_OPEN = process.env.NEXT_PUBLIC_JLPS_SIGNUP_OPEN === 'true';
