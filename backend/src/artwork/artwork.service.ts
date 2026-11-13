@@ -8,6 +8,14 @@ import { Model, Types } from 'mongoose';
 import { Artwork } from '../explore/schemas/artwork.schema';
 import { S3Service } from '../s3/s3.service';
 import { CreateArtworkDto } from './dto/create-artwork.dto';
+import { marketCurrency, sellerMarket } from '../orders/market';
+
+type Seller = {
+  _id: Types.ObjectId | string;
+  legacyIdentityId?: string;
+  community?: string;
+  location?: { country?: string };
+};
 
 type UploadedImage = {
   buffer: Buffer;
@@ -24,16 +32,14 @@ export class ArtworkService {
   ) {}
 
   async create(
-    user: {
-      _id: Types.ObjectId;
-      legacyIdentityId?: string;
-      community?: string;
-    },
+    user: Seller,
     dto: CreateArtworkDto,
     files: UploadedImage[] = [],
   ) {
-    // Community makers (e.g. JLPS, Toronto) always list in CAD; the tag is
-    // inherited from the account so it can't be spoofed from the client.
+    // Currency follows the seller's market (profile country): Canada → CAD,
+    // India → INR. The community tag is inherited from the account so it
+    // can't be spoofed from the client.
+    const market = sellerMarket(user);
     const dimensions =
       dto.heightCm || dto.widthCm
         ? { height: dto.heightCm ?? 0, width: dto.widthCm ?? 0 }
@@ -45,8 +51,11 @@ export class ArtworkService {
       title: dto.title,
       description: dto.description,
       cost: dto.cost,
-      currency: user.community ? 'CAD' : dto.currency || 'INR',
+      currency: marketCurrency(market),
       ...(user.community ? { community: user.community } : {}),
+      ...(market === 'CA'
+        ? { localOnly: !!user.community || dto.localOnly === 'true' }
+        : {}),
       medium: dto.medium,
       material: dto.material,
       theme: dto.theme,
@@ -103,11 +112,7 @@ export class ArtworkService {
 
   async update(
     id: string,
-    user: {
-      _id: Types.ObjectId | string;
-      legacyIdentityId?: string;
-      community?: string;
-    },
+    user: Seller,
     dto: Partial<CreateArtworkDto>,
     files: UploadedImage[] = [],
     keepImages?: string | string[],
@@ -126,7 +131,13 @@ export class ArtworkService {
     ] as const) {
       if (dto[f] !== undefined) set[f] = dto[f];
     }
-    if (user.community) set.currency = 'CAD';
+    const market = sellerMarket(user);
+    set.currency = marketCurrency(market);
+    if (market === 'CA') {
+      if (user.community) set.localOnly = true;
+      else if (dto.localOnly !== undefined)
+        set.localOnly = dto.localOnly === 'true';
+    }
     if (dto.available !== undefined) set.available = dto.available === 'true';
     if (dto.heightCm !== undefined || dto.widthCm !== undefined) {
       set.dimensions = { height: dto.heightCm ?? 0, width: dto.widthCm ?? 0 };

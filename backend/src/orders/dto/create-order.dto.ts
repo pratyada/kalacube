@@ -75,6 +75,18 @@ export class CreateOrderDto {
   shippingPincode?: string;
 
   // Honeypot — must stay empty. Whitelisted so validation doesn't reject it.
+  // Canada market: 'Canada'. India orders omit it (defaults to India).
+  @IsOptional()
+  @IsIn(['India', 'Canada'])
+  shippingCountry?: 'India' | 'Canada';
+
+  // Origin the buyer is on (e.g. https://jlps.kalacube.com) so Stripe returns
+  // them to the same site. Validated against CLIENT_URL server-side.
+  @IsOptional()
+  @IsString()
+  @MaxLength(100)
+  returnOrigin?: string;
+
   @IsOptional()
   @IsString()
   company?: string;

@@ -28,6 +28,10 @@ export class Artwork extends Document {
   // (e.g. 'jlps'). Unset = regular KalaCUBE gallery artwork.
   @Prop({ index: true, sparse: true }) community?: string;
 
+  // Canada market: deliverable ONLY within the KalaCUBE local zone
+  // (CityPlace + downtown Toronto). Always true for community items/treats.
+  @Prop() localOnly?: boolean;
+
   // Short evocative story shown on the artwork detail page to help it sell.
   // Populated out-of-band by the coordinator; optional.
   @Prop() story?: string;

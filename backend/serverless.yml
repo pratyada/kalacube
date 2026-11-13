@@ -112,6 +112,13 @@ provider:
     SHIPROCKET_PASSWORD: ${ssm:/kalacube/prod/SHIPROCKET_PASSWORD, ''}
     SHIPROCKET_BASE_URL: ${ssm:/kalacube/prod/SHIPROCKET_BASE_URL, ''}
     SHIPROCKET_WEBHOOK_TOKEN: ${ssm:/kalacube/prod/SHIPROCKET_WEBHOOK_TOKEN, ''}
+    # Canada market (Stripe CAD + KalaCUBE local delivery). All optional.
+    STRIPE_SECRET_KEY: ${ssm:/kalacube/prod/STRIPE_SECRET_KEY, ''}
+    COMMERCE_CA_LOCAL_FSAS: ${ssm:/kalacube/prod/COMMERCE_CA_LOCAL_FSAS, ''}
+    COMMERCE_CA_LOCAL_DELIVERY_FEE: ${ssm:/kalacube/prod/COMMERCE_CA_LOCAL_DELIVERY_FEE, ''}
+    COMMERCE_CA_SHIPPING_FLAT: ${ssm:/kalacube/prod/COMMERCE_CA_SHIPPING_FLAT, ''}
+    COMMERCE_CA_COMMISSION_RATE: ${ssm:/kalacube/prod/COMMERCE_CA_COMMISSION_RATE, ''}
+    COMMUNITY_SALES_OPEN_AT: ${ssm:/kalacube/prod/COMMUNITY_SALES_OPEN_AT, ''}
 
 functions:
   api:

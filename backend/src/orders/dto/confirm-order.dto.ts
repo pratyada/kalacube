@@ -20,4 +20,10 @@ export class ConfirmOrderDto {
   @IsString()
   @MaxLength(256)
   razorpaySignature?: string;
+
+  // Canada market: the Stripe Checkout Session id from the success redirect.
+  @IsOptional()
+  @IsString()
+  @MaxLength(256)
+  stripeSessionId?: string;
 }

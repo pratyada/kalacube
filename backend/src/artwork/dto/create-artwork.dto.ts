@@ -62,6 +62,11 @@ export class CreateArtworkDto {
   @IsBooleanString()
   available?: string;
 
+  // Canada sellers: "true" = local delivery only (downtown Toronto).
+  @IsOptional()
+  @IsBooleanString()
+  localOnly?: string;
+
   // 'draft' | 'submitted' — defaults to 'submitted'.
   @IsOptional()
   @IsString()

@@ -91,4 +91,18 @@ export const configValidationSchema = Joi.object({
   SHIPROCKET_PASSWORD: Joi.string().allow('').default(''),
   SHIPROCKET_BASE_URL: Joi.string().allow('').default(''),
   SHIPROCKET_WEBHOOK_TOKEN: Joi.string().allow('').default(''),
+
+  // ---- Canada market (CAD · Stripe · KalaCUBE local delivery) ---------------
+  // Stripe goes live when STRIPE_SECRET_KEY is set (sk_test_… or sk_live_…).
+  STRIPE_SECRET_KEY: Joi.string().allow('').default(''),
+  // Comma-separated FSAs (e.g. "M5V,M5J") = local delivery zone. Blank → the
+  // built-in CityPlace + downtown Toronto list (orders/market.ts).
+  COMMERCE_CA_LOCAL_FSAS: Joi.string().allow('').default(''),
+  COMMERCE_CA_LOCAL_DELIVERY_FEE: Joi.number().empty('').default(0),
+  COMMERCE_CA_SHIPPING_FLAT: Joi.number().empty('').default(15),
+  COMMERCE_CA_COMMISSION_RATE: Joi.number().empty('').default(0.15),
+  // Community markets (JLPS) accept orders from this instant (ISO-8601).
+  COMMUNITY_SALES_OPEN_AT: Joi.string()
+    .empty('')
+    .default('2026-12-10T05:00:00Z'),
 });

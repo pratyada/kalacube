@@ -326,6 +326,8 @@ export class AuthService {
       ...(dto.community
         ? {
             community: dto.community,
+            // JLPS = Jean Lumb PS, CityPlace, Toronto → Canada market (CAD/Stripe).
+            location: { city: 'Toronto', state: 'ON', country: 'Canada' },
             communityProfile: {
               grade: dto.grade,
               makes: dto.makes,

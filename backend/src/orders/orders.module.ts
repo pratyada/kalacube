@@ -10,6 +10,7 @@ import {
   POD_ADAPTER,
   LOGISTICS_ADAPTER,
   PAYOUT_ADAPTER,
+  STRIPE_ADAPTER,
 } from './orders.service';
 import { UserModule } from '../user/user.module';
 import { EmailModule } from '../email/email.module';
@@ -17,6 +18,7 @@ import { createPaymentAdapter } from './adapters/payment.adapter';
 import { createPodAdapter } from './adapters/pod.adapter';
 import { createLogisticsAdapter } from './adapters/logistics.adapter';
 import { createPayoutAdapter } from './adapters/payout.adapter';
+import { createStripeAdapter } from './adapters/stripe.adapter';
 
 /**
  * Selling + fulfilment engine. Public checkout creates a held-payment order and
@@ -57,6 +59,11 @@ import { createPayoutAdapter } from './adapters/payout.adapter';
     {
       provide: PAYOUT_ADAPTER,
       useFactory: (c: ConfigService) => createPayoutAdapter(c),
+      inject: [ConfigService],
+    },
+    {
+      provide: STRIPE_ADAPTER,
+      useFactory: (c: ConfigService) => createStripeAdapter(c),
       inject: [ConfigService],
     },
   ],

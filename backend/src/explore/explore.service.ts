@@ -156,6 +156,8 @@ export class ExploreService {
             imagePrefix: 1,
             images: 1,
             artist: 1,
+            localOnly: 1,
+            community: 1,
             createdAt: 1,
           },
         },
@@ -393,7 +395,7 @@ export class ExploreService {
       .findById(id)
       .populate(
         'artist',
-        'username firstName lastName pilotSeller community communityProfile.grade',
+        'username firstName lastName pilotSeller community communityProfile.grade location.country location.city',
       )
       .lean();
   }

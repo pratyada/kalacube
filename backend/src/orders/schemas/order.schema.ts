@@ -75,7 +75,10 @@ export interface ShipmentEvent {
  * Nested objects use inline raw type definitions (matching the codebase's
  * artwork schema) so Mongoose resolves them without separate sub-schema classes.
  */
-@Schema({ timestamps: { createdAt: true, updatedAt: true }, collection: 'orders' })
+@Schema({
+  timestamps: { createdAt: true, updatedAt: true },
+  collection: 'orders',
+})
 export class Order extends Document {
   @Prop({
     type: { name: String, email: String, phone: String },
@@ -114,7 +117,11 @@ export class Order extends Document {
       {
         artworkId: String,
         title: String,
-        kind: { type: String, enum: ['original', 'print'], default: 'original' },
+        kind: {
+          type: String,
+          enum: ['original', 'print'],
+          default: 'original',
+        },
         qty: { type: Number, default: 1 },
         unitPrice: { type: Number, default: 0 },
       },
@@ -131,6 +138,18 @@ export class Order extends Document {
   amount: { art: number; shipping: number; gst: number; total: number };
 
   @Prop({ default: 'INR' }) currency: string;
+
+  // Selling market (from the seller's profile country): IN = INR/Razorpay/
+  // Shiprocket; CA = CAD/Stripe/KalaCUBE delivery.
+  @Prop({ enum: ['IN', 'CA'], default: 'IN', index: true }) market: 'IN' | 'CA';
+
+  // How it reaches the buyer: courier (Shiprocket/POD), KalaCUBE local
+  // hand-delivery (CityPlace + downtown Toronto), or Canada-wide shipping.
+  @Prop({ enum: ['courier', 'local', 'ship_ca'], default: 'courier' })
+  delivery: 'courier' | 'local' | 'ship_ca';
+
+  // Community market of the seller (e.g. 'jlps') — for reporting/filtering.
+  @Prop({ index: true, sparse: true }) community?: string;
 
   @Prop({ enum: ['original', 'pod'], required: true, index: true })
   track: OrderTrack;
