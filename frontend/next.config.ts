@@ -16,6 +16,22 @@ const nextConfig: NextConfig = {
   ...(process.env.BUILD_STANDALONE === "true"
     ? { output: "standalone" as const }
     : {}),
+
+  // jlps.kalacube.com → the JLPS Winter Craft Market page (served from /jlps).
+  // beforeFiles so the subdomain root wins over the main homepage route.
+  async rewrites() {
+    return {
+      beforeFiles: [
+        {
+          source: '/',
+          has: [{ type: 'host', value: 'jlps.kalacube.com' }],
+          destination: '/jlps',
+        },
+      ],
+      afterFiles: [],
+      fallback: [],
+    };
+  },
 };
 
 export default nextConfig;

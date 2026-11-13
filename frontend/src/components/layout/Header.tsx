@@ -62,7 +62,7 @@ export default function Header() {
   if (pathname.startsWith('/admin')) return null;
 
   return (
-    <header className="sticky top-0 z-50 border-b border-line bg-cream/85 backdrop-blur">
+    <header data-site-chrome className="sticky top-0 z-50 border-b border-line bg-cream/85 backdrop-blur">
       <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4 sm:px-6">
         <Link href="/" className="flex items-center" aria-label="KalaCUBE — Art Lives Here">
           {/* eslint-disable-next-line @next/next/no-img-element */}

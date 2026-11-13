@@ -25,7 +25,7 @@ export default function Footer() {
   if (pathname.startsWith('/admin')) return null;
 
   return (
-    <footer className="bg-navy-deep text-white/70">
+    <footer data-site-chrome className="bg-navy-deep text-white/70">
       <div className="mx-auto grid max-w-7xl gap-8 px-6 py-16 md:grid-cols-5">
         <div className="md:col-span-2">
           <Link href="/" className="inline-flex items-center" aria-label="KalaCUBE — Art Lives Here">

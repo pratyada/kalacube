@@ -1,0 +1,193 @@
+/* JLPS Winter Craft Market — kids' event skin. Scoped under .jlps. */
+
+/* Hide the main KalaCUBE header/footer on this page (works on the
+   jlps.kalacube.com host rewrite too, where usePathname() is just "/"). */
+body:has(.jlps) [data-site-chrome] {
+  display: none;
+}
+
+.jlps {
+  --sky-1: #0b1f52;
+  --sky-2: #1d3fa8;
+  --sky-3: #4f7bf0;
+  --snow: #ffffff;
+  --ink: #0b1f52;
+  --sun: #ffd200;
+  --tang: #ff8a00;
+  --mint: #00a896;
+  --berry: #d81b60;
+  --grape: #7c4dff;
+  --sky: #29b6f6;
+  --paper: #fffaf0;
+  font-family: var(--font-fredoka), var(--font-poppins), system-ui, sans-serif;
+  color: var(--ink);
+  background: var(--paper);
+  overflow-x: hidden;
+}
+
+.jlps-hero {
+  position: relative;
+  background:
+    radial-gradient(ellipse at 20% 10%, rgba(255, 255, 255, 0.18), transparent 45%),
+    radial-gradient(ellipse at 85% 30%, rgba(124, 77, 255, 0.35), transparent 50%),
+    linear-gradient(180deg, var(--sky-1) 0%, var(--sky-2) 55%, var(--sky-3) 100%);
+  color: #fff;
+  isolation: isolate;
+}
+
+/* ---------- Snow ---------- */
+.jlps-snow {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  overflow: hidden;
+  z-index: -1;
+}
+.jlps-flake {
+  position: absolute;
+  top: -10%;
+  color: #fff;
+  opacity: 0.85;
+  user-select: none;
+  line-height: 1;
+}
+@media (prefers-reduced-motion: no-preference) {
+  .jlps-flake {
+    animation-name: jlpsFall;
+    animation-timing-function: linear;
+    animation-iteration-count: infinite;
+  }
+  .jlps-wiggle {
+    animation: jlpsWiggle 2.6s ease-in-out infinite;
+  }
+  .jlps-bob {
+    animation: jlpsBob 3.2s ease-in-out infinite;
+  }
+  .jlps-pop {
+    transition: transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
+  }
+  .jlps-pop:hover {
+    transform: translateY(-6px) rotate(-1.5deg) scale(1.03);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .jlps-flake {
+    top: auto;
+  }
+}
+@keyframes jlpsFall {
+  0% { transform: translate3d(0, -10vh, 0) rotate(0deg); }
+  50% { transform: translate3d(24px, 50vh, 0) rotate(180deg); }
+  100% { transform: translate3d(-12px, 115vh, 0) rotate(360deg); }
+}
+@keyframes jlpsWiggle {
+  0%, 100% { transform: rotate(-4deg); }
+  50% { transform: rotate(4deg); }
+}
+@keyframes jlpsBob {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-10px); }
+}
+
+/* ---------- Title ---------- */
+.jlps-title {
+  font-weight: 700;
+  line-height: 0.95;
+  letter-spacing: -0.01em;
+  text-shadow: 0 6px 0 rgba(7, 23, 56, 0.35);
+}
+
+/* ---------- Candy buttons ---------- */
+.jlps-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  border-radius: 999px;
+  padding: 0.95rem 1.6rem;
+  font-weight: 600;
+  font-size: 1.05rem;
+  border: 3px solid var(--ink);
+  box-shadow: 0 6px 0 var(--ink);
+  transition: transform 0.12s ease, box-shadow 0.12s ease;
+  text-align: center;
+}
+.jlps-btn:hover {
+  transform: translateY(2px);
+  box-shadow: 0 4px 0 var(--ink);
+}
+.jlps-btn:active {
+  transform: translateY(6px);
+  box-shadow: 0 0 0 var(--ink);
+}
+.jlps-btn-sun { background: var(--sun); color: var(--ink); }
+.jlps-btn-white { background: #fff; color: var(--ink); }
+.jlps-btn-berry { background: var(--berry); color: #fff; }
+
+/* ---------- Cards ---------- */
+.jlps-card {
+  background: #fff;
+  border: 3px solid var(--ink);
+  border-radius: 28px;
+  box-shadow: 0 8px 0 var(--ink);
+}
+.jlps-wiggle,
+.jlps-bob {
+  display: inline-block;
+}
+.jlps-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  border-radius: 999px;
+  padding: 0.35rem 0.9rem;
+  font-weight: 600;
+  font-size: 0.9rem;
+}
+
+/* ---------- Countdown ---------- */
+.jlps-tick {
+  min-width: 4.5rem;
+  background: rgba(255, 255, 255, 0.14);
+  border: 2px solid rgba(255, 255, 255, 0.45);
+  border-radius: 20px;
+  padding: 0.6rem 0.4rem;
+  backdrop-filter: blur(4px);
+}
+
+/* ---------- Bunting ---------- */
+.jlps-bunting {
+  display: flex;
+  justify-content: center;
+  gap: 0;
+  height: 34px;
+  overflow: hidden;
+}
+.jlps-bunting i {
+  width: 34px;
+  height: 34px;
+  clip-path: polygon(0 0, 100% 0, 50% 100%);
+  flex: none;
+}
+
+/* ---------- FAQ ---------- */
+.jlps details summary {
+  cursor: pointer;
+  list-style: none;
+}
+.jlps details summary::-webkit-details-marker {
+  display: none;
+}
+.jlps details[open] .jlps-plus {
+  transform: rotate(45deg);
+}
+.jlps-plus {
+  transition: transform 0.2s ease;
+}
+
+.jlps a:focus-visible,
+.jlps button:focus-visible,
+.jlps summary:focus-visible {
+  outline: 3px solid var(--sun);
+  outline-offset: 3px;
+}
