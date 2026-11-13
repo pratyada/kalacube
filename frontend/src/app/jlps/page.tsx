@@ -5,6 +5,7 @@ import { Fredoka } from 'next/font/google';
 import Countdown from './Countdown';
 import ShareButton from './ShareButton';
 import MakersGallery from './MakersGallery';
+import ShopOwnerStory from './ShopOwnerStory';
 import './jlps.css';
 
 // Rounded, friendly display face for the kids' event.
@@ -72,42 +73,11 @@ const CATEGORIES = [
   { emoji: '✨', name: 'Surprise Me!', note: 'Whatever you dream up', bg: '#dcf5ff' },
 ];
 
-const STEPS = [
-  {
-    n: '1',
-    emoji: '✂️',
-    title: 'Make it',
-    text: 'Bead a bracelet, bake some cookies, draw a dragon. Anything you are proud of!',
-    color: '#ff8a00',
-  },
-  {
-    n: '2',
-    emoji: '📸',
-    title: 'Snap it',
-    text: 'A grown-up takes a photo and puts it in your very own shop. Takes minutes.',
-    color: '#00a896',
-  },
-  {
-    n: '3',
-    emoji: '🎉',
-    title: 'Sell it',
-    text: 'Neighbours buy it online, and you keep every single dollar. Ka-ching!',
-    color: '#d81b60',
-  },
-];
-
 const DATES = [
   { when: 'Right now', what: 'Start making! Practise, sketch, bake test batches.', emoji: '✂️', color: '#ff8a00' },
   { when: 'Open now', what: 'Parents sign up and list your creations.', emoji: '📝', color: '#00a896' },
   { when: 'Thu, Dec 10', what: 'The shop opens to everyone!', emoji: '🎉', color: '#d81b60' },
   { when: 'Thu, Dec 31', what: 'Last day to shop. Happy New Year!', emoji: '🎆', color: '#7c4dff' },
-];
-
-const FLOW = [
-  { emoji: '🛒', title: 'You order', text: 'Shop online and pay securely by card.', color: '#ff8a00' },
-  { emoji: '📦', title: 'We collect', text: 'Our team picks the item up from the young maker’s family.', color: '#00a896' },
-  { emoji: '🚚', title: 'We deliver', text: 'Straight to your door in CityPlace & downtown Toronto.', color: '#29b6f6' },
-  { emoji: '🐷', title: 'Kid gets paid', text: '100% of the sale goes to the young maker.', color: '#d81b60' },
 ];
 
 const FAQ = [
@@ -240,40 +210,7 @@ export default function JlpsWinterMarketPage() {
         </svg>
       </section>
 
-      {/* ================= HOW IT WORKS ================= */}
-      <section className="mx-auto max-w-6xl px-4 py-16 sm:px-6 sm:py-20">
-        <div className="text-center">
-          <p className="text-sm font-semibold uppercase tracking-[0.2em] text-[var(--berry)]">For young makers</p>
-          <h2 className="mt-2 text-4xl font-bold sm:text-5xl">Be a real shop owner! 🌟</h2>
-          <p className="mx-auto mt-3 max-w-xl text-lg text-[#3b4a6b]">
-            Three easy steps from your craft table to someone&apos;s holiday.
-          </p>
-        </div>
-
-        <div className="mt-12 grid gap-8 md:grid-cols-3">
-          {STEPS.map((s, i) => (
-            <div
-              key={s.n}
-              className="jlps-card jlps-pop relative p-7 pt-10 text-center"
-              style={{ rotate: `${[-1.5, 1, -0.5][i]}deg` }}
-            >
-              <div
-                className="absolute -top-6 left-1/2 flex h-12 w-12 -translate-x-1/2 items-center justify-center rounded-full border-[3px] border-[var(--ink)] text-2xl font-bold text-white"
-                style={{ background: s.color }}
-              >
-                {s.n}
-              </div>
-              <div className="jlps-bob text-6xl" style={{ animationDelay: `${i * 0.4}s` }}>
-                {s.emoji}
-              </div>
-              <h3 className="mt-4 text-3xl font-bold" style={{ color: s.color }}>
-                {s.title}
-              </h3>
-              <p className="mt-2 text-lg text-[#3b4a6b]">{s.text}</p>
-            </div>
-          ))}
-        </div>
-      </section>
+      <ShopOwnerStory />
 
       {/* ================= WHAT CAN YOU MAKE ================= */}
       <section className="bg-[#eaf4ff] py-16 sm:py-20">
@@ -313,47 +250,6 @@ export default function JlpsWinterMarketPage() {
             <p className="mt-2 text-lg text-[var(--ink)]/80">
               No fees. No cuts. KalaCUBE covers the platform and payment costs, so our young makers
               keep it all. 🐷💰
-            </p>
-          </div>
-        </div>
-      </section>
-
-      {/* ================= WE HANDLE EVERYTHING ================= */}
-      <section className="bg-[#f3ecff] py-16 sm:py-20">
-        <div className="mx-auto max-w-6xl px-4 sm:px-6">
-          <div className="text-center">
-            <p className="text-sm font-semibold uppercase tracking-[0.2em] text-[var(--grape)]">From order to doorstep</p>
-            <h2 className="mt-2 text-4xl font-bold sm:text-5xl">We handle everything 🚚</h2>
-            <p className="mx-auto mt-3 max-w-2xl text-lg text-[#3b4a6b]">
-              Kids make the magic. KalaCUBE runs the orders, collection and delivery, so{' '}
-              <b className="text-[var(--ink)]">no stranger ever meets or messages a child</b>.
-            </p>
-          </div>
-          <ol className="mt-12 grid grid-cols-2 gap-4 sm:gap-6 md:grid-cols-4">
-            {FLOW.map((f, i) => (
-              <li key={f.title} className="jlps-card jlps-pop relative p-5 text-center sm:p-6">
-                <span
-                  className="absolute -top-4 left-4 flex h-9 w-9 items-center justify-center rounded-full border-[3px] border-[var(--ink)] text-base font-bold text-white"
-                  style={{ background: f.color }}
-                >
-                  {i + 1}
-                </span>
-                <div className="text-5xl sm:text-6xl" aria-hidden>
-                  {f.emoji}
-                </div>
-                <h3 className="mt-3 text-xl font-bold sm:text-2xl" style={{ color: f.color }}>
-                  {f.title}
-                </h3>
-                <p className="mt-1 text-sm text-[#3b4a6b] sm:text-base">{f.text}</p>
-              </li>
-            ))}
-          </ol>
-          <div className="mx-auto mt-10 flex max-w-3xl items-center gap-4 rounded-[24px] border-[3px] border-[var(--ink)] bg-white p-5 text-left">
-            <span className="text-4xl" aria-hidden>🛡️</span>
-            <p className="text-base sm:text-lg">
-              <b>Kids stay safe and private.</b> Shoppers only see a first name, last initial and
-              grade. Every question, order and delivery goes through the KalaCUBE team, never to a
-              child or their family.
             </p>
           </div>
         </div>
