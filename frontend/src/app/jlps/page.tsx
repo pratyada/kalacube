@@ -103,14 +103,21 @@ const DATES = [
   { when: 'Thu, Dec 31', what: 'Last day to shop. Happy New Year!', emoji: '🎆', color: '#7c4dff' },
 ];
 
+const FLOW = [
+  { emoji: '🛒', title: 'You order', text: 'Shop online and pay securely by card.', color: '#ff8a00' },
+  { emoji: '📦', title: 'We collect', text: 'Our team picks the item up from the young maker’s family.', color: '#00a896' },
+  { emoji: '🚚', title: 'We deliver', text: 'Straight to your door in CityPlace & downtown Toronto.', color: '#29b6f6' },
+  { emoji: '🐷', title: 'Kid gets paid', text: '100% of the sale goes to the young maker.', color: '#d81b60' },
+];
+
 const FAQ = [
   {
     q: 'Who can sell?',
-    a: 'Students of Jean Lumb Public School (JLPS), with a parent or guardian running their shop. Parents sign up, list items and hand over orders.',
+    a: 'Students of Jean Lumb Public School (JLPS), with a parent or guardian running their shop. Parents sign up and list the items. KalaCUBE handles every order, collection and delivery.',
   },
   {
     q: 'Who can buy?',
-    a: 'Everyone! Family, friends, neighbours and anyone who loves handmade things. Delivery and pickup cover CityPlace and downtown Toronto.',
+    a: 'Everyone! Family, friends, neighbours and anyone who loves handmade things. We deliver to your door across CityPlace and downtown Toronto.',
   },
   {
     q: 'Does anyone take a cut?',
@@ -122,11 +129,11 @@ const FAQ = [
   },
   {
     q: 'Can my child sell homemade treats?',
-    a: 'Yes! Every treat must list its ingredients and allergens. Treats are handed over locally (no long-distance shipping).',
+    a: 'Yes! Every treat must list its ingredients and allergens. Treats are delivered locally by our team (no long-distance shipping).',
   },
   {
     q: 'How is my child’s privacy protected?',
-    a: 'Kids appear by first name, last initial and grade only (like “Maya R., Grade 4”). Photos show the craft, not faces. Buyers never contact kids; questions come to the KalaCUBE team.',
+    a: 'Kids appear by first name, last initial and grade only (like “Maya R., Grade 4”). Photos show the craft, not faces. Buyers never meet, message or visit kids or their families. KalaCUBE handles every order, question and delivery.',
   },
 ];
 
@@ -303,6 +310,47 @@ export default function JlpsWinterMarketPage() {
         </div>
       </section>
 
+      {/* ================= WE HANDLE EVERYTHING ================= */}
+      <section className="bg-[#f3ecff] py-16 sm:py-20">
+        <div className="mx-auto max-w-6xl px-4 sm:px-6">
+          <div className="text-center">
+            <p className="text-sm font-semibold uppercase tracking-[0.2em] text-[var(--grape)]">From order to doorstep</p>
+            <h2 className="mt-2 text-4xl font-bold sm:text-5xl">We handle everything 🚚</h2>
+            <p className="mx-auto mt-3 max-w-2xl text-lg text-[#3b4a6b]">
+              Kids make the magic. KalaCUBE runs the orders, collection and delivery, so{' '}
+              <b className="text-[var(--ink)]">no stranger ever meets or messages a child</b>.
+            </p>
+          </div>
+          <ol className="mt-12 grid grid-cols-2 gap-4 sm:gap-6 md:grid-cols-4">
+            {FLOW.map((f, i) => (
+              <li key={f.title} className="jlps-card jlps-pop relative p-5 text-center sm:p-6">
+                <span
+                  className="absolute -top-4 left-4 flex h-9 w-9 items-center justify-center rounded-full border-[3px] border-[var(--ink)] text-base font-bold text-white"
+                  style={{ background: f.color }}
+                >
+                  {i + 1}
+                </span>
+                <div className="text-5xl sm:text-6xl" aria-hidden>
+                  {f.emoji}
+                </div>
+                <h3 className="mt-3 text-xl font-bold sm:text-2xl" style={{ color: f.color }}>
+                  {f.title}
+                </h3>
+                <p className="mt-1 text-sm text-[#3b4a6b] sm:text-base">{f.text}</p>
+              </li>
+            ))}
+          </ol>
+          <div className="mx-auto mt-10 flex max-w-3xl items-center gap-4 rounded-[24px] border-[3px] border-[var(--ink)] bg-white p-5 text-left">
+            <span className="text-4xl" aria-hidden>🛡️</span>
+            <p className="text-base sm:text-lg">
+              <b>Kids stay safe and private.</b> Shoppers only see a first name, last initial and
+              grade. Every question, order and delivery goes through the KalaCUBE team, never to a
+              child or their family.
+            </p>
+          </div>
+        </div>
+      </section>
+
       {/* ================= GROWN-UPS ================= */}
       <section className="mx-auto max-w-6xl px-4 py-16 sm:px-6 sm:py-20">
         <div className="text-center">
@@ -315,9 +363,9 @@ export default function JlpsWinterMarketPage() {
             <div className="text-5xl">👪</div>
             <h3 className="mt-3 text-3xl font-bold text-[var(--tang)]">JLPS parents</h3>
             <ul className="mt-4 space-y-3 text-lg">
-              <li>✅ <b>You run the shop:</b> sign up, list items, hand over orders.</li>
+              <li>✅ <b>You list, we do the rest:</b> orders, collection and delivery are all handled by KalaCUBE.</li>
               <li>✅ <b>Kids stay private:</b> first name, last initial and grade only.</li>
-              <li>✅ <b>No strangers messaging kids:</b> buyer questions come to us.</li>
+              <li>✅ <b>No strangers, ever:</b> buyers never meet or message kids or families.</li>
               <li>✅ <b>You keep 100%:</b> paid out to you after each sale.</li>
             </ul>
             <a href={SELL_MAIL} className="jlps-btn jlps-btn-sun mt-7">
@@ -331,7 +379,7 @@ export default function JlpsWinterMarketPage() {
             <ul className="mt-4 space-y-3 text-lg">
               <li>🎁 <b>One-of-a-kind gifts:</b> stocking stuffers, teacher gifts, treats.</li>
               <li>💳 <b>Pay securely online</b> by card.</li>
-              <li>🚲 <b>Local delivery or pickup</b> across CityPlace & downtown Toronto.</li>
+              <li>🚚 <b>Delivered to your door</b> across CityPlace & downtown Toronto.</li>
               <li>💛 <b>Make a kid&apos;s day:</b> every dollar goes to the maker.</li>
             </ul>
             <a href={BUY_MAIL} className="jlps-btn jlps-btn-white mt-7">
