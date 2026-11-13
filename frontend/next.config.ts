@@ -27,6 +27,11 @@ const nextConfig: NextConfig = {
           has: [{ type: 'host', value: 'jlps.kalacube.com' }],
           destination: '/jlps',
         },
+        {
+          source: '/join',
+          has: [{ type: 'host', value: 'jlps.kalacube.com' }],
+          destination: '/jlps/join',
+        },
       ],
       afterFiles: [],
       fallback: [],

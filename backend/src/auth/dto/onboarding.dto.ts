@@ -1,5 +1,7 @@
 import {
+  Equals,
   IsArray,
+  IsBoolean,
   IsIn,
   IsOptional,
   IsString,
@@ -7,6 +9,9 @@ import {
   MinLength,
 } from 'class-validator';
 import { ArtDimension } from '../../user/types/user.types';
+
+/** Community markets an account can be tagged with at sign-up. */
+export const COMMUNITIES = ['jlps'] as const;
 
 /**
  * Fields collected from a new sign-up to create their Mongo profile.
@@ -52,4 +57,25 @@ export class OnboardingDto {
   @IsString()
   @MaxLength(500)
   bio?: string;
+
+  // ---- Community sign-up (e.g. JLPS winter craft market) ----
+  @IsOptional()
+  @IsIn(COMMUNITIES)
+  community?: (typeof COMMUNITIES)[number];
+
+  @IsOptional()
+  @IsString()
+  @MaxLength(20)
+  grade?: string;
+
+  @IsOptional()
+  @IsString()
+  @MaxLength(200)
+  makes?: string;
+
+  // Required (must be true) when `community` is set — enforced in the service.
+  @IsOptional()
+  @IsBoolean()
+  @Equals(true)
+  parentConsent?: boolean;
 }

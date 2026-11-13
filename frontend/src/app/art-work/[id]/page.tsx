@@ -25,7 +25,7 @@ const dimPill = (d: string) =>
 function formatPrice(cost?: number, currency?: string) {
   if (!cost && cost !== 0) return null;
   try {
-    return new Intl.NumberFormat('en-IN', {
+    return new Intl.NumberFormat(currency === 'CAD' ? 'en-CA' : 'en-IN', {
       style: 'currency',
       currency: currency || 'INR',
       maximumFractionDigits: 0,
@@ -105,6 +105,11 @@ export default function ArtworkPage() {
       artist.username
     : 'Unknown artist';
   const price = formatPrice(art.cost, art.currency);
+  // Community (student) makers: no direct buyer contact at all — the portal
+  // handles every order and delivery.
+  const isCommunity = !!(art.community || artist?.community);
+  const grade: string | undefined = artist?.communityProfile?.grade;
+  const gradeLabel = grade ? (/^\d/.test(grade) ? `Grade ${grade}` : grade) : '';
 
   const user = artistDetail?.user;
   const artProfile = artistDetail?.profile;
@@ -190,7 +195,21 @@ export default function ArtworkPage() {
             {/* Buy / Enquire — buyer → artist connection (preserved feature).
                 This stays the LIVE buyer path. The checkout entry below is only
                 surfaced when NEXT_PUBLIC_COMMERCE_ENABLED is on (test). */}
-            {artist?.username && (
+            {isCommunity && (
+              <div className="mt-7 rounded-2xl border border-teal/40 bg-teal/10 p-5">
+                <p className="text-base font-semibold text-navy">
+                  ❄️ Made by a young maker{gradeLabel ? ` · ${gradeLabel}` : ''} for the
+                  JLPS Winter Craft Market
+                </p>
+                <p className="mt-1 text-sm text-neutral-700">
+                  The market opens Dec 10. KalaCUBE handles every order and delivers
+                  across CityPlace &amp; downtown Toronto, and 100% of the sale goes to
+                  the maker.
+                </p>
+              </div>
+            )}
+
+            {artist?.username && !isCommunity && (
               <div className="mt-7 flex flex-wrap gap-3">
                 <button
                   type="button"
@@ -224,7 +243,7 @@ export default function ArtworkPage() {
 
             {/* Online purchase — shown ONLY for pilot-seller artists (per-artist
                 commerce gate). Everyone else keeps Buy/Enquire above. */}
-            {artist?.pilotSeller && artist?.username && (
+            {artist?.pilotSeller && artist?.username && !isCommunity && (
               <div className="mt-3 flex flex-wrap items-center gap-3">
                 <Link
                   href={`/checkout?artwork=${art._id || id}&kind=original`}

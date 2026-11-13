@@ -118,6 +118,22 @@ export class User extends Document {
   @Prop({ default: 0 })
   profileCompleteness: number;
 
+  // Community / school market the account belongs to (e.g. 'jlps' = Jean Lumb
+  // Public School winter craft market). Unset for regular KalaCUBE artists.
+  // Community makers are kept OUT of the main kalacube.com gallery and are
+  // never contactable by buyers (no enquiries / WhatsApp) — the portal handles
+  // every order and delivery.
+  @Prop({ index: true, sparse: true })
+  community: string;
+
+  // Community-specific details. For 'jlps' the account is run by a parent; the
+  // public name (firstName + lastName initial) is the STUDENT maker's.
+  @Prop({
+    type: { grade: String, parentConsentAt: Date, makes: String },
+    default: undefined,
+  })
+  communityProfile: { grade?: string; parentConsentAt?: Date; makes?: string };
+
   @Prop({
     type: { google: String, facebook: String },
     default: {},

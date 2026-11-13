@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { useAuthStore } from '@/stores/authStore';
+import { newUserPath } from '@/lib/community';
 import api from '@/lib/api';
 
 interface MyArtwork {
@@ -56,7 +57,7 @@ export default function EditArtworkPage() {
   useEffect(() => {
     if (isLoading) return;
     if (!isAuthenticated) router.replace('/auth/login');
-    else if (user?.isNewUser) router.replace('/onboarding');
+    else if (user?.isNewUser) router.replace(newUserPath());
   }, [isLoading, isAuthenticated, user, router]);
 
   // Prefill from the owner-scoped list (guarantees ownership + all fields).

@@ -4,6 +4,7 @@ import { useCallback, useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { useAuthStore } from '@/stores/authStore';
+import { newUserPath } from '@/lib/community';
 import api from '@/lib/api';
 
 type EnquiryStatus = 'new' | 'read' | 'closed';
@@ -67,7 +68,7 @@ export default function EnquiriesPage() {
   useEffect(() => {
     if (isLoading) return;
     if (!isAuthenticated) router.replace('/auth/login');
-    else if (user?.isNewUser) router.replace('/onboarding');
+    else if (user?.isNewUser) router.replace(newUserPath());
   }, [isLoading, isAuthenticated, user, router]);
 
   const load = useCallback(async () => {

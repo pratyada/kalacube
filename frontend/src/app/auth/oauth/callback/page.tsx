@@ -4,6 +4,7 @@ import { Suspense, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { Hub } from 'aws-amplify/utils';
 import { useAuthStore } from '@/stores/authStore';
+import { newUserPath } from '@/lib/community';
 
 function OAuthCallbackContent() {
   const router = useRouter();
@@ -15,7 +16,10 @@ function OAuthCallbackContent() {
       if (done) return;
       done = true;
       await fetchUser();
-      router.push('/dashboard');
+      // Brand-new Google users have no profile yet → the right sign-up flow
+      // (the JLPS join page when they came from jlps.kalacube.com).
+      const u = useAuthStore.getState().user;
+      router.push(u?.isNewUser ? newUserPath() : '/dashboard');
     };
 
     // Amplify emits this once it exchanges the ?code= for tokens.

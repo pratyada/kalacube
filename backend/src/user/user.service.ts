@@ -100,24 +100,37 @@ export class UserService {
     if (user.role === UserRole.ARTIST) {
       roleProfile = await this.userRepo.findArtistProfile(user._id.toString());
     } else if (user.role === UserRole.CURATOR) {
-      roleProfile = await this.userRepo.findCuratorProfile(
-        user._id.toString(),
-      );
+      roleProfile = await this.userRepo.findCuratorProfile(user._id.toString());
     } else if (user.role === UserRole.ARTSPACE) {
       roleProfile = await this.userRepo.findArtSpaceProfile(
         user._id.toString(),
       );
     }
 
+    // Community (student) makers: public view shows only the child's display
+    // name + grade — never the parent's email or other private details.
+    if ((user as any).community) {
+      const pub: any = user.toObject();
+      for (const k of [
+        'email',
+        'pickup',
+        'socialLinks',
+        'website',
+        'dob',
+        'oauthProviderIds',
+        'cognitoSub',
+        'legacyIdentityId',
+      ]) {
+        delete pub[k];
+      }
+      pub.communityProfile = { grade: pub.communityProfile?.grade };
+      return { user: pub, roleProfile };
+    }
+
     return { user, roleProfile };
   }
 
-  async listUsers(
-    page: number,
-    limit: number,
-    search?: string,
-    role?: string,
-  ) {
+  async listUsers(page: number, limit: number, search?: string, role?: string) {
     const filter: any = { isActive: true };
     if (role) filter.role = role;
     if (search) {
@@ -182,10 +195,7 @@ export class UserService {
   async deactivateUser(username: string) {
     const user = await this.userRepo.findUserByUsername(username);
     if (!user) throw new NotFoundException('User not found');
-    await this.userRepo.updateUser(
-      { _id: user._id },
-      { isActive: false },
-    );
+    await this.userRepo.updateUser({ _id: user._id }, { isActive: false });
     return { message: 'Account deactivated' };
   }
 
@@ -269,11 +279,7 @@ export class UserService {
       const p = await this.userRepo.findArtistProfile(userId);
       if (p) {
         hasRoleProfile = true;
-        if (
-          p.skills?.length >= 1 &&
-          p.artDimensions?.length >= 1 &&
-          p.headline
-        )
+        if (p.skills?.length >= 1 && p.artDimensions?.length >= 1 && p.headline)
           score += 15;
       }
     } else if (user.role === UserRole.CURATOR) {

@@ -28,6 +28,7 @@ export class ExploreController {
     @Query('category') category?: string,
     @Query('specialist') specialist?: string,
     @Query('search') search?: string,
+    @Query('community') community?: string,
   ) {
     return this.explore.listArtworks(
       Number(page),
@@ -36,6 +37,7 @@ export class ExploreController {
       category,
       specialist,
       search,
+      community,
     );
   }
 
@@ -56,6 +58,7 @@ export class ExploreController {
     @Query('domain') domain?: string,
     @Query('category') category?: string,
     @Query('specialist') specialist?: string,
+    @Query('community') community?: string,
   ) {
     return this.explore.listArtists(
       Number(page),
@@ -64,6 +67,7 @@ export class ExploreController {
       domain,
       category,
       specialist,
+      community,
     );
   }
 

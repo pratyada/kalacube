@@ -101,6 +101,7 @@ export default function DashboardPage() {
   }
 
   if (!user) return null;
+  const isJlps = user.community === 'jlps';
 
   return (
     <main className="flex-1 bg-cream">
@@ -109,7 +110,9 @@ export default function DashboardPage() {
           Welcome, {user.firstName || user.username}!
         </h1>
         <p className="mb-8 text-muted">
-          Let’s get your portfolio in front of collectors and curators.
+          {isJlps
+            ? '❄️ Your JLPS Winter Craft Market shop. Add crafts now. The market opens Dec 10, and KalaCUBE handles every order and delivery.'
+            : 'Let’s get your portfolio in front of collectors and curators.'}
         </p>
 
         {/* Stats — real data only */}
@@ -118,7 +121,11 @@ export default function DashboardPage() {
             label="Artworks"
             value={isArtist ? fmt(artworkCount) : '—'}
           />
-          <Stat label="Enquiries" value={fmt(enquiryCount)} />
+          {isJlps ? (
+            <Stat label="Opens" value="Dec 10" />
+          ) : (
+            <Stat label="Enquiries" value={fmt(enquiryCount)} />
+          )}
           <Stat
             label="Profile complete"
             value={`${user.profileCompleteness ?? 0}%`}
@@ -235,14 +242,14 @@ export default function DashboardPage() {
           {isArtist && (
             <QuickAction
               href="/dashboard/upload"
-              title="Upload artwork"
-              desc="Add a new piece to your portfolio"
+              title={isJlps ? 'Add a craft' : 'Upload artwork'}
+              desc={isJlps ? 'List something your young maker made' : 'Add a new piece to your portfolio'}
             />
           )}
           {isArtist && (
             <QuickAction
               href="/dashboard/artworks"
-              title="Manage artworks"
+              title={isJlps ? 'My shop items' : 'Manage artworks'}
               desc="Edit details, images or remove your pieces"
             />
           )}
@@ -251,11 +258,13 @@ export default function DashboardPage() {
             title="Edit profile"
             desc={`Update your info and ${isArtist ? 'portfolio' : 'details'}`}
           />
-          <QuickAction
-            href="/dashboard/enquiries"
-            title="Enquiries"
-            desc="See who wants to buy or connect"
-          />
+          {!isJlps && (
+            <QuickAction
+              href="/dashboard/enquiries"
+              title="Enquiries"
+              desc="See who wants to buy or connect"
+            />
+          )}
           {isArtist && (
             <QuickAction
               href="/dashboard/orders"
@@ -265,14 +274,22 @@ export default function DashboardPage() {
           )}
           <QuickAction
             href={`/artist/${user.username}`}
-            title="View public page"
+            title={isJlps ? 'View my shop' : 'View public page'}
             desc="See how visitors see your page"
           />
-          <QuickAction
-            href="/explore"
-            title="Explore artists"
-            desc="Discover artists across India"
-          />
+          {isJlps ? (
+            <QuickAction
+              href="/jlps"
+              title="JLPS market page"
+              desc="Share it with friends and family"
+            />
+          ) : (
+            <QuickAction
+              href="/explore"
+              title="Explore artists"
+              desc="Discover artists around the world"
+            />
+          )}
         </div>
       </div>
     </main>

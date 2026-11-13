@@ -24,6 +24,9 @@ export interface User {
   };
   profileCompleteness: number;
   isActive: boolean;
+  // Community market tag (e.g. 'jlps'); unset for regular KalaCUBE artists.
+  community?: string;
+  communityProfile?: { grade?: string; makes?: string; parentConsentAt?: string };
   emailVerifiedAt?: string;
   createdAt: string;
   updatedAt: string;

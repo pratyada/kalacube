@@ -51,6 +51,12 @@ export class EnquiryService {
 
     if (!artist) throw new NotFoundException('Artist not found');
 
+    // Student makers (community markets like JLPS) are never contactable by
+    // buyers — the portal handles every order and delivery.
+    if ((artist as any).community) {
+      throw new ForbiddenException('This maker can’t be messaged directly');
+    }
+
     const intent = dto.intent === 'buy' ? 'buy' : 'enquiry';
 
     const doc = await this.enquiryModel.create({
@@ -162,7 +168,8 @@ export class EnquiryService {
   }
 
   async updateStatus(id: string, userId: string, status: string) {
-    if (!Types.ObjectId.isValid(id)) throw new NotFoundException('Enquiry not found');
+    if (!Types.ObjectId.isValid(id))
+      throw new NotFoundException('Enquiry not found');
     const doc = await this.enquiryModel.findById(id);
     if (!doc) throw new NotFoundException('Enquiry not found');
     if (doc.artistId.toString() !== userId?.toString()) {

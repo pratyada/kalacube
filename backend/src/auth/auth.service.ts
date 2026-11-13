@@ -80,9 +80,7 @@ export class AuthService {
     if (!user) throw new UnauthorizedException('Invalid credentials');
 
     if (user.authType !== AuthType.KALACUBE) {
-      throw new BadRequestException(
-        `Please login with ${user.authType}`,
-      );
+      throw new BadRequestException(`Please login with ${user.authType}`);
     }
 
     const isPasswordValid = await bcrypt.compare(dto.password, user.password);
@@ -146,7 +144,9 @@ export class AuthService {
     const user = await this.userRepo.findUserByEmail(email);
     if (!user) {
       // Don't reveal if email exists
-      return { message: 'If this email is registered, a reset link has been sent' };
+      return {
+        message: 'If this email is registered, a reset link has been sent',
+      };
     }
 
     const resetToken = nanoid(32);
@@ -162,7 +162,9 @@ export class AuthService {
 
     // TODO: Queue reset email via EmailService
 
-    return { message: 'If this email is registered, a reset link has been sent' };
+    return {
+      message: 'If this email is registered, a reset link has been sent',
+    };
   }
 
   async resetPassword(token: string, newPassword: string) {
@@ -244,7 +246,10 @@ export class AuthService {
     if (!user) {
       // Create new user
       const username =
-        profile.email?.split('@')[0]?.toLowerCase().replace(/[^a-z0-9_]/g, '') +
+        profile.email
+          ?.split('@')[0]
+          ?.toLowerCase()
+          .replace(/[^a-z0-9_]/g, '') +
         '_' +
         nanoid(4);
       user = await this.userRepo.createUser({
@@ -286,12 +291,19 @@ export class AuthService {
 
     const existing = await this.userRepo.findUserByEmail(email);
     if (existing) {
-      return { data: this.sanitizeUser(existing), message: 'Already onboarded' };
+      return {
+        data: this.sanitizeUser(existing),
+        message: 'Already onboarded',
+      };
     }
 
     const username = dto.username.toLowerCase().trim();
     if (await this.userRepo.userExists({ username })) {
       throw new ConflictException('Username already taken');
+    }
+
+    if (dto.community && dto.parentConsent !== true) {
+      throw new BadRequestException('Parent/guardian consent is required');
     }
 
     const isFederated = !!claims.identities;
@@ -302,9 +314,25 @@ export class AuthService {
       role,
       username,
       email,
-      firstName: dto.firstName || claims.given_name,
-      lastName: dto.lastName || claims.family_name,
+      // Community (student) accounts: the public name is the child's, so never
+      // fall back to the parent's Google name.
+      firstName: dto.community
+        ? dto.firstName
+        : dto.firstName || claims.given_name,
+      lastName: dto.community
+        ? dto.lastName
+        : dto.lastName || claims.family_name,
       bio: dto.bio,
+      ...(dto.community
+        ? {
+            community: dto.community,
+            communityProfile: {
+              grade: dto.grade,
+              makes: dto.makes,
+              parentConsentAt: new Date(),
+            },
+          }
+        : {}),
       cognitoSub: claims.sub,
       emailVerifiedAt: claims.email_verified ? new Date() : undefined,
       isActive: true,

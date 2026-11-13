@@ -24,6 +24,10 @@ export class Artwork extends Document {
   @Prop() available: boolean;
   @Prop() legacyArtStyleId: [Types.ObjectId];
 
+  // Community market tag copied from the maker's account at creation
+  // (e.g. 'jlps'). Unset = regular KalaCUBE gallery artwork.
+  @Prop({ index: true, sparse: true }) community?: string;
+
   // Short evocative story shown on the artwork detail page to help it sell.
   // Populated out-of-band by the coordinator; optional.
   @Prop() story?: string;

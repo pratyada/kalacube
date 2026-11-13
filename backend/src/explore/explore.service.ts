@@ -19,7 +19,12 @@ export class ExploreService {
    */
   async getCategories() {
     const rows = await this.artworkModel.aggregate([
-      { $match: { status: 'submitted', legacyArtStyleId: { $exists: true, $ne: [] } } },
+      {
+        $match: {
+          status: 'submitted',
+          legacyArtStyleId: { $exists: true, $ne: [] },
+        },
+      },
       { $unwind: '$legacyArtStyleId' },
       {
         $lookup: {
@@ -91,9 +96,15 @@ export class ExploreService {
     category?: string,
     specialist?: string,
     search?: string,
+    community?: string,
   ) {
     const skip = (page - 1) * limit;
-    const match: Record<string, any> = { status: 'submitted' };
+    // Community markets (e.g. JLPS) are walled off: the main gallery never
+    // shows them, and a community gallery shows only its own items.
+    const match: Record<string, any> = {
+      status: 'submitted',
+      community: community || null,
+    };
     if (search) match.title = { $regex: escapeRegex(search), $options: 'i' };
 
     // Art type / category / sub-category all live on the artstyle the artwork
@@ -129,6 +140,7 @@ export class ExploreService {
                   username: '$$a.username',
                   firstName: '$$a.firstName',
                   lastName: '$$a.lastName',
+                  grade: '$$a.communityProfile.grade',
                 },
               },
             },
@@ -161,9 +173,14 @@ export class ExploreService {
     domain?: string,
     category?: string,
     specialist?: string,
+    community?: string,
   ) {
     const skip = (page - 1) * limit;
-    const match: any = { role: 'artist', isActive: true };
+    const match: any = {
+      role: 'artist',
+      isActive: true,
+      community: community || null,
+    };
     if (search) {
       const rx = { $regex: escapeRegex(search), $options: 'i' };
       match.$or = [{ username: rx }, { firstName: rx }, { lastName: rx }];
@@ -265,7 +282,7 @@ export class ExploreService {
    */
   async listJournal(limit = 80) {
     const pipeline = [
-      { $match: { role: 'artist', isActive: true } },
+      { $match: { role: 'artist', isActive: true, community: null } },
       {
         $lookup: {
           from: 'artistprofiles',
@@ -281,7 +298,12 @@ export class ExploreService {
           from: 'artworks',
           let: { uid: '$_id' },
           pipeline: [
-            { $match: { $expr: { $eq: ['$artist', '$$uid'] }, status: 'submitted' } },
+            {
+              $match: {
+                $expr: { $eq: ['$artist', '$$uid'] },
+                status: 'submitted',
+              },
+            },
             { $limit: 1 },
             { $project: { images: 1 } },
           ],
@@ -324,11 +346,35 @@ export class ExploreService {
   }
 
   async getArtist(username: string) {
-    const user = await this.userRepo.findUserByUsername(username.toLowerCase(), {
-      password: 0,
-      phone: 0,
-    });
+    const user = await this.userRepo.findUserByUsername(
+      username.toLowerCase(),
+      {
+        password: 0,
+        phone: 0,
+      },
+    );
     if (!user) return null;
+    // Community (student) makers: never expose the parent's email/contact or
+    // private details publicly — only the child's display name + grade.
+    let publicUser: any = user;
+    if ((user as any).community) {
+      publicUser = user.toObject();
+      for (const k of [
+        'email',
+        'pickup',
+        'socialLinks',
+        'website',
+        'dob',
+        'oauthProviderIds',
+        'cognitoSub',
+        'legacyIdentityId',
+      ]) {
+        delete publicUser[k];
+      }
+      publicUser.communityProfile = {
+        grade: publicUser.communityProfile?.grade,
+      };
+    }
     const [profile, artworks] = await Promise.all([
       this.userRepo.findArtistProfile(user._id.toString()),
       this.artworkModel
@@ -338,14 +384,17 @@ export class ExploreService {
         .limit(60)
         .lean(),
     ]);
-    return { user, profile, artworks };
+    return { user: publicUser, profile, artworks };
   }
 
   async getArtwork(id: string) {
     if (!/^[0-9a-fA-F]{24}$/.test(id)) return null;
     return this.artworkModel
       .findById(id)
-      .populate('artist', 'username firstName lastName pilotSeller')
+      .populate(
+        'artist',
+        'username firstName lastName pilotSeller community communityProfile.grade',
+      )
       .lean();
   }
 }

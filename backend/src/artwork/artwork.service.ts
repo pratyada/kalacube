@@ -24,10 +24,16 @@ export class ArtworkService {
   ) {}
 
   async create(
-    user: { _id: Types.ObjectId; legacyIdentityId?: string },
+    user: {
+      _id: Types.ObjectId;
+      legacyIdentityId?: string;
+      community?: string;
+    },
     dto: CreateArtworkDto,
     files: UploadedImage[] = [],
   ) {
+    // Community makers (e.g. JLPS, Toronto) always list in CAD; the tag is
+    // inherited from the account so it can't be spoofed from the client.
     const dimensions =
       dto.heightCm || dto.widthCm
         ? { height: dto.heightCm ?? 0, width: dto.widthCm ?? 0 }
@@ -39,7 +45,8 @@ export class ArtworkService {
       title: dto.title,
       description: dto.description,
       cost: dto.cost,
-      currency: dto.currency || 'INR',
+      currency: user.community ? 'CAD' : dto.currency || 'INR',
+      ...(user.community ? { community: user.community } : {}),
       medium: dto.medium,
       material: dto.material,
       theme: dto.theme,
@@ -83,7 +90,8 @@ export class ArtworkService {
   }
 
   private async ownedOrThrow(id: string, userId: string) {
-    if (!Types.ObjectId.isValid(id)) throw new NotFoundException('Artwork not found');
+    if (!Types.ObjectId.isValid(id))
+      throw new NotFoundException('Artwork not found');
     const art = await this.artworkModel.findById(id);
     if (!art) throw new NotFoundException('Artwork not found');
     // userId may arrive as an ObjectId (from @CurrentUser('_id')) — compare as strings.
@@ -95,7 +103,11 @@ export class ArtworkService {
 
   async update(
     id: string,
-    user: { _id: Types.ObjectId | string; legacyIdentityId?: string },
+    user: {
+      _id: Types.ObjectId | string;
+      legacyIdentityId?: string;
+      community?: string;
+    },
     dto: Partial<CreateArtworkDto>,
     files: UploadedImage[] = [],
     keepImages?: string | string[],
@@ -114,6 +126,7 @@ export class ArtworkService {
     ] as const) {
       if (dto[f] !== undefined) set[f] = dto[f];
     }
+    if (user.community) set.currency = 'CAD';
     if (dto.available !== undefined) set.available = dto.available === 'true';
     if (dto.heightCm !== undefined || dto.widthCm !== undefined) {
       set.dimensions = { height: dto.heightCm ?? 0, width: dto.widthCm ?? 0 };

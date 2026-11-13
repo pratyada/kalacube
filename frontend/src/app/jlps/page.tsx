@@ -1,8 +1,10 @@
 import type { Metadata } from 'next';
 import Image from 'next/image';
+import Link from 'next/link';
 import { Fredoka } from 'next/font/google';
 import Countdown from './Countdown';
 import ShareButton from './ShareButton';
+import MakersGallery from './MakersGallery';
 import './jlps.css';
 
 // Rounded, friendly display face for the kids' event.
@@ -41,10 +43,8 @@ export const metadata: Metadata = {
 const mail = (subject: string, body: string) =>
   `mailto:${CONTACT}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
 
-const SELL_MAIL = mail(
-  'JLPS Winter Craft Market: my child wants to sell',
-  "Hi KalaCUBE team,\n\nMy child would love to sell at the JLPS Winter Craft Market.\n\nParent name:\nChild's first name + grade:\nWhat they plan to make:\n\nThanks!",
-);
+const JOIN = '/jlps/join';
+
 const BUY_MAIL = mail(
   'JLPS Winter Craft Market: remind me when it opens',
   'Hi! Please email me when the JLPS Winter Craft Market opens on Dec 10.\n\nName:\nNeighbourhood (e.g. CityPlace):',
@@ -98,7 +98,7 @@ const STEPS = [
 
 const DATES = [
   { when: 'Right now', what: 'Start making! Practise, sketch, bake test batches.', emoji: '✂️', color: '#ff8a00' },
-  { when: 'Late November', what: 'Parents sign up and list your creations.', emoji: '📝', color: '#00a896' },
+  { when: 'Open now', what: 'Parents sign up and list your creations.', emoji: '📝', color: '#00a896' },
   { when: 'Thu, Dec 10', what: 'The shop opens to everyone!', emoji: '🎉', color: '#d81b60' },
   { when: 'Thu, Dec 31', what: 'Last day to shop. Happy New Year!', emoji: '🎆', color: '#7c4dff' },
 ];
@@ -210,14 +210,20 @@ export default function JlpsWinterMarketPage() {
           </div>
 
           <div className="mt-10 flex flex-col items-center justify-center gap-4 sm:flex-row">
-            <a href={SELL_MAIL} className="jlps-btn jlps-btn-sun w-full sm:w-auto">
+            <Link href={JOIN} className="jlps-btn jlps-btn-sun w-full sm:w-auto">
               🖍️ My kid wants to sell
-            </a>
+            </Link>
             <a href={BUY_MAIL} className="jlps-btn jlps-btn-white w-full sm:w-auto">
               🛍️ Remind me when it opens
             </a>
           </div>
-          <ShareButton className="mt-5 text-base font-semibold text-white underline decoration-wavy decoration-[var(--sun)] underline-offset-4 hover:text-[var(--sun)]" />
+          <p className="mt-4 text-sm text-white/80">
+            Already opened a shop?{' '}
+            <Link href="/dashboard" className="font-semibold underline">
+              Go to your dashboard
+            </Link>
+          </p>
+          <ShareButton className="mt-3 text-base font-semibold text-white underline decoration-wavy decoration-[var(--sun)] underline-offset-4 hover:text-[var(--sun)]" />
         </div>
 
         {/* Snowy hill */}
@@ -294,6 +300,8 @@ export default function JlpsWinterMarketPage() {
         </div>
       </section>
 
+      <MakersGallery />
+
       {/* ================= 100% BAND ================= */}
       <section className="relative overflow-hidden bg-[var(--sun)] py-14 sm:py-16">
         <div className="mx-auto flex max-w-5xl flex-col items-center gap-6 px-4 text-center sm:px-6 md:flex-row md:text-left">
@@ -368,9 +376,9 @@ export default function JlpsWinterMarketPage() {
               <li>✅ <b>No strangers, ever:</b> buyers never meet or message kids or families.</li>
               <li>✅ <b>You keep 100%:</b> paid out to you after each sale.</li>
             </ul>
-            <a href={SELL_MAIL} className="jlps-btn jlps-btn-sun mt-7">
-              🖍️ Count us in!
-            </a>
+            <Link href={JOIN} className="jlps-btn jlps-btn-sun mt-7">
+              🖍️ Open our shop
+            </Link>
           </div>
 
           <div className="jlps-card p-7 sm:p-8" style={{ background: '#e8f7f3' }}>

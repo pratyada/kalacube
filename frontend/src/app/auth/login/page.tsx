@@ -4,6 +4,7 @@ import { useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useAuthStore } from '@/stores/authStore';
+import { newUserPath } from '@/lib/community';
 
 // Google/Hosted-UI login is hidden until the pool has Google enabled + the
 // current origin's callback URL whitelisted (set NEXT_PUBLIC_GOOGLE_LOGIN=true).
@@ -34,7 +35,7 @@ export default function LoginPage() {
       await loginWithEmail(email, password);
       // New Cognito sign-ups have no Mongo profile yet — send them to onboarding.
       const current = useAuthStore.getState().user;
-      router.push(current?.isNewUser ? '/onboarding' : '/dashboard');
+      router.push(current?.isNewUser ? newUserPath() : '/dashboard');
     } catch (err: any) {
       const msg: string = err?.message || '';
       if (msg.startsWith('ADDITIONAL_STEP:')) {

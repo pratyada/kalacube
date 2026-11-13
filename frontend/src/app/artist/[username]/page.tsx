@@ -145,7 +145,10 @@ export default function ArtistPage() {
 
   const { user, profile, artworks } = data;
   const name = `${user.firstName || ''} ${user.lastName || ''}`.trim() || user.username;
-  const socials = buildSocials(user.socialLinks || {}, user.website);
+  // Community (student) makers are never contactable — no socials, no contact.
+  const isCommunity = Boolean(user.community);
+  const grade: string = user.communityProfile?.grade || '';
+  const socials = isCommunity ? [] : buildSocials(user.socialLinks || {}, user.website);
   const location = [user.location?.city, user.location?.country]
     .map((s: string) => (s || '').trim())
     .filter(Boolean)
@@ -276,13 +279,20 @@ export default function ArtistPage() {
               )}
             </div>
 
-            <button
-              type="button"
-              onClick={() => setContactOpen(true)}
-              className="flex-shrink-0 rounded-lg bg-navy px-6 py-3 text-sm font-semibold text-white transition hover:bg-navy-deep"
-            >
-              Contact artist
-            </button>
+            {isCommunity ? (
+              <span className="flex-shrink-0 rounded-full border border-teal/40 bg-teal/10 px-4 py-2 text-sm font-semibold text-teal-deep">
+                ❄️ JLPS young maker
+                {grade ? ` · ${/^\d/.test(grade) ? `Grade ${grade}` : grade}` : ''}
+              </span>
+            ) : (
+              <button
+                type="button"
+                onClick={() => setContactOpen(true)}
+                className="flex-shrink-0 rounded-lg bg-navy px-6 py-3 text-sm font-semibold text-white transition hover:bg-navy-deep"
+              >
+                Contact artist
+              </button>
+            )}
           </motion.div>
 
           {about && (

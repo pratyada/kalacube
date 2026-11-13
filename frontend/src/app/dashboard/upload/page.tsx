@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { useAuthStore } from '@/stores/authStore';
+import { newUserPath } from '@/lib/community';
 import api from '@/lib/api';
 
 /**
@@ -38,6 +39,18 @@ async function compressImage(file: File, maxEdge = 1600, quality = 0.82): Promis
   }
 }
 
+// JLPS winter craft market categories (stored in the artwork's `theme`).
+const JLPS_CATEGORIES = [
+  'Jewellery',
+  'Ornaments',
+  'Homemade Treats',
+  'Paintings & Drawings',
+  'Stickers',
+  'Toys',
+  'Gifts',
+  'Other',
+];
+
 export default function UploadArtworkPage() {
   const router = useRouter();
   const { user, isLoading, isAuthenticated, fetchUser } = useAuthStore();
@@ -56,6 +69,7 @@ export default function UploadArtworkPage() {
   const [previews, setPreviews] = useState<string[]>([]);
   const [error, setError] = useState('');
   const [saving, setSaving] = useState(false);
+  const isJlps = user?.community === 'jlps';
 
   useEffect(() => {
     fetchUser();
@@ -64,7 +78,7 @@ export default function UploadArtworkPage() {
   useEffect(() => {
     if (isLoading) return;
     if (!isAuthenticated) router.replace('/auth/login');
-    else if (user?.isNewUser) router.replace('/onboarding');
+    else if (user?.isNewUser) router.replace(newUserPath());
   }, [isLoading, isAuthenticated, user, router]);
 
   const onPick = (list: FileList | null) => {
@@ -128,10 +142,22 @@ export default function UploadArtworkPage() {
         <Link href="/dashboard" className="text-sm text-[#202f9a] hover:underline">
           ← Back to dashboard
         </Link>
-        <h1 className="mt-3 font-serif text-4xl">Upload artwork</h1>
-        <p className="mt-2 text-neutral-600">
-          Share a new piece with the KalaCUBE community.
-        </p>
+        {isJlps ? (
+          <>
+            <h1 className="mt-3 font-serif text-4xl">Add a craft ❄️</h1>
+            <p className="mt-2 text-neutral-600">
+              List something your young maker made for the JLPS Winter Craft
+              Market. Use a clear photo of the craft (no faces, please).
+            </p>
+          </>
+        ) : (
+          <>
+            <h1 className="mt-3 font-serif text-4xl">Upload artwork</h1>
+            <p className="mt-2 text-neutral-600">
+              Share a new piece with the KalaCUBE community.
+            </p>
+          </>
+        )}
 
         <form onSubmit={submit} className="mt-8 space-y-5">
           {error && (
@@ -210,10 +236,62 @@ export default function UploadArtworkPage() {
               onChange={(e) => setForm({ ...form, description: e.target.value })}
               rows={3}
               className={field}
-              placeholder="Materials, inspiration, story…"
+              placeholder={
+                isJlps
+                  ? 'How I made it… For treats: list ALL ingredients and allergens.'
+                  : 'Materials, inspiration, story…'
+              }
             />
           </div>
 
+          {isJlps && (
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+              <div>
+                <label className="mb-1 block text-sm font-medium">Category *</label>
+                <select
+                  required
+                  value={form.theme}
+                  onChange={(e) => setForm({ ...form, theme: e.target.value })}
+                  className={field}
+                >
+                  <option value="">Choose…</option>
+                  {JLPS_CATEGORIES.map((c) => (
+                    <option key={c} value={c}>
+                      {c}
+                    </option>
+                  ))}
+                </select>
+              </div>
+              <div>
+                <label className="mb-1 block text-sm font-medium">Made with</label>
+                <input
+                  value={form.material}
+                  onChange={(e) => setForm({ ...form, material: e.target.value })}
+                  className={field}
+                  placeholder="Beads, clay, paper…"
+                />
+              </div>
+              <div className="sm:col-span-2">
+                <label className="mb-1 block text-sm font-medium">Price (CAD $) *</label>
+                <input
+                  type="number"
+                  required
+                  min={1}
+                  step="0.5"
+                  value={form.cost}
+                  onChange={(e) => setForm({ ...form, cost: e.target.value })}
+                  className={field}
+                  placeholder="e.g. 8"
+                />
+                <p className="mt-1 text-xs text-neutral-500">
+                  Most JLPS crafts are $2–$40. 100% of the sale goes to your family.
+                </p>
+              </div>
+            </div>
+          )}
+
+          {!isJlps && (
+          <>
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
             <div>
               <label className="mb-1 block text-sm font-medium">Medium</label>
@@ -276,12 +354,15 @@ export default function UploadArtworkPage() {
             </div>
           </div>
 
+          </>
+          )}
+
           <button
             type="submit"
             disabled={saving}
             className="w-full rounded-full bg-[#0b1f52] py-3 text-sm font-semibold text-white transition hover:bg-[#202f9a] disabled:opacity-60"
           >
-            {saving ? 'Publishing…' : 'Publish artwork'}
+            {saving ? 'Publishing…' : isJlps ? 'Add to my shop 🎉' : 'Publish artwork'}
           </button>
         </form>
       </div>
