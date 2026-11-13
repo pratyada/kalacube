@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { useAuthStore } from '@/stores/authStore';
 import { newUserPath } from '@/lib/community';
+import { sellerMarket } from '@/lib/commerce';
 import api from '@/lib/api';
 
 /**
@@ -70,6 +71,9 @@ export default function UploadArtworkPage() {
   const [error, setError] = useState('');
   const [saving, setSaving] = useState(false);
   const isJlps = user?.community === 'jlps';
+  // Seller market from the profile country: Canada → CAD + local-delivery option.
+  const isCA = sellerMarket(user) === 'CA';
+  const [localOnly, setLocalOnly] = useState(false);
 
   useEffect(() => {
     fetchUser();
@@ -108,7 +112,8 @@ export default function UploadArtworkPage() {
       if (form.material) fd.append('material', form.material);
       if (form.theme) fd.append('theme', form.theme);
       if (form.cost) fd.append('cost', form.cost);
-      fd.append('currency', form.currency);
+      fd.append('currency', isCA ? 'CAD' : form.currency);
+      if (isCA && !isJlps) fd.append('localOnly', String(localOnly));
       if (form.heightCm) fd.append('heightCm', form.heightCm);
       if (form.widthCm) fd.append('widthCm', form.widthCm);
       // Compress each image before sending so large phone photos don't exceed
@@ -322,7 +327,9 @@ export default function UploadArtworkPage() {
 
           <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
             <div className="col-span-2">
-              <label className="mb-1 block text-sm font-medium">Price</label>
+              <label className="mb-1 block text-sm font-medium">
+                Price ({isCA ? 'CA$' : '₹'})
+              </label>
               <input
                 type="number"
                 min={0}
@@ -353,6 +360,22 @@ export default function UploadArtworkPage() {
               />
             </div>
           </div>
+
+          {isCA && (
+            <label className="flex cursor-pointer items-start gap-3 rounded-xl border border-teal/40 bg-teal/10 p-4 text-sm">
+              <input
+                type="checkbox"
+                className="mt-0.5 h-4 w-4"
+                checked={localOnly}
+                onChange={(e) => setLocalOnly(e.target.checked)}
+              />
+              <span>
+                <b>Local delivery only</b> (CityPlace &amp; downtown Toronto). Tick this
+                for fragile, large or perishable pieces. Unticked items can also ship
+                across Canada.
+              </span>
+            </label>
+          )}
 
           </>
           )}

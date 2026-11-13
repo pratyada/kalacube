@@ -5,7 +5,12 @@ import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
 import api from '@/lib/api';
 import {
-  formatINR,
+  formatMoney,
+  sellerMarket,
+  isCanadianPostal,
+  inLocalZone,
+  CA_SHIPPING_FLAT,
+  CA_LOCAL_DELIVERY_FEE,
   type Order,
 } from '@/lib/commerce';
 import { useCartStore } from '@/stores/cartStore';
@@ -17,6 +22,8 @@ const GST_RATE = 0.12;
 
 // Payment shape returned by POST /api/orders (mirrors backend CreatedPayment).
 type CreatedPayment = {
+  provider?: 'stripe' | 'razorpay';
+  checkoutUrl?: string | null;
   orderId: string;
   keyId?: string;
   amount: number; // paise
@@ -121,19 +128,34 @@ function CheckoutInner() {
     if (confirmed && isCart) clearCart();
   }, [confirmed, isCart, clearCart]);
 
+  // Canada market (JLPS + Canada sellers): CAD · Stripe · KalaCUBE delivery.
+  const isCA = !isCart && sellerMarket(art?.artist) === 'CA';
+  const currency = isCA ? 'CAD' : 'INR';
+  const fmt = (n?: number) => formatMoney(n, currency);
+  const localOnlyItem =
+    !!art?.community ||
+    !!art?.artist?.community ||
+    !!art?.localOnly ||
+    (art?.theme || '').trim() === 'Homemade Treats';
+
   const breakdown = useMemo(() => {
     const artPrice = isCart
       ? cartItems.reduce((s, i) => s + (i.price || 0), 0)
       : Number(art?.cost || 0);
+    if (isCA) {
+      const local = inLocalZone(form.shippingPincode);
+      const shipping = local || !form.shippingPincode ? CA_LOCAL_DELIVERY_FEE : CA_SHIPPING_FLAT;
+      return { art: artPrice, shipping, gst: 0, total: artPrice + shipping };
+    }
     const shipping = SHIPPING_FLAT;
     const gst = Math.round(artPrice * GST_RATE);
     return { art: artPrice, shipping, gst, total: artPrice + shipping + gst };
-  }, [art, isCart, cartItems]);
+  }, [art, isCart, cartItems, isCA, form.shippingPincode]);
 
   // Per-artist gate: online checkout is only open for pilot-seller artists.
   // (Cart items already come only from pilot-seller pages, so skip in cart mode;
   // the backend enforces it regardless.)
-  if (!isCart && status === 'ok' && !art?.artist?.pilotSeller) {
+  if (!isCart && status === 'ok' && !isCA && !art?.artist?.pilotSeller) {
     return (
       <Shell>
         <div className="rounded-2xl border border-line bg-white p-8 text-center">
@@ -167,7 +189,18 @@ function CheckoutInner() {
       return setError('Please enter a valid email address.');
     if (isCart && cartItems.length === 0) return setError('Your cart is empty.');
     // Originals ship via courier → a full deliverable address is required.
-    if (isCart || kind === 'original') {
+    if (isCA) {
+      if (!form.buyerPhone.trim()) return setError('Please enter a phone number for delivery.');
+      if (!form.shippingAddress.trim()) return setError('Please enter your delivery address.');
+      if (!form.shippingCity.trim()) return setError('Please enter your city.');
+      if (!form.shippingState.trim()) return setError('Please enter your province.');
+      if (!isCanadianPostal(form.shippingPincode))
+        return setError('Please enter a valid Canadian postal code (e.g. M5V 3L9).');
+      if (localOnlyItem && !inLocalZone(form.shippingPincode))
+        return setError(
+          'Sorry, this item is hand-delivered only within CityPlace and downtown Toronto (postal codes starting M5V, M5J, M5H, M5A, M5B, M5C, M5E, M5G, M5S, M5T, M4Y, M6J, M6K…).',
+        );
+    } else if (isCart || kind === 'original') {
       if (!form.buyerPhone.trim()) return setError('Please enter a phone number for delivery.');
       if (!form.shippingAddress.trim()) return setError('Please enter your shipping address.');
       if (!form.shippingCity.trim()) return setError('Please enter your city.');
@@ -189,10 +222,19 @@ function CheckoutInner() {
         shippingCity: form.shippingCity.trim() || undefined,
         shippingState: form.shippingState.trim() || undefined,
         shippingPincode: form.shippingPincode.trim() || undefined,
+        ...(isCA
+          ? { shippingCountry: 'Canada', returnOrigin: window.location.origin }
+          : {}),
         company: form.company,
       });
+      const pay: CreatedPayment | null = data?.data?.payment || null;
+      // Canada: hand off to Stripe's hosted checkout (returns to /checkout/success).
+      if (pay?.provider === 'stripe' && pay.checkoutUrl) {
+        window.location.href = pay.checkoutUrl;
+        return;
+      }
       setOrder(data?.data?.order || null);
-      setPayment(data?.data?.payment || null);
+      setPayment(pay);
       setPhase('placed');
     } catch (err: unknown) {
       const msg =
@@ -207,7 +249,7 @@ function CheckoutInner() {
   // with the real payment signature; in STUB mode it just exercises the
   // fulfilment state machine (no charge).
   const trackHref = `/orders/${order?.publicToken || order?._id || ''}`;
-  const isLive = !!(payment && !payment.stub && payment.keyId);
+  const isLive = !!(payment && !payment.stub && (payment.keyId || payment.checkoutUrl));
   const payNow = async () => {
     if (!order?._id) return;
     setConfirming(true);
@@ -303,7 +345,7 @@ function CheckoutInner() {
 
   return (
     <Shell>
-      <TestBanner />
+      {isCA ? <CanadaBanner community={!!(art?.community || art?.artist?.community)} /> : <TestBanner />}
       <div className="grid gap-8 lg:grid-cols-[minmax(0,1fr)_22rem]">
         {/* Left: buyer details or confirmation */}
         <div>
@@ -335,7 +377,7 @@ function CheckoutInner() {
                     {confirmed ? 'Total paid' : 'Total'}
                   </dt>
                   <dd className="font-semibold text-navy">
-                    {formatINR(amount.total)}
+                    {fmt(amount.total)}
                   </dd>
                 </div>
               </dl>
@@ -351,7 +393,7 @@ function CheckoutInner() {
                     {confirming
                       ? 'Processing…'
                       : isLive
-                        ? `Pay ${formatINR(amount.total)} securely`
+                        ? `Pay ${fmt(amount.total)} securely`
                         : 'Simulate payment (test) → create shipment'}
                   </button>
                 ) : (
@@ -376,7 +418,9 @@ function CheckoutInner() {
             <form onSubmit={placeOrder} className="rounded-2xl border border-line bg-white p-6 sm:p-8">
               <h1 className="font-serif text-2xl text-navy">Checkout</h1>
               <p className="mt-1 text-sm text-muted">
-                All-in price — artwork, shipping and GST included. No surprises.
+                {isCA
+                  ? 'All-in price in CAD. Free hand-delivery in CityPlace & downtown Toronto.'
+                  : 'All-in price — artwork, shipping and GST included. No surprises.'}
               </p>
 
               {/* Honeypot */}
@@ -388,10 +432,10 @@ function CheckoutInner() {
               <div className="mt-6 space-y-4">
                 <Field label="Your name" required id="co-name" value={form.buyerName} onChange={set('buyerName')} placeholder="Jane Doe" />
                 <Field label="Email" required id="co-email" type="email" value={form.buyerEmail} onChange={set('buyerEmail')} placeholder="you@example.com" />
-                <Field label="Phone" required={kind === 'original'} id="co-phone" type="tel" value={form.buyerPhone} onChange={set('buyerPhone')} placeholder="+91 98765 43210" />
+                <Field label="Phone" required={isCA || kind === 'original'} id="co-phone" type="tel" value={form.buyerPhone} onChange={set('buyerPhone')} placeholder={isCA ? '+1 416 555 0123' : '+91 98765 43210'} />
                 <div>
                   <label htmlFor="co-address" className="mb-1 block text-sm font-medium text-navy">
-                    Shipping address {kind === 'original' && <span className="text-magenta">*</span>}
+                    {isCA ? 'Delivery address' : 'Shipping address'} {kind === 'original' && <span className="text-magenta">*</span>}
                   </label>
                   <textarea
                     id="co-address"
@@ -399,14 +443,19 @@ function CheckoutInner() {
                     value={form.shippingAddress}
                     onChange={set('shippingAddress')}
                     className="w-full resize-none rounded-lg border border-navy/15 bg-white px-3 py-2.5 text-sm text-navy outline-none focus:border-indigo focus:ring-2 focus:ring-indigo/20"
-                    placeholder="Flat / house no, street, area"
+                    placeholder={isCA ? 'Unit, street (e.g. 12 Fort York Blvd, Unit 1205)' : 'Flat / house no, street, area'}
                   />
                 </div>
                 <div className="grid grid-cols-2 gap-4">
-                  <Field label="City" required={kind === 'original'} id="co-city" value={form.shippingCity} onChange={set('shippingCity')} placeholder="Dehradun" />
-                  <Field label="State" required={kind === 'original'} id="co-state" value={form.shippingState} onChange={set('shippingState')} placeholder="Uttarakhand" />
+                  <Field label="City" required={kind === 'original'} id="co-city" value={form.shippingCity} onChange={set('shippingCity')} placeholder={isCA ? 'Toronto' : 'Dehradun'} />
+                  <Field label={isCA ? 'Province' : 'State'} required={kind === 'original'} id="co-state" value={form.shippingState} onChange={set('shippingState')} placeholder={isCA ? 'ON' : 'Uttarakhand'} />
                 </div>
-                <Field label="Pincode" required={kind === 'original'} id="co-pin" value={form.shippingPincode} onChange={set('shippingPincode')} placeholder="248001" />
+                <Field label={isCA ? 'Postal code' : 'Pincode'} required={kind === 'original'} id="co-pin" value={form.shippingPincode} onChange={set('shippingPincode')} placeholder={isCA ? 'M5V 3L9' : '248001'} />
+                {isCA && localOnlyItem && (
+                  <p className="rounded-lg bg-teal/10 px-3 py-2 text-xs text-teal-deep">
+                    📍 This item is hand-delivered only within CityPlace &amp; downtown Toronto.
+                  </p>
+                )}
               </div>
 
               {error && (
@@ -420,7 +469,11 @@ function CheckoutInner() {
                 disabled={phase === 'placing'}
                 className="mt-6 w-full rounded-lg bg-navy px-5 py-3 text-sm font-semibold text-white transition hover:bg-navy-deep disabled:cursor-not-allowed disabled:opacity-60"
               >
-                {phase === 'placing' ? 'Reserving…' : `Continue to payment · ${formatINR(amount.total)}`}
+                {phase === 'placing'
+                  ? isCA
+                    ? 'Opening secure checkout…'
+                    : 'Reserving…'
+                  : `Continue to payment · ${fmt(amount.total)}`}
               </button>
               <p className="mt-3 text-center text-xs text-muted">
                 Secure payment on the next step. Cancel anytime before paying.
@@ -447,7 +500,7 @@ function CheckoutInner() {
                     </div>
                     <div className="min-w-0 flex-1">
                       <p className="truncate text-sm font-medium text-navy">{i.title}</p>
-                      <p className="text-xs text-muted">{formatINR(i.price)}</p>
+                      <p className="text-xs text-muted">{fmt(i.price)}</p>
                     </div>
                   </div>
                 ))}
@@ -468,12 +521,15 @@ function CheckoutInner() {
             )}
 
             <dl className="mt-5 space-y-2 border-t border-line pt-4 text-sm">
-              <Row label="Artwork" value={formatINR(amount.art)} />
-              <Row label="Shipping" value={formatINR(amount.shipping)} />
-              <Row label="GST" value={formatINR(amount.gst)} />
+              <Row label="Artwork" value={fmt(amount.art)} />
+              <Row
+                label={isCA ? 'Delivery' : 'Shipping'}
+                value={isCA && !amount.shipping ? 'Free' : fmt(amount.shipping)}
+              />
+              {!isCA && <Row label="GST" value={fmt(amount.gst)} />}
               <div className="flex justify-between border-t border-line pt-2 font-semibold text-navy">
                 <dt>Total</dt>
-                <dd>{formatINR(amount.total)}</dd>
+                <dd>{fmt(amount.total)}</dd>
               </div>
             </dl>
           </div>
@@ -503,6 +559,25 @@ function Shell({ children }: { children: React.ReactNode }) {
         {children}
       </div>
     </main>
+  );
+}
+
+function CanadaBanner({ community }: { community: boolean }) {
+  return (
+    <div className="mb-6 rounded-xl border border-teal/40 bg-teal/10 px-4 py-3 text-sm text-navy">
+      {community ? (
+        <>
+          <strong>❄️ JLPS Winter Craft Market.</strong> 100% of your purchase goes to the
+          young maker. KalaCUBE hand-delivers in CityPlace &amp; downtown Toronto. Secure
+          card payment by Stripe.
+        </>
+      ) : (
+        <>
+          <strong>Secure checkout.</strong> Pay by card via Stripe (CAD). KalaCUBE arranges
+          delivery to your door.
+        </>
+      )}
+    </div>
   );
 }
 

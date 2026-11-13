@@ -70,7 +70,49 @@ export const STATUS_PILL: Record<FulfilmentStatus, string> = {
   REFUNDED: 'border-navy/20 bg-navy/5 text-navy/60',
 };
 
-export function formatINR(n?: number, currency = 'INR') {
+/** Currency-aware price: CAD → "$12.50" (en-CA), INR → "₹1,200". */
+export function formatMoney(n?: number, currency = 'INR'): string {
+  if (currency !== 'CAD') return formatINR(n, currency);
+  if (n === undefined || n === null || Number.isNaN(n)) return '';
+  try {
+    return new Intl.NumberFormat('en-CA', { style: 'currency', currency: 'CAD' }).format(n);
+  } catch {
+    return `CA$${n.toFixed(2)}`;
+  }
+}
+
+/** JLPS / community markets accept orders from this moment (Toronto midnight). */
+export const COMMUNITY_SALES_OPEN_AT = Date.parse('2026-12-10T05:00:00Z');
+
+/** KalaCUBE local-delivery zone (CityPlace + downtown Toronto) by FSA —
+ *  display-only mirror of backend orders/market.ts (the server decides). */
+export const CA_LOCAL_FSAS = [
+  'M5V', 'M5J', 'M5H', 'M5K', 'M5L', 'M5X', 'M5C', 'M5E',
+  'M5A', 'M5B', 'M5G', 'M5T', 'M5S', 'M4Y', 'M6J', 'M6K',
+];
+export const CA_SHIPPING_FLAT = 15; // display mirror of COMMERCE_CA_SHIPPING_FLAT
+export const CA_LOCAL_DELIVERY_FEE = 0; // display mirror of COMMERCE_CA_LOCAL_DELIVERY_FEE
+
+export function isCanadianPostal(raw: string) {
+  return /^[ABCEGHJ-NPRSTVXY][0-9][ABCEGHJ-NPRSTV-Z] ?[0-9][ABCEGHJ-NPRSTV-Z][0-9]$/i.test(
+    raw.trim(),
+  );
+}
+export function inLocalZone(raw: string) {
+  return isCanadianPostal(raw) && CA_LOCAL_FSAS.includes(raw.trim().slice(0, 3).toUpperCase());
+}
+
+/** Seller market from their profile (mirrors backend orders/market.ts). */
+export function sellerMarket(
+  a?: { community?: string; location?: { country?: string } } | null,
+): 'IN' | 'CA' {
+  if (!a) return 'IN';
+  if (a.community) return 'CA';
+  return (a.location?.country || '').trim().toLowerCase() === 'canada' ? 'CA' : 'IN';
+}
+
+export function formatINR(n?: number, currency = 'INR'): string {
+  if (currency === 'CAD') return formatMoney(n, 'CAD');
   if (n === undefined || n === null || Number.isNaN(n)) return '';
   try {
     return new Intl.NumberFormat('en-IN', {
@@ -99,6 +141,9 @@ export interface Order {
   items: OrderItem[];
   amount: { art: number; shipping: number; gst: number; total: number };
   currency: string;
+  market?: 'IN' | 'CA';
+  delivery?: 'courier' | 'local' | 'ship_ca';
+  community?: string;
   track: 'original' | 'pod';
   paymentStatus: 'pending' | 'paid' | 'refunded';
   fulfilmentStatus: FulfilmentStatus;

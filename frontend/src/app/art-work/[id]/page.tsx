@@ -8,6 +8,7 @@ import api from '@/lib/api';
 import EnquiryModal, { type EnquiryIntent } from '@/components/EnquiryModal';
 import ArtworkGallery from '@/components/ArtworkGallery';
 import { useCartStore } from '@/stores/cartStore';
+import { COMMUNITY_SALES_OPEN_AT, sellerMarket } from '@/lib/commerce';
 
 const DIMENSION_LABEL: Record<string, string> = {
   handicraft: 'Handicraft',
@@ -111,6 +112,16 @@ export default function ArtworkPage() {
   const grade: string | undefined = artist?.communityProfile?.grade;
   const gradeLabel = grade ? (/^\d/.test(grade) ? `Grade ${grade}` : grade) : '';
 
+  // Canada market (JLPS + Canada-located sellers): CAD · Stripe · KalaCUBE delivery.
+  const isCA = sellerMarket(artist) === 'CA';
+  const localOnlyItem =
+    isCommunity || !!art.localOnly || (art.theme || '').trim() === 'Homemade Treats';
+  const sold = art.available === false;
+  const salesOpen = isCommunity
+    ? Date.now() >= COMMUNITY_SALES_OPEN_AT
+    : !!artist?.pilotSeller;
+  const caBuyable = isCA && !sold && salesOpen && Number(art.cost) > 0;
+
   const user = artistDetail?.user;
   const artProfile = artistDetail?.profile;
   const artistLoc = user
@@ -187,7 +198,11 @@ export default function ArtworkPage() {
               <div className="mt-6">
                 <p className="text-2xl font-medium text-navy-deep">{price}</p>
                 <p className="mt-1 text-sm text-muted">
-                  + shipping calculated at checkout
+                  {!isCA
+                    ? '+ shipping calculated at checkout'
+                    : localOnlyItem
+                      ? 'Hand-delivered by KalaCUBE in CityPlace & downtown Toronto'
+                      : 'Delivered in downtown Toronto · ships across Canada'}
                 </p>
               </div>
             )}
@@ -206,6 +221,33 @@ export default function ArtworkPage() {
                   across CityPlace &amp; downtown Toronto, and 100% of the sale goes to
                   the maker.
                 </p>
+              </div>
+            )}
+
+            {/* Canada checkout (Stripe, CAD). India keeps the pilot block below. */}
+            {isCA && (
+              <div className="mt-4 flex flex-wrap items-center gap-3">
+                {sold ? (
+                  <span className="rounded-lg bg-navy/10 px-5 py-3 text-sm font-semibold text-navy">
+                    Sold 💛
+                  </span>
+                ) : caBuyable ? (
+                  <Link
+                    href={`/checkout?artwork=${art._id || id}&kind=original`}
+                    className="inline-flex items-center gap-2 rounded-lg bg-yellow px-6 py-3 text-sm font-semibold text-navy shadow transition hover:bg-yellow-deep"
+                  >
+                    Buy now{price ? ` · ${price}` : ''}
+                  </Link>
+                ) : isCommunity ? (
+                  <span className="rounded-lg border border-navy/20 bg-white px-5 py-3 text-sm font-semibold text-navy">
+                    🗓️ On sale from Dec 10
+                  </span>
+                ) : null}
+                {localOnlyItem && (
+                  <span className="rounded-full border border-teal/40 bg-teal/10 px-3 py-1 text-xs font-semibold text-teal-deep">
+                    📍 Local delivery only · CityPlace &amp; downtown Toronto
+                  </span>
+                )}
               </div>
             )}
 
@@ -243,7 +285,7 @@ export default function ArtworkPage() {
 
             {/* Online purchase — shown ONLY for pilot-seller artists (per-artist
                 commerce gate). Everyone else keeps Buy/Enquire above. */}
-            {artist?.pilotSeller && artist?.username && !isCommunity && (
+            {artist?.pilotSeller && artist?.username && !isCommunity && !isCA && (
               <div className="mt-3 flex flex-wrap items-center gap-3">
                 <Link
                   href={`/checkout?artwork=${art._id || id}&kind=original`}

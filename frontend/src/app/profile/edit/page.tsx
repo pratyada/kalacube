@@ -437,14 +437,24 @@ export default function EditProfilePage() {
                   <label className="block text-sm font-medium text-gray-700 mb-1">
                     Country
                   </label>
-                  <input
-                    type="text"
-                    value={basicForm.country}
+                  <select
+                    value={user?.community ? 'Canada' : basicForm.country}
+                    disabled={!!user?.community}
                     onChange={(e) =>
                       setBasicForm({ ...basicForm, country: e.target.value })
                     }
                     className={inputClass}
-                  />
+                  >
+                    <option value="India">India</option>
+                    <option value="Canada">Canada</option>
+                    {!['India', 'Canada', ''].includes(basicForm.country) && (
+                      <option value={basicForm.country}>{basicForm.country}</option>
+                    )}
+                  </select>
+                  <p className="mt-1 text-xs text-gray-500">
+                    Sets how you sell: India → ₹ (Razorpay, courier pickup) ·
+                    Canada → CA$ (Stripe, KalaCUBE delivery).
+                  </p>
                 </div>
               </div>
 
